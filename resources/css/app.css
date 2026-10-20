@@ -1,9 +1,256 @@
 @import 'tailwindcss';
+@import './fonts.css';
+@plugin '@tailwindcss/typography';
 
+@source '../views';
+@source '../../app';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
 
+/*
+ * Design tokens. Real values are injected at runtime from the dashboard
+ * (ThemeService) — the defaults below only apply if that fails.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-ink: #12324f;
+    --color-ink-contrast: #fff;
+    --color-accent: #0f8b8d;
+    --color-accent-contrast: #fff;
+    --color-accent-ink: #0b6e70;
+    --color-highlight: #d9822b;
+    --color-highlight-contrast: #111;
+    --color-paper: #fbfaf7;
+    --color-surface: #fff;
+    --color-fg: #1c2733;
+    --color-muted: color-mix(in oklab, var(--color-fg) 64%, var(--color-paper));
+    --color-subtle: color-mix(in oklab, var(--color-fg) 4%, var(--color-paper));
+    --color-line: color-mix(in oklab, var(--color-fg) 11%, transparent);
+    --color-line-strong: color-mix(in oklab, var(--color-fg) 20%, transparent);
+    --color-viewer: #07090c;
+
+    --font-heading: 'Newsreader Variable', Georgia, serif;
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+    --radius-ui: .5rem;
+    --radius-card: .875rem;
+    --radius-btn: .5rem;
+
+    --container-site: 76rem;
+    --container-prose: 44rem;
+
+    --shadow-card: 0 1px 2px rgb(16 24 40 / .04), 0 1px 3px rgb(16 24 40 / .06);
+    --shadow-lift: 0 2px 4px rgb(16 24 40 / .04), 0 12px 28px -6px rgb(16 24 40 / .14);
+    --shadow-pop: 0 24px 60px -12px rgb(16 24 40 / .28);
+
+    --ease-out-soft: cubic-bezier(.22, .8, .32, 1);
+
+    --animate-fade-up: fade-up .6s var(--ease-out-soft) both;
+
+    @keyframes fade-up {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: none; }
+    }
 }
+
+@custom-variant hocus (&:hover, &:focus-visible);
+
+@layer base {
+    html {
+        font-size: var(--font-size-root, 106.25%);
+        -webkit-text-size-adjust: 100%;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        scroll-padding-top: 6rem;
+    }
+
+    body {
+        @apply bg-paper text-fg font-sans leading-relaxed;
+        font-feature-settings: 'cv11', 'ss01';
+    }
+
+    h1, h2, h3, h4, .font-heading {
+        font-family: var(--font-heading);
+        font-optical-sizing: auto;
+        letter-spacing: -0.012em;
+        text-wrap: balance;
+    }
+
+    p { text-wrap: pretty; }
+
+    ::selection { background: color-mix(in oklab, var(--color-accent) 22%, transparent); }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
+    [x-cloak] { display: none !important; }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    .container-site {
+        width: 100%;
+        max-width: var(--container-site);
+        margin-inline: auto;
+        padding-inline: 1.25rem;
+        @media (width >= 40rem) { padding-inline: 2rem; }
+    }
+
+    .section { padding-block: var(--space-section-sm, 3.75rem); }
+    @media (width >= 64rem) { .section { padding-block: var(--space-section, 6rem); } }
+
+    .eyebrow {
+        @apply font-sans text-xs font-semibold uppercase text-accent-ink;
+        font-family: var(--font-sans) !important;
+        letter-spacing: .14em;
+    }
+
+    .h-display { @apply font-heading text-4xl leading-[1.08] font-medium sm:text-5xl lg:text-6xl; }
+    .h-section { @apply font-heading text-3xl leading-tight font-medium sm:text-4xl; }
+    .h-card { @apply font-heading text-xl leading-snug font-semibold; }
+    .lead { @apply text-lg text-muted sm:text-xl leading-relaxed; }
+
+    /* Buttons */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[0.9375rem] font-semibold whitespace-nowrap transition duration-200 select-none;
+        border-radius: var(--radius-btn);
+        &:disabled { @apply opacity-60 cursor-not-allowed; }
+        & svg { @apply size-4.5 shrink-0; }
+    }
+    .btn-sm { @apply px-3.5 py-1.5 text-sm; }
+    .btn-lg { @apply px-6 py-3 text-base; }
+    .btn-primary { @apply bg-ink text-ink-contrast shadow-sm hocus:bg-ink/90 hocus:shadow-md; }
+    .btn-accent { @apply bg-accent text-accent-contrast shadow-sm hocus:brightness-110; }
+    .btn-highlight { @apply bg-highlight text-highlight-contrast shadow-sm hocus:brightness-105; }
+    .btn-secondary { @apply bg-surface text-ink ring-1 ring-line-strong ring-inset hocus:bg-subtle hocus:ring-ink/30; }
+    .btn-ghost { @apply text-ink hocus:bg-ink/5; }
+    .btn-light { @apply bg-white text-ink hocus:bg-white/90; }
+    .btn-outline-light { @apply text-white ring-1 ring-white/40 ring-inset hocus:bg-white/10; }
+    .link { @apply font-medium text-accent-ink underline decoration-accent/30 underline-offset-4 transition hocus:decoration-accent; }
+    .link-arrow { @apply inline-flex items-center gap-1.5 text-sm font-semibold text-accent-ink; & svg { @apply size-4 transition-transform; } &:hover svg { @apply translate-x-0.5; } }
+
+    /* Cards */
+    .card {
+        @apply bg-surface ring-1 ring-line;
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+    }
+    .card-interactive {
+        @apply bg-surface ring-1 ring-line transition duration-300;
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        &:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); @apply ring-line-strong; }
+    }
+    .rounded-card { border-radius: var(--radius-card); }
+    .rounded-ui { border-radius: var(--radius-ui); }
+
+    .chip {
+        @apply inline-flex items-center gap-1 rounded-full bg-ink/[.06] px-2.5 py-0.5 text-xs font-medium text-ink;
+    }
+    .chip-outline, .chip-accent, .chip-highlight { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
+    .chip-accent { @apply bg-accent/10 text-accent-ink; }
+    .chip-highlight { @apply bg-highlight/15 text-[color-mix(in_oklab,var(--color-highlight)_60%,black)]; }
+    .chip-outline { @apply bg-transparent ring-1 ring-line-strong text-muted; }
+
+    .filter-chip {
+        @apply inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-fg ring-1 ring-line-strong ring-inset transition select-none hover:bg-ink/5;
+        &[aria-pressed='true'], &.is-active { @apply bg-ink text-ink-contrast ring-ink; }
+    }
+
+    /* Forms */
+    .field-label { @apply mb-1.5 block text-sm font-medium text-fg; }
+    .field-hint { @apply mt-1.5 text-xs text-muted; }
+    .field-error { @apply mt-1.5 text-sm text-red-700; }
+    .input {
+        @apply block w-full bg-surface px-3.5 py-2.5 text-[0.9375rem] text-fg shadow-xs ring-1 ring-line-strong ring-inset transition placeholder:text-muted/70 focus:ring-2 focus:ring-accent focus:outline-none;
+        border-radius: var(--radius-ui);
+    }
+    textarea.input { @apply leading-relaxed; }
+    select.input { @apply appearance-none pr-10; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; background-size: 1.1rem; }
+    .checkbox { @apply size-4.5 rounded border-0 text-accent ring-1 ring-line-strong focus:ring-2 focus:ring-accent; accent-color: var(--color-accent); }
+
+    /* Section tones (page builder) */
+    .tone-default { @apply bg-paper; }
+    .tone-surface { @apply bg-surface; }
+    .tone-muted { @apply bg-subtle; }
+    .tone-accent { background: color-mix(in oklab, var(--color-accent) 7%, var(--color-paper)); }
+    .tone-ink { @apply bg-ink text-ink-contrast; --color-muted: color-mix(in oklab, var(--color-ink-contrast) 72%, var(--color-ink)); --color-line: color-mix(in oklab, var(--color-ink-contrast) 14%, transparent); --color-accent-ink: color-mix(in oklab, var(--color-accent) 55%, white); }
+    .tone-ink .card { @apply bg-white/[.04] ring-white/10 text-ink-contrast; box-shadow: none; }
+    .tone-ink .btn-secondary { @apply bg-transparent text-white ring-white/30 hocus:bg-white/10; }
+
+    /* Rich clinical content */
+    .prose-clinical {
+        max-width: none;
+        --tw-prose-body: var(--color-fg);
+        --tw-prose-headings: var(--color-ink);
+        --tw-prose-links: var(--color-accent-ink);
+        --tw-prose-bold: var(--color-fg);
+        --tw-prose-counters: var(--color-muted);
+        --tw-prose-bullets: color-mix(in oklab, var(--color-accent) 70%, transparent);
+        --tw-prose-hr: var(--color-line);
+        --tw-prose-quotes: var(--color-ink);
+        --tw-prose-quote-borders: var(--color-accent);
+        --tw-prose-captions: var(--color-muted);
+        --tw-prose-th-borders: var(--color-line-strong);
+        --tw-prose-td-borders: var(--color-line);
+        font-size: 1.0625rem;
+        line-height: 1.75;
+
+        & :where(h2) { @apply font-heading font-semibold mt-12 mb-4 text-[1.65rem]; }
+        & :where(h3) { @apply font-heading font-semibold mt-9 mb-3 text-[1.3rem]; }
+        & :where(a) { @apply underline decoration-accent/35 underline-offset-[3px] transition; &:hover { @apply decoration-accent; } }
+        & :where(blockquote) { @apply not-italic font-heading text-xl; }
+        & :where(img) { border-radius: var(--radius-card); }
+        & .table-wrap { @apply my-8 overflow-x-auto ring-1 ring-line; border-radius: var(--radius-card); }
+        & .table-wrap table { @apply my-0 text-[0.9375rem]; }
+        & .table-wrap th { @apply bg-subtle px-4 py-2.5; }
+        & .table-wrap td { @apply px-4 py-2.5; }
+        & sup.cite { @apply text-[0.7em] font-semibold text-accent-ink; & a { @apply no-underline; } }
+        & .figure { @apply my-9; & img { @apply w-full my-0 ring-1 ring-line; } }
+        & .figure-wide { @media (width >= 64rem) { margin-inline: -4rem; } }
+        & figcaption { @apply mt-3 text-sm leading-relaxed; }
+        & .figure-credit { @apply block text-xs opacity-75 mt-1; }
+        & mark { @apply rounded px-0.5 bg-highlight/25 text-inherit; }
+    }
+
+    .callout {
+        @apply my-8 border-l-4 px-5 py-4 text-[0.98rem] leading-relaxed;
+        border-radius: var(--radius-card);
+        & .callout-title { @apply mb-1 text-xs font-bold tracking-[0.12em] uppercase; }
+        & p { @apply m-0; }
+    }
+    .callout-pearl { @apply border-accent; background: color-mix(in oklab, var(--color-accent) 8%, var(--color-surface)); & .callout-title { @apply text-accent-ink; } }
+    .callout-pitfall { @apply border-red-600 bg-red-50; & .callout-title { @apply text-red-800; } }
+    .callout-key { @apply border-ink bg-ink/[.04]; & .callout-title { @apply text-ink; } }
+    .callout-exam { @apply border-highlight; background: color-mix(in oklab, var(--color-highlight) 10%, var(--color-surface)); & .callout-title { color: color-mix(in oklab, var(--color-highlight) 55%, black); } }
+    .callout-note { @apply border-line-strong bg-subtle; & .callout-title { @apply text-muted; } }
+
+    /* Image viewer surfaces */
+    .viewer-frame { @apply relative overflow-hidden bg-viewer; border-radius: var(--radius-card); }
+
+    .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:bg-ink focus:px-4 focus:py-2 focus:text-ink-contrast; border-radius: var(--radius-ui); }
+
+    .js .reveal-on-scroll { opacity: 0; transform: translateY(16px); transition: opacity .7s var(--ease-out-soft), transform .7s var(--ease-out-soft); }
+    .js .reveal-on-scroll.is-visible { opacity: 1; transform: none; }
+
+    .scrollbar-none { scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
+
+    .bg-retina-lines {
+        background-image:
+            radial-gradient(120% 80% at 100% 0%, color-mix(in oklab, var(--color-accent) 22%, transparent), transparent 60%),
+            radial-gradient(90% 70% at 0% 100%, color-mix(in oklab, var(--color-highlight) 12%, transparent), transparent 60%);
+    }
+}
+
+/* Responsive builder visibility */
+@media (width < 64rem) { .hide-mobile { display: none !important; } }
+@media (width >= 64rem) { .hide-desktop { display: none !important; } }
