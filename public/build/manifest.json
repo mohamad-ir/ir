@@ -1,0 +1,162 @@
+{
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-italic.woff2": {
+    "file": "assets/fraunces-latin-ext-wght-italic-BfTTTDIL.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2": {
+    "file": "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-italic.woff2": {
+    "file": "assets/fraunces-latin-wght-italic-Py8at3oI.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2": {
+    "file": "assets/fraunces-latin-wght-normal-ukD16Tqj.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-ext-wght-normal.woff2": {
+    "file": "assets/ibm-plex-sans-latin-ext-wght-normal-CIII54If.woff2",
+    "src": "node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2": {
+    "file": "assets/ibm-plex-sans-latin-wght-normal-IvpUvPa2.woff2",
+    "src": "node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2": {
+    "file": "assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2": {
+    "file": "assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/literata/files/literata-latin-ext-wght-italic.woff2": {
+    "file": "assets/literata-latin-ext-wght-italic-CC1SwlwQ.woff2",
+    "src": "node_modules/@fontsource-variable/literata/files/literata-latin-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/literata/files/literata-latin-ext-wght-normal.woff2": {
+    "file": "assets/literata-latin-ext-wght-normal-BnEbWgdZ.woff2",
+    "src": "node_modules/@fontsource-variable/literata/files/literata-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/literata/files/literata-latin-wght-italic.woff2": {
+    "file": "assets/literata-latin-wght-italic-Bm_GJfSc.woff2",
+    "src": "node_modules/@fontsource-variable/literata/files/literata-latin-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/literata/files/literata-latin-wght-normal.woff2": {
+    "file": "assets/literata-latin-wght-normal-DLxlUchJ.woff2",
+    "src": "node_modules/@fontsource-variable/literata/files/literata-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-italic.woff2": {
+    "file": "assets/newsreader-latin-ext-wght-italic-DFS986qL.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2": {
+    "file": "assets/newsreader-latin-ext-wght-normal-C-3rgBeH.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2": {
+    "file": "assets/newsreader-latin-wght-italic-Bxi8ein9.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2": {
+    "file": "assets/newsreader-latin-wght-normal-CCVVNp6i.woff2",
+    "src": "node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/source-sans-3/files/source-sans-3-latin-ext-wght-normal.woff2": {
+    "file": "assets/source-sans-3-latin-ext-wght-normal-C8iNium2.woff2",
+    "src": "node_modules/@fontsource-variable/source-sans-3/files/source-sans-3-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2": {
+    "file": "assets/source-sans-3-latin-wght-normal-Bo_j9asI.woff2",
+    "src": "node_modules/@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-italic.woff2": {
+    "file": "assets/source-serif-4-latin-ext-wght-italic-B_cmBfNX.woff2",
+    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-normal.woff2": {
+    "file": "assets/source-serif-4-latin-ext-wght-normal-BVZ5su8S.woff2",
+    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2": {
+    "file": "assets/source-serif-4-latin-wght-italic-B-rCj6ir.woff2",
+    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2": {
+    "file": "assets/source-serif-4-latin-wght-normal-DMe4EKeb.woff2",
+    "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-B2rv4sCj.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "assets": [
+      "assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+      "assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+      "assets/newsreader-latin-ext-wght-normal-C-3rgBeH.woff2",
+      "assets/newsreader-latin-wght-normal-CCVVNp6i.woff2",
+      "assets/newsreader-latin-ext-wght-italic-DFS986qL.woff2",
+      "assets/newsreader-latin-wght-italic-Bxi8ein9.woff2",
+      "assets/source-serif-4-latin-ext-wght-normal-BVZ5su8S.woff2",
+      "assets/source-serif-4-latin-wght-normal-DMe4EKeb.woff2",
+      "assets/source-serif-4-latin-ext-wght-italic-B_cmBfNX.woff2",
+      "assets/source-serif-4-latin-wght-italic-B-rCj6ir.woff2",
+      "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
+      "assets/fraunces-latin-wght-normal-ukD16Tqj.woff2",
+      "assets/fraunces-latin-ext-wght-italic-BfTTTDIL.woff2",
+      "assets/fraunces-latin-wght-italic-Py8at3oI.woff2",
+      "assets/source-sans-3-latin-ext-wght-normal-C8iNium2.woff2",
+      "assets/source-sans-3-latin-wght-normal-Bo_j9asI.woff2",
+      "assets/ibm-plex-sans-latin-ext-wght-normal-CIII54If.woff2",
+      "assets/ibm-plex-sans-latin-wght-normal-IvpUvPa2.woff2",
+      "assets/literata-latin-ext-wght-normal-BnEbWgdZ.woff2",
+      "assets/literata-latin-wght-normal-DLxlUchJ.woff2",
+      "assets/literata-latin-ext-wght-italic-CC1SwlwQ.woff2",
+      "assets/literata-latin-wght-italic-Bm_GJfSc.woff2"
+    ]
+  },
+  "resources/css/filament/admin/theme.css": {
+    "file": "assets/theme-ntEznYfs.css",
+    "name": "theme",
+    "names": [
+      "theme.css"
+    ],
+    "src": "resources/css/filament/admin/theme.css",
+    "isEntry": true,
+    "assets": [
+      "assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+      "assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+      "assets/newsreader-latin-ext-wght-normal-C-3rgBeH.woff2",
+      "assets/newsreader-latin-wght-normal-CCVVNp6i.woff2",
+      "assets/newsreader-latin-ext-wght-italic-DFS986qL.woff2",
+      "assets/newsreader-latin-wght-italic-Bxi8ein9.woff2",
+      "assets/source-serif-4-latin-ext-wght-normal-BVZ5su8S.woff2",
+      "assets/source-serif-4-latin-wght-normal-DMe4EKeb.woff2",
+      "assets/source-serif-4-latin-ext-wght-italic-B_cmBfNX.woff2",
+      "assets/source-serif-4-latin-wght-italic-B-rCj6ir.woff2",
+      "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
+      "assets/fraunces-latin-wght-normal-ukD16Tqj.woff2",
+      "assets/fraunces-latin-ext-wght-italic-BfTTTDIL.woff2",
+      "assets/fraunces-latin-wght-italic-Py8at3oI.woff2",
+      "assets/source-sans-3-latin-ext-wght-normal-C8iNium2.woff2",
+      "assets/source-sans-3-latin-wght-normal-Bo_j9asI.woff2",
+      "assets/ibm-plex-sans-latin-ext-wght-normal-CIII54If.woff2",
+      "assets/ibm-plex-sans-latin-wght-normal-IvpUvPa2.woff2",
+      "assets/literata-latin-ext-wght-normal-BnEbWgdZ.woff2",
+      "assets/literata-latin-wght-normal-DLxlUchJ.woff2",
+      "assets/literata-latin-ext-wght-italic-CC1SwlwQ.woff2",
+      "assets/literata-latin-wght-italic-Bm_GJfSc.woff2"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CJ9Isgbb.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}

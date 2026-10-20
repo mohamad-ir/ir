@@ -49,14 +49,15 @@ class CaseController extends Controller
         if ($topic = $case->topics->first()) {
             $seo->breadcrumb($topic->name, $topic->url());
         }
-        $seo->breadcrumb($case->title, $case->url())->schema(SchemaFactory::case($case));
+        $canView = $access->canView($case, $request->user());
+        $seo->breadcrumb($case->title, $case->url())->schema(SchemaFactory::case($case, $case->access_level?->value === 'public'));
         if ($preview) {
             $seo->noindex();
         }
 
         return view('cases.show', [
             'case' => $case,
-            'canView' => $access->canView($case, $request->user()),
+            'canView' => $canView,
             'related' => $case->related(3)->load(['featuredMedia', 'topics', 'modalities']),
             'previous' => ClinicalCase::published()->where('published_at', '<', $case->published_at ?? now())->orderByDesc('published_at')->first(['id', 'title', 'slug']),
             'next' => ClinicalCase::published()->where('published_at', '>', $case->published_at ?? now())->orderBy('published_at')->first(['id', 'title', 'slug']),

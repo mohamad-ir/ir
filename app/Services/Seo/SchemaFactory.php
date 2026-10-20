@@ -44,7 +44,7 @@ class SchemaFactory
         ]);
     }
 
-    public static function case(ClinicalCase $c): array
+    public static function case(ClinicalCase $c, bool $includeAnswer = true): array
     {
         return array_filter([
             '@type' => 'MedicalWebPage',
@@ -60,7 +60,7 @@ class SchemaFactory
             'audience' => ['@type' => 'MedicalAudience', 'audienceType' => 'Clinician'],
             'medicalAudience' => 'Clinician',
             'specialty' => 'Ophthalmologic',
-            'about' => $c->diagnosis ? ['@type' => 'MedicalCondition', 'name' => $c->diagnosis] : null,
+            'about' => $includeAnswer && $c->diagnosis ? ['@type' => 'MedicalCondition', 'name' => $c->diagnosis] : null,
             'keywords' => $c->topics->pluck('name')->merge($c->modalities->pluck('name'))->implode(', ') ?: null,
             'isAccessibleForFree' => true,
             'citation' => collect($c->references)->pluck('citation')->filter()->values()->all() ?: null,

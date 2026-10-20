@@ -78,7 +78,7 @@ trait HasRevisions
     {
         $data = collect($revision->data)->only($this->getFillable())->all();
         $this->fill($data);
-        $this->save();
+        static::withoutRevisions(fn () => $this->save());
         $this->createRevision('restored');
     }
 

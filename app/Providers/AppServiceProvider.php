@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
             'role' => \Spatie\Permission\Models\Role::class,
         ]);
 
-        if (str_starts_with((string) config('app.url'), 'https://') && $this->app->isProduction()) {
+        if (str_starts_with((string) config('app.url'), 'https://') && $this->app->isProduction() && \App\Support\Installer::isInstalled()) {
             URL::forceScheme('https');
         }
 

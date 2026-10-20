@@ -9,7 +9,7 @@ use Throwable;
 /** Environment checks shown in System › Health and used by the installer. */
 class SystemHealth
 {
-    public const EXTENSIONS = ['pdo_mysql', 'mbstring', 'openssl', 'intl', 'fileinfo', 'tokenizer', 'xml', 'ctype', 'json', 'bcmath', 'curl', 'zip'];
+    public const EXTENSIONS = ['pdo_mysql', 'mbstring', 'openssl', 'intl', 'fileinfo', 'tokenizer', 'xml', 'ctype', 'json', 'curl', 'zip'];
 
     /** @return array<int, array{label: string, ok: bool, value: string, help?: string}> */
     public static function requirements(): array

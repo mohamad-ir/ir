@@ -104,6 +104,7 @@ class CaseResource extends Resource
                             ])
                             ->columns(3)->reorderableWithDragAndDrop()->collapsible()->cloneable()
                             ->itemLabel(fn (array $state) => $state['label'] ?? null)
+                            ->defaultItems(0)
                             ->addActionLabel('Add image')
                             ->helperText('Upload de-identified images only. EXIF and location metadata are removed automatically.'),
                         Section::make('Before / after comparison')->description('Optional slider comparing two scans, e.g. before and after treatment.')->collapsible()->collapsed()
