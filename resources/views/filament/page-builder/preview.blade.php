@@ -20,7 +20,7 @@
         },
         queue() { if (this.auto) { clearTimeout(this._t); this._t = setTimeout(() => $wire.refreshPreview(), 1100) } },
      }"
-     x-init="fit(); $wire.refreshPreview(); $nextTick(() => fit())"
+     x-init="fit(); $wire.refreshPreview(); $nextTick(() => fit()); new ResizeObserver(() => fit()).observe($refs.wrap)"
      x-on:resize.window.debounce.150ms="fit()"
      x-on:builder-preview-updated.window="reload()"
      x-on:input.window="if (! $el.contains($event.target)) queue()"

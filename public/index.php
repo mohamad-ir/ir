@@ -10,6 +10,9 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
+// Create .env with an application key on the very first request (web installer).
+require __DIR__.'/../bootstrap/prepare-env.php';
+
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
 
