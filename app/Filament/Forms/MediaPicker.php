@@ -30,7 +30,7 @@ class MediaPicker extends Select
             ->placeholder('Choose from the media library or upload')
             ->options(fn () => $this->baseQuery()->latest('id')->limit(30)->get()->mapWithKeys(fn (Media $m) => [$m->id => $m->pickerLabel()])->all())
             ->getSearchResultsUsing(fn (string $search) => $this->baseQuery()
-                ->where(fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('original_name', 'like', "%{$search}%")->orWhere('alt', 'like', "%{$search}%"))
+                ->where(fn ($query) => $query->where('title', 'like', "%{$search}%")->orWhere('original_name', 'like', "%{$search}%")->orWhere('alt', 'like', "%{$search}%"))
                 ->latest('id')->limit(40)->get()->mapWithKeys(fn (Media $m) => [$m->id => $m->pickerLabel()])->all())
             ->getOptionLabelUsing(fn ($value) => Media::find($value)?->pickerLabel())
             ->createOptionForm(fn () => [
@@ -70,7 +70,7 @@ class MediaPicker extends Select
     public function videosOnly(): static
     {
         $this->imagesOnly = false;
-        $this->mediaQueryModifier = fn ($q) => $q->where('mime_type', 'like', 'video/%');
+        $this->mediaQueryModifier = fn ($query) => $query->where('mime_type', 'like', 'video/%');
 
         return $this;
     }

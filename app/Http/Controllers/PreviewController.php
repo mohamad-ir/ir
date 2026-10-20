@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\ClinicalCase;
 use App\Models\ExamTopic;
 use App\Models\Page;
+use App\Models\Question;
 use App\Models\Topic;
 use App\Models\Video;
 use App\Services\Access\ContentAccess;
@@ -27,6 +28,7 @@ class PreviewController extends Controller
             'exam_topic' => app(ExamController::class)->renderTopic(ExamTopic::findOrFail($id), $seo, true),
             'topic' => redirect(Topic::findOrFail($id)->urlPath()),
             'page' => $this->page(Page::withTrashed()->findOrFail($id), $seo),
+            'question' => view('preview.question', ['question' => Question::withTrashed()->with(['media', 'examTopic'])->findOrFail($id), 'noTracking' => true]),
         };
     }
 

@@ -32,7 +32,7 @@ class PublicationsBlock extends PageBlock
     public static function prepare(array $data): array
     {
         $query = ProfileEntry::query()->whereIn('type', array_filter((array) ($data['types'] ?? ['publication', 'book'])))
-            ->when(! empty($data['highlighted_only']), fn ($q) => $q->where('is_highlighted', true))
+            ->when(! empty($data['highlighted_only']), fn ($query) => $query->where('is_highlighted', true))
             ->orderByDesc('start_year')->orderBy('sort_order');
         if (! empty($data['limit'])) {
             $query->limit((int) $data['limit']);

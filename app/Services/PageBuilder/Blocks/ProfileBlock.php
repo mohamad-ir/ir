@@ -50,6 +50,6 @@ class ProfileBlock extends PageBlock
 
     public static function plainText(array $data): string
     {
-        return trim(($data['heading'] ?? '').' '.Html::text(is_string($data['bio'] ?? null) ? $data['bio'] : ''));
+        return trim(($data['heading'] ?? '').' '.Html::text($data['bio'] ?? ''));
     }
 }

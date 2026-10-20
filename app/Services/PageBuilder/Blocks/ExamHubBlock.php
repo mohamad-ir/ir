@@ -28,7 +28,7 @@ class ExamHubBlock extends PageBlock
 
     public static function prepare(array $data): array
     {
-        $data['topics'] = ExamTopic::published()->withCount(['questions' => fn ($q) => $q->published()])->orderBy('sort_order')->limit((int) ($data['limit'] ?? 6))->get();
+        $data['topics'] = ExamTopic::published()->withCount(['questions' => fn ($query) => $query->published()])->orderBy('sort_order')->limit((int) ($data['limit'] ?? 6))->get();
         $data['question_count'] = Question::published()->count();
 
         return $data;

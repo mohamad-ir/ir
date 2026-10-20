@@ -47,6 +47,6 @@ class ImageTextBlock extends PageBlock
 
     public static function plainText(array $data): string
     {
-        return trim(($data['heading'] ?? '').' '.Html::text(is_string($data['content'] ?? null) ? $data['content'] : ''));
+        return trim(($data['heading'] ?? '').' '.Html::text($data['content'] ?? ''));
     }
 }

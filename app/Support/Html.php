@@ -7,10 +7,13 @@ use Illuminate\Support\Str;
 class Html
 {
     /** Converts rich HTML into clean plain text for search, excerpts and meta tags. */
-    public static function text(?string $html): string
+    public static function text(string|array|null $html): string
     {
         if (blank($html)) {
             return '';
+        }
+        if (is_array($html)) {
+            $html = (string) RichText::render($html);
         }
 
         $html = preg_replace('~<(script|style)[^>]*>.*?</\1>~is', ' ', $html);

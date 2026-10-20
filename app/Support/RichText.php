@@ -24,15 +24,19 @@ class RichText
         return [CalloutBlock::class, FigureBlock::class, VideoEmbedBlock::class];
     }
 
-    public static function render(?string $html, array $references = []): HtmlString
+    public static function render(string|array|null $html, array $references = []): HtmlString
     {
         return new HtmlString(static::process($html, $references)['html']);
     }
 
     /** @return array{html: string, toc: array<int, array{id: string, text: string, level: int}>} */
-    public static function process(?string $html, array $references = []): array
+    public static function process(string|array|null $html, array $references = []): array
     {
         if (blank($html)) {
+            return ['html' => '', 'toc' => []];
+        }
+
+        if (is_array($html) && ! isset($html['type'])) {
             return ['html' => '', 'toc' => []];
         }
 
@@ -44,6 +48,7 @@ class RichText
                 ->toUnsafeHtml();
         } catch (Throwable $e) {
             report($e);
+            $html = is_string($html) ? $html : '';
         }
 
         $html = static::sanitizer()->sanitize($html);

@@ -98,7 +98,7 @@ Route::middleware('auth')->group(function () {
     // Staff previews of drafts and the live page-builder canvas
     Route::middleware('staff')->prefix('_preview')->name('preview.')->controller(Controllers\PreviewController::class)->group(function () {
         Route::get('/builder/{token}', 'builder')->name('builder');
-        Route::get('/{type}/{id}', 'show')->name('show')->where('type', 'case|article|video|page|exam_topic|topic');
+        Route::get('/{type}/{id}', 'show')->name('show')->where('type', 'case|article|video|page|exam_topic|topic|question');
     });
 });
 

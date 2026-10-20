@@ -21,7 +21,7 @@ enum ContentStatus: string implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::Draft => 'Draft',
-            self::Pending => 'Pending review',
+            self::Pending => 'In review',
             self::Published => 'Published',
             self::Archived => 'Archived',
         };
