@@ -71,8 +71,7 @@ class BackupService
             ."app-key.txt — the APP_KEY needed to read encrypted settings; keep this archive private.\n");
         $zip->addFromString('app-key.txt', (string) config('app.key'));
 
-        if ($includeMedia && is_dir(public_path('media'))) {
-            $base = public_path('media');
+        if ($includeMedia && is_dir($base = config('filesystems.disks.public.root'))) {
             foreach (File::allFiles($base) as $file) {
                 if (in_array($file->getFilename(), ['.htaccess', '.gitignore'], true)) {
                     continue;
@@ -151,7 +150,7 @@ class BackupService
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $entry = $zip->getNameIndex($i);
                 if (str_starts_with($entry, 'media/') && ! str_contains($entry, '..') && ! str_ends_with($entry, '/')) {
-                    $target = public_path($entry);
+                    $target = config('filesystems.disks.public.root').'/'.substr($entry, 6);
                     File::ensureDirectoryExists(dirname($target));
                     file_put_contents($target, $zip->getFromIndex($i));
                 }

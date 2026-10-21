@@ -4,6 +4,13 @@
         <div class="rounded-xl bg-warning-50 p-4 text-sm font-medium text-warning-800 ring-1 ring-warning-200">The website is in maintenance mode — visitors see a “back shortly” page.</div>
     @endif
 
+    @if ($pending > 0)
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-primary-50 p-4 text-sm ring-1 ring-primary-200 dark:bg-primary-500/10">
+            <span><strong>{{ $pending }} database {{ \Illuminate\Support\Str::plural('update', $pending) }} pending</strong> — apply them after uploading a new version (create a backup first).</span>
+            <x-filament::button size="sm" wire:click="applyUpdates" wire:confirm="Apply database updates now? Make sure you have a recent backup.">Apply database updates</x-filament::button>
+        </div>
+    @endif
+
     <div class="grid gap-6 xl:grid-cols-2">
         @foreach (['Runtime status' => $runtime, 'Server requirements' => $requirements] as $title => $checks)
             <div class="{{ $card }}">

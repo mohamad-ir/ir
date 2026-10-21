@@ -72,6 +72,8 @@ class InstallController extends Controller
                 'SESSION_DRIVER' => 'file',
                 'CACHE_STORE' => 'file',
                 'QUEUE_CONNECTION' => 'database',
+                // When served from public_html (app outside the web root) cron jobs must know where uploads live.
+                'MEDIA_ROOT' => realpath(public_path()) !== realpath(base_path('public')) ? public_path('media') : '',
             ]);
 
             $connection = str_contains(strtolower((string) $version), 'mariadb') ? 'mariadb' : 'mysql';

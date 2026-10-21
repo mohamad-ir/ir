@@ -48,7 +48,7 @@ return [
             'driver' => 'local',
             // Uploads live directly inside the web root (public/media) so no
             // storage:link symlink is needed on shared hosting.
-            'root' => public_path('media'),
+            'root' => env('MEDIA_ROOT') ?: public_path('media'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
             'visibility' => 'public',
             'throw' => false,

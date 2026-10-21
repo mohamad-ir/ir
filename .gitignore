@@ -27,3 +27,4 @@ Thumbs.db
 /storage/app/backups
 /storage/app/geoip
 /storage/app/installed.lock
+/dist

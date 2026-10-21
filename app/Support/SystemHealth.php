@@ -25,7 +25,7 @@ class SystemHealth
         $img = extension_loaded('gd') || extension_loaded('imagick');
         $checks[] = ['label' => 'Image library (GD or Imagick)', 'ok' => $img, 'value' => extension_loaded('imagick') ? 'Imagick' : (extension_loaded('gd') ? 'GD' : 'missing'), 'help' => 'Enable gd or imagick.'];
 
-        foreach (['storage' => storage_path(), 'bootstrap/cache' => base_path('bootstrap/cache'), 'media uploads' => public_path('media')] as $label => $dir) {
+        foreach (['storage' => storage_path(), 'bootstrap/cache' => base_path('bootstrap/cache'), 'media uploads' => config('filesystems.disks.public.root')] as $label => $dir) {
             File::ensureDirectoryExists($dir);
             $checks[] = ['label' => "Writable: {$label}", 'ok' => is_writable($dir), 'value' => is_writable($dir) ? 'writable' : 'not writable', 'help' => 'Set folder permissions to 755 (or 775) in the DirectAdmin File Manager.'];
         }
@@ -55,7 +55,7 @@ class SystemHealth
             ['label' => 'Environment', 'ok' => app()->isProduction(), 'value' => app()->environment(), 'help' => 'Set APP_ENV=production in .env.'],
             ['label' => 'HTTPS', 'ok' => str_starts_with((string) config('app.url'), 'https://'), 'value' => (string) config('app.url'), 'help' => 'Enable SSL in DirectAdmin and set APP_URL to https://…'],
             ['label' => 'Pending queue jobs', 'ok' => true, 'value' => (string) (rescue(fn () => DB::table('jobs')->count(), 0, false))],
-            ['label' => 'Media library size', 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(public_path('media')), 1)],
+            ['label' => 'Media library size', 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(config('filesystems.disks.public.root')), 1)],
             ['label' => 'Backups size', 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(storage_path('app/backups')), 1)],
             ['label' => 'Application version', 'ok' => true, 'value' => config('cms.version').' · Laravel '.app()->version().' · PHP '.PHP_VERSION],
         ];

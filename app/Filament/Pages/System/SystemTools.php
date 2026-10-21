@@ -53,6 +53,7 @@ class SystemTools extends Page
             'maintenance' => app()->isDownForMaintenance(),
             'cronUrl' => ($t = Settings::get('system.cron_token') ?: config('cms.cron_token')) ? route('cron', $t) : null,
             'demo' => DemoContent::summary(),
+            'pending' => $this->pendingMigrations(),
             'cronLine' => '* * * * * '.PHP_BINARY.' '.base_path('artisan').' schedule:run >> /dev/null 2>&1',
         ];
     }
@@ -61,6 +62,25 @@ class SystemTools extends Page
     {
         ActivityLog::record('system', $title);
         Notification::make()->success()->title($title)->body($body)->send();
+    }
+
+    public function pendingMigrations(): int
+    {
+        $migrator = app('migrator');
+        $files = $migrator->getMigrationFiles([database_path('migrations')]);
+        $ran = $migrator->getRepository()->getRan();
+
+        return count(array_diff(array_keys($files), $ran));
+    }
+
+    public function applyUpdates(): void
+    {
+        @set_time_limit(300);
+        Artisan::call('migrate', ['--force' => true]);
+        \App\Support\Permissions::sync();
+        Artisan::call('optimize:clear');
+        Settings::flush();
+        $this->done('Database updates applied', trim(Artisan::output()) ?: null);
     }
 
     public function clearCaches(): void
