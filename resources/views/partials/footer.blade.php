@@ -51,7 +51,10 @@
                 <p class="max-w-4xl text-xs leading-relaxed {{ $dark ? 'text-white/45' : 'text-muted' }}">{{ setting('site.medical_disclaimer') }}</p>
             @endif
             <div class="mt-5 flex flex-col gap-4 text-sm sm:flex-row sm:items-center sm:justify-between {{ $dark ? 'text-white/55' : 'text-muted' }}">
-                <p>{{ $copyright }}</p>
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <p>{{ $copyright }}</p>
+                    @if (\App\Services\Payments\StripeClient::configured())<x-currency-switcher :dark="$dark" />@endif
+                </div>
                 @if ($legal)
                     <ul class="flex flex-wrap gap-x-6 gap-y-2" role="list">
                         @foreach ($legal as $item)

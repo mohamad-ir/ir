@@ -4,6 +4,12 @@ namespace Database\Seeders;
 
 use App\Enums\ContentStatus;
 use App\Models\Article;
+use App\Models\Course;
+use App\Models\CourseSection;
+use App\Models\Gallery;
+use App\Models\Lesson;
+use App\Models\MembershipPlan;
+use App\Models\Webinar;
 use App\Models\Category;
 use App\Models\ClinicalCase;
 use App\Models\ExamTopic;
@@ -138,7 +144,90 @@ class DemoContentSeeder extends Seeder
             }
         }
 
+        $this->learning($author);
+        $this->galleries($author);
+
         DemoContent::remember($this->registry);
+    }
+
+    protected function galleries(?User $author): void
+    {
+        foreach (require __DIR__.'/data/galleries.php' as $i => $g) {
+            if (Gallery::withTrashed()->where('slug', $g['slug'])->exists()) {
+                continue;
+            }
+            $gallery = Gallery::withoutRevisions(fn () => Gallery::create([
+                'title' => $g['title'], 'slug' => $g['slug'], 'summary' => $g['summary'], 'layout' => $g['layout'], 'dark_viewer' => $g['dark'],
+                'is_featured' => $g['featured'], 'sort_order' => $i, 'status' => ContentStatus::Published, 'published_at' => now()->subDays(3 + $i), 'author_id' => $author?->id,
+            ]));
+            foreach ($g['images'] as $n => [$file, $caption]) {
+                if (isset($this->media[$file])) {
+                    $gallery->items()->create(['media_id' => $this->media[$file]->id, 'caption' => $caption, 'sort_order' => $n + 1]);
+                }
+            }
+            $gallery->topics()->sync($this->topicIds($g['topics']));
+            $gallery->touch();
+            $this->track($gallery);
+        }
+    }
+
+    protected function learning(?User $author): void
+    {
+        $data = require __DIR__.'/data/learning.php';
+        $currency = Settings::get('payments.currency', 'EUR');
+
+        foreach ($data['plans'] as $p) {
+            if (! MembershipPlan::where('slug', $p['slug'])->exists()) {
+                $this->track(MembershipPlan::create([...$p, 'currency' => $currency, 'is_active' => true, 'features' => collect($p['features'])->map(fn ($f) => ['text' => $f])->all()]));
+            }
+        }
+
+        foreach ($data['courses'] as $i => $c) {
+            if (Course::withTrashed()->where('slug', $c['slug'])->exists()) {
+                continue;
+            }
+            $course = Course::withoutRevisions(fn () => Course::create([
+                ...collect($c)->only(['title', 'slug', 'subtitle', 'summary', 'description', 'level', 'price', 'prices', 'included_in_membership', 'is_featured', 'faqs'])->all(),
+                'outcomes' => collect($c['outcomes'])->map(fn ($o) => ['text' => $o])->all(),
+                'currency' => $currency,
+                'featured_media_id' => $this->media[$c['image']]->id ?? null,
+                'status' => ContentStatus::Published, 'published_at' => now()->subDays(4 + $i * 5), 'author_id' => $author?->id,
+            ]));
+            $course->topics()->sync($this->topicIds($c['topics']));
+            $position = 0;
+            foreach ($c['sections'] as $s => $section) {
+                $sectionModel = CourseSection::create(['course_id' => $course->id, 'title' => $section['title'], 'sort_order' => $s]);
+                foreach ($section['lessons'] as $l => $lesson) {
+                    Lesson::create([
+                        'course_id' => $course->id, 'course_section_id' => $sectionModel->id, 'title' => $lesson['title'],
+                        'summary' => $lesson['summary'], 'duration_minutes' => $lesson['minutes'], 'is_preview' => $lesson['preview'] ?? false, 'quiz' => $lesson['quiz'] ?? null,
+                        'body' => '<p>'.e($lesson['summary']).'</p><p><em>Sample lesson — replace the video and notes in the dashboard under Learning › Courses.</em></p>',
+                        'video_provider' => 'file', 'video_media_id' => $this->media['demo-oct-fluid.mp4']->id ?? null, 'sort_order' => ++$position,
+                    ]);
+                }
+            }
+            $course->touch();
+            $this->track($course);
+        }
+
+        foreach ($data['webinars'] as $w) {
+            if (Webinar::withTrashed()->where('slug', $w['slug'])->exists()) {
+                continue;
+            }
+            $webinar = Webinar::withoutRevisions(fn () => Webinar::create([
+                ...collect($w)->only(['title', 'slug', 'summary', 'description', 'price', 'prices', 'free_for_members', 'capacity'])->all(),
+                'currency' => $currency,
+                'starts_at' => now()->addDays($w['days'])->setTime($w['hour'], 0),
+                'duration_minutes' => $w['minutes'],
+                'platform' => 'zoom',
+                'join_url' => 'https://zoom.us/j/0000000000',
+                'join_details' => 'Sample meeting — replace with your Zoom link and passcode.',
+                'featured_media_id' => $this->media[$w['image']]->id ?? null,
+                'status' => ContentStatus::Published, 'published_at' => now()->subDay(), 'author_id' => $author?->id,
+            ]));
+            $webinar->topics()->sync($this->topicIds($w['topics']));
+            $this->track($webinar);
+        }
     }
 
     protected function track($model)

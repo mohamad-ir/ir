@@ -35,6 +35,34 @@ Route::get('/exam-prep', [Controllers\ExamController::class, 'index'])->name('ex
 Route::get('/exam-prep/practice', [Controllers\ExamController::class, 'practice'])->name('exam.practice');
 Route::get('/exam-prep/{slug}', [Controllers\ExamController::class, 'topic'])->name('exam.topic');
 
+// Certificates of completion (public verification)
+Route::get('/certificates/{code}', [Controllers\CertificateController::class, 'show'])->name('certificates.show')->middleware('throttle:60,1');
+Route::get('/certificates/{code}/download', [Controllers\CertificateController::class, 'download'])->name('certificates.download')->middleware(['auth', 'throttle:20,1']);
+
+// Photo galleries
+Route::get('/galleries', [Controllers\GalleryController::class, 'index'])->name('galleries.index');
+Route::get('/galleries/{slug}', [Controllers\GalleryController::class, 'show'])->name('galleries.show');
+
+// Courses, webinars and membership
+Route::get('/courses', [Controllers\CourseController::class, 'index'])->name('courses.index');
+Route::get('/courses/{slug}', [Controllers\CourseController::class, 'show'])->name('courses.show');
+Route::get('/courses/{slug}/lessons/{lesson}', [Controllers\CourseController::class, 'lesson'])->name('courses.lesson');
+Route::get('/webinars', [Controllers\WebinarController::class, 'index'])->name('webinars.index');
+Route::get('/webinars/{slug}', [Controllers\WebinarController::class, 'show'])->name('webinars.show');
+Route::get('/webinars/{slug}/calendar.ics', [Controllers\WebinarController::class, 'calendar'])->name('webinars.calendar');
+Route::get('/membership', [Controllers\MembershipController::class, 'show'])->name('membership');
+
+// Visitor's preferred currency for prices and checkout
+Route::post('/currency', function (\Illuminate\Http\Request $request) {
+    $currency = strtoupper((string) $request->input('currency'));
+    abort_unless(in_array($currency, \App\Support\Currency::enabled(), true), 422);
+
+    return back()->withCookie(cookie()->forever(\App\Support\Currency::COOKIE, $currency));
+})->name('currency')->middleware('throttle:30,1');
+
+// Stripe webhooks (signature-verified, CSRF-exempt)
+Route::post('/stripe/webhook', Controllers\StripeWebhookController::class)->name('stripe.webhook')->middleware('throttle:120,1');
+
 // Topics
 Route::get('/topics', [Controllers\TopicController::class, 'index'])->name('topics.index');
 Route::get('/topics/{slug}', [Controllers\TopicController::class, 'show'])->name('topics.show');
@@ -95,14 +123,32 @@ Route::middleware('auth')->group(function () {
         Route::post('/bookmarks/{type}/{id}', 'toggleBookmark')->name('bookmark')->where('type', 'case|article|video|question');
     });
 
+    // Learning
+    Route::post('/courses/{slug}/enroll', [Controllers\CourseController::class, 'enroll'])->name('courses.enroll');
+    Route::post('/courses/{slug}/lessons/{lesson}/complete', [Controllers\CourseController::class, 'complete'])->name('courses.complete');
+    Route::post('/webinars/{slug}/register', [Controllers\WebinarController::class, 'register'])->name('webinars.register')->middleware('throttle:forms');
+    Route::post('/webinars/{slug}/cancel', [Controllers\WebinarController::class, 'cancel'])->name('webinars.cancel');
+    Route::get('/webinars/{slug}/join', [Controllers\WebinarController::class, 'join'])->name('webinars.join');
+
+    // Payments (Stripe Checkout)
+    Route::prefix('checkout')->name('checkout.')->controller(Controllers\CheckoutController::class)->group(function () {
+        Route::post('/membership/{plan:slug}', 'membership')->name('membership')->middleware('throttle:10,1');
+        Route::post('/course/{slug}', 'course')->name('course')->middleware('throttle:10,1');
+        Route::post('/webinar/{slug}', 'webinar')->name('webinar')->middleware('throttle:10,1');
+        Route::get('/success', 'success')->name('success');
+        Route::get('/cancel', 'cancel')->name('cancel');
+    });
+    Route::get('/account/billing', [Controllers\AccountController::class, 'billing'])->name('account.billing');
+    Route::post('/account/billing/portal', [Controllers\CheckoutController::class, 'portal'])->name('account.billing.portal')->middleware('throttle:10,1');
+
     // Staff previews of drafts and the live page-builder canvas
     Route::middleware('staff')->prefix('_preview')->name('preview.')->controller(Controllers\PreviewController::class)->group(function () {
         Route::get('/builder/{token}', 'builder')->name('builder');
-        Route::get('/{type}/{id}', 'show')->name('show')->where('type', 'case|article|video|page|exam_topic|topic|question');
+        Route::get('/{type}/{id}', 'show')->name('show')->where('type', 'case|article|video|page|exam_topic|topic|question|course|webinar|gallery');
     });
 });
 
 // CMS pages (must stay last)
 Route::get('/{slug}', [Controllers\PageController::class, 'show'])
-    ->where('slug', '^(?!'.preg_quote(config('cms.admin_path'), '/').'|livewire|filament|install|_preview|media|build|storage|account|cron)[a-z0-9]+(?:-[a-z0-9]+)*$')
+    ->where('slug', '^(?!'.preg_quote(config('cms.admin_path'), '/').'|livewire|filament|install|_preview|media|build|storage|account|cron|checkout|stripe)[a-z0-9]+(?:-[a-z0-9]+)*$')
     ->name('page.show');

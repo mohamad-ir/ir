@@ -4,7 +4,9 @@ namespace App\Services\Seo;
 
 use App\Models\Article;
 use App\Models\ClinicalCase;
+use App\Models\Course;
 use App\Models\Video;
+use App\Models\Webinar;
 use App\Support\Settings;
 
 /** schema.org objects for content types. */
@@ -39,7 +41,7 @@ class SchemaFactory
             'articleSection' => $a->category?->name,
             'keywords' => $a->topics->pluck('name')->implode(', ') ?: null,
             'audience' => ['@type' => 'MedicalAudience', 'audienceType' => 'Clinician'],
-            'isAccessibleForFree' => true,
+            'isAccessibleForFree' => ($a->access_level?->value ?? 'public') === 'public',
             'citation' => collect($a->references)->pluck('citation')->filter()->values()->all() ?: null,
         ]);
     }
@@ -62,7 +64,7 @@ class SchemaFactory
             'specialty' => 'Ophthalmologic',
             'about' => $includeAnswer && $c->diagnosis ? ['@type' => 'MedicalCondition', 'name' => $c->diagnosis] : null,
             'keywords' => $c->topics->pluck('name')->merge($c->modalities->pluck('name'))->implode(', ') ?: null,
-            'isAccessibleForFree' => true,
+            'isAccessibleForFree' => ($c->access_level?->value ?? 'public') === 'public',
             'citation' => collect($c->references)->pluck('citation')->filter()->values()->all() ?: null,
         ]);
     }
@@ -76,8 +78,9 @@ class SchemaFactory
             'thumbnailUrl' => $v->thumbnail() ? [$v->thumbnail()] : null,
             'uploadDate' => $v->published_at?->toIso8601String(),
             'duration' => $v->isoDuration(),
-            'embedUrl' => $v->isFilePlayer() ? null : preg_replace('/[?&]autoplay=1/', '', (string) $v->embedUrl()),
-            'contentUrl' => $v->isFilePlayer() ? $v->embedUrl() : null,
+            'embedUrl' => ! $v->isPublicAccess() || $v->isFilePlayer() ? null : preg_replace('/[?&]autoplay=1/', '', (string) $v->embedUrl()),
+            'contentUrl' => $v->isPublicAccess() && $v->isFilePlayer() ? $v->embedUrl() : null,
+            'isAccessibleForFree' => $v->isPublicAccess(),
             'publisher' => self::publisher(),
             'hasPart' => collect($v->chapters)->filter(fn ($ch) => isset($ch['time'], $ch['title']))->values()->map(fn ($ch, $i) => [
                 '@type' => 'Clip',
@@ -85,6 +88,89 @@ class SchemaFactory
                 'startOffset' => self::seconds($ch['time']),
                 'url' => $v->url().'?t='.self::seconds($ch['time']),
             ])->all() ?: null,
+        ]);
+    }
+
+    public static function course(Course $c): array
+    {
+        $offers = collect($c->allPrices())->map(fn ($amount, $currency) => [
+            '@type' => 'Offer',
+            'category' => $c->isFree() ? 'Free' : 'Paid',
+            'price' => number_format($amount / 100, 2, '.', ''),
+            'priceCurrency' => $currency,
+            'availability' => 'https://schema.org/InStock',
+            'url' => $c->url(),
+        ])->values()->all();
+
+        return array_filter([
+            '@type' => 'Course',
+            'name' => $c->title,
+            'description' => $c->seoDescription() ?: $c->title,
+            'url' => $c->url(),
+            'image' => $c->featuredMedia?->url('lg'),
+            'provider' => self::publisher(),
+            'author' => self::author($c->author),
+            'educationalLevel' => $c->level?->getLabel(),
+            'inLanguage' => 'en',
+            'audience' => ['@type' => 'MedicalAudience', 'audienceType' => 'Clinician'],
+            'teaches' => collect($c->outcomes)->pluck('text')->filter()->values()->all() ?: null,
+            'offers' => $offers,
+            'hasCourseInstance' => [array_filter([
+                '@type' => 'CourseInstance',
+                'courseMode' => 'Online',
+                'courseWorkload' => $c->totalMinutes() ? 'PT'.intdiv($c->totalMinutes(), 60).'H'.($c->totalMinutes() % 60).'M' : null,
+            ])],
+        ]);
+    }
+
+    public static function event(Webinar $w): array
+    {
+        return array_filter([
+            '@type' => 'Event',
+            'name' => $w->title,
+            'description' => $w->seoDescription() ?: $w->title,
+            'url' => $w->url(),
+            'image' => $w->featuredMedia?->url('lg'),
+            'startDate' => $w->starts_at?->toIso8601String(),
+            'endDate' => $w->endsAt()->toIso8601String(),
+            'eventStatus' => 'https://schema.org/EventScheduled',
+            'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
+            'location' => ['@type' => 'VirtualLocation', 'url' => $w->url()],
+            'organizer' => self::publisher(),
+            'performer' => $w->author ? self::author($w->author) : null,
+            'offers' => collect($w->allPrices())->map(fn ($amount, $currency) => array_filter([
+                '@type' => 'Offer',
+                'price' => number_format($amount / 100, 2, '.', ''),
+                'priceCurrency' => $currency,
+                'availability' => $w->acceptsRegistrations() ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+                'url' => $w->url(),
+                'validFrom' => $w->published_at?->toIso8601String(),
+            ]))->values()->all(),
+        ]);
+    }
+
+    /** @param \Illuminate\Support\Collection<int, \App\Models\GalleryItem> $items only images that may be shown publicly */
+    public static function gallery(\App\Models\Gallery $g, $items): array
+    {
+        return array_filter([
+            '@type' => 'ImageGallery',
+            'name' => $g->title,
+            'description' => $g->seoDescription() ?: $g->title,
+            'url' => $g->url(),
+            'datePublished' => $g->published_at?->toIso8601String(),
+            'dateModified' => $g->updated_at?->toIso8601String(),
+            'author' => self::author($g->author),
+            'publisher' => self::publisher(),
+            'isAccessibleForFree' => ($g->access_level?->value ?? 'public') === 'public',
+            'image' => $items->take(30)->map(fn ($i) => array_filter([
+                '@type' => 'ImageObject',
+                'contentUrl' => $i->media->url('lg'),
+                'thumbnailUrl' => $i->media->thumbUrl(),
+                'caption' => $i->captionText(),
+                'width' => $i->media->width,
+                'height' => $i->media->height,
+                'creditText' => $i->media->credit,
+            ]))->values()->all() ?: null,
         ]);
     }
 

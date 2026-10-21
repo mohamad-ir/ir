@@ -33,6 +33,9 @@
     <main id="main" class="flex-1">
         @yield('content')
     </main>
+    @unless (request()->routeIs('account.*'))
+        @include('partials.flash')
+    @endunless
 
     @include('partials.footer')
     @include('partials.search-modal')

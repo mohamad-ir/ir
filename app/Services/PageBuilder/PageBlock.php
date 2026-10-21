@@ -38,6 +38,12 @@ abstract class PageBlock
         return $data;
     }
 
+    /** Return false to omit the whole section (e.g. a feed with nothing to show). */
+    public static function shouldRender(array $prepared, array $context): bool
+    {
+        return true;
+    }
+
     public static function defaultTone(): string
     {
         return 'default';

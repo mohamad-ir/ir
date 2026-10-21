@@ -85,10 +85,19 @@ class Video extends Model
         return $this->belongsTo(Media::class, 'video_media_id');
     }
 
+    public function isPublicAccess(): bool
+    {
+        return ($this->access_level?->value ?? 'public') === 'public';
+    }
+
     public function thumbnail(): ?string
     {
         if ($this->thumbnailMedia) {
             return $this->thumbnailMedia->url('md');
+        }
+        // A YouTube thumbnail URL contains the video ID, which would reveal a members-only video.
+        if (! $this->isPublicAccess() && $this->provider === VideoProvider::Youtube) {
+            return null;
         }
         if ($this->thumbnail_url) {
             return $this->thumbnail_url;

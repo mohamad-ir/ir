@@ -36,6 +36,7 @@ class SetupChecklist extends Widget
             ['Add the cron job so newsletters and backups run automatically', $cron && now()->diffInMinutes(\Illuminate\Support\Carbon::parse($cron)) < 15, SystemTools::getUrl()],
             ['Turn on two-factor authentication for your account', filled(auth()->user()?->app_authentication_secret), filament()->getProfileUrl()],
             ['Connect Google Analytics & Search Console (optional)', filled(Settings::get('analytics.google_credentials')) || filled(Settings::get('analytics.ga4_measurement_id')), AnalyticsSettings::getUrl()],
+            ['Connect Stripe to sell membership, courses and webinar tickets (optional)', \App\Services\Payments\StripeClient::configured() && filled(Settings::get('payments.stripe_webhook_secret')), \App\Filament\Pages\Settings\PaymentSettings::getUrl()],
             ['Replace the sample cases and remove sample content', ! DemoContent::present(), SystemTools::getUrl()],
         ];
     }

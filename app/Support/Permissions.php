@@ -17,6 +17,9 @@ class Permissions
         'questions' => 'Exam questions',
         'exam_topics' => 'Exam topics',
         'pages' => 'Pages',
+        'courses' => 'Courses',
+        'webinars' => 'Webinars',
+        'galleries' => 'Photo galleries',
     ];
 
     public const CONTENT_ACTIONS = ['view', 'create', 'update', 'delete', 'publish'];
@@ -42,6 +45,8 @@ class Permissions
         'activity.view' => 'View the activity log',
         'backups.manage' => 'Create, download and delete backups',
         'system.manage' => 'Maintenance mode, cache and system tools',
+        'sales.view' => 'View orders, memberships, enrolments and revenue',
+        'sales.manage' => 'Manage membership plans, refunds, subscriptions and payment settings',
     ];
 
     public const ROLES = [
@@ -82,14 +87,14 @@ class Permissions
             'editor' => [
                 ...$content(self::CONTENT_ACTIONS), 'content.edit_others',
                 'media.view', 'media.create', 'media.update', 'media.delete', 'taxonomy.manage', 'profile.manage', 'reusable_blocks.manage',
-                'menus.manage', 'seo.manage', 'analytics.view', 'newsletter.manage', 'enquiries.manage', 'activity.view',
+                'menus.manage', 'seo.manage', 'analytics.view', 'newsletter.manage', 'enquiries.manage', 'activity.view', 'sales.view',
             ],
             'author' => [
-                ...collect(['cases', 'articles', 'videos', 'questions'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),
+                ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),
                 'media.view', 'media.create', 'media.update', 'analytics.view',
             ],
             'contributor' => [
-                ...collect(['cases', 'articles', 'videos', 'questions'])->crossJoin(['view', 'create', 'update'])->map(fn ($p) => implode('.', $p))->all(),
+                ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update'])->map(fn ($p) => implode('.', $p))->all(),
                 'media.view', 'media.create',
             ],
             'member' => [],

@@ -48,6 +48,21 @@ class Fields
             ->extraInputAttributes(['style' => 'min-height: 14rem']);
     }
 
+    /** Optional prices in further currencies, stored as [['currency' => 'GBP', 'amount' => 8500]]. */
+    public static function otherPrices(): Repeater
+    {
+        return Repeater::make('prices')->label('Prices in other currencies')
+            ->schema([
+                Select::make('currency')->options(array_combine(array_keys(\App\Support\Money::CURRENCIES), array_keys(\App\Support\Money::CURRENCIES)))
+                    ->required()->selectablePlaceholder(false)->distinct(),
+                TextInput::make('amount')->label('Price')->numeric()->minValue(0.5)->step('0.01')->required()
+                    ->formatStateUsing(fn ($state) => \App\Support\Money::toMajor($state === null ? null : (int) $state))
+                    ->dehydrateStateUsing(fn ($state) => \App\Support\Money::toMinor($state)),
+            ])
+            ->columns(2)->defaultItems(0)->addActionLabel('Add a price in another currency')
+            ->helperText('Visitors see and pay the price in their currency (chosen by them, or detected from their country). Without one, they pay the main price.');
+    }
+
     public static function title(string $prefix): TextInput
     {
         return TextInput::make('title')

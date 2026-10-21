@@ -3,18 +3,12 @@
 namespace App\Filament\Pages\System;
 
 use App\Models\ActivityLog;
-use App\Models\Article;
-use App\Models\ClinicalCase;
-use App\Models\ExamTopic;
-use App\Models\Page as CmsPage;
-use App\Models\Question;
-use App\Models\Topic;
-use App\Models\Video;
 use App\Services\Analytics\AnalyticsQuery;
 use App\Services\Demo\DemoContent;
 use App\Services\Newsletter\CampaignSender;
 use App\Services\Search\SearchIndexer;
 use App\Services\Seo\SitemapGenerator;
+use App\Support\Permissions;
 use App\Support\Settings;
 use App\Support\SystemHealth;
 use Filament\Actions\Action;
@@ -77,7 +71,7 @@ class SystemTools extends Page
     {
         @set_time_limit(300);
         Artisan::call('migrate', ['--force' => true]);
-        \App\Support\Permissions::sync();
+        Permissions::sync();
         Artisan::call('optimize:clear');
         Settings::flush();
         $this->done('Database updates applied', trim(Artisan::output()) ?: null);
@@ -100,7 +94,7 @@ class SystemTools extends Page
 
     public function rebuildSearch(): void
     {
-        $n = app(SearchIndexer::class)->rebuild([ClinicalCase::class, Article::class, Video::class, Question::class, ExamTopic::class, Topic::class, CmsPage::class]);
+        $n = app(SearchIndexer::class)->rebuild(SearchIndexer::MODELS);
         $this->done("Search index rebuilt ({$n} items)");
     }
 

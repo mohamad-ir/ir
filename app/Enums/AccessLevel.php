@@ -9,12 +9,14 @@ enum AccessLevel: string implements HasColor, HasLabel
 {
     case Public = 'public';
     case Registered = 'registered';
+    case Members = 'members';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::Public => 'Everyone',
-            self::Registered => 'Registered members',
+            self::Registered => 'Registered users (free account)',
+            self::Members => 'Paying members',
         };
     }
 
@@ -23,6 +25,7 @@ enum AccessLevel: string implements HasColor, HasLabel
         return match ($this) {
             self::Public => 'success',
             self::Registered => 'info',
+            self::Members => 'warning',
         };
     }
 

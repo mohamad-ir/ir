@@ -2,13 +2,6 @@
 
 namespace App\Filament\Pages\Settings;
 
-use App\Models\Article;
-use App\Models\ClinicalCase;
-use App\Models\ExamTopic;
-use App\Models\Page;
-use App\Models\Question;
-use App\Models\Topic;
-use App\Models\Video;
 use App\Services\Search\SearchIndexer;
 use App\Services\Seo\SitemapGenerator;
 use Filament\Actions\Action;
@@ -51,7 +44,7 @@ class SeoSettings extends SettingsPage
             Action::make('rebuild')->label('Rebuild search index & sitemap')->icon('heroicon-o-arrow-path')->color('gray')
                 ->requiresConfirmation()
                 ->action(function () {
-                    $n = app(SearchIndexer::class)->rebuild([ClinicalCase::class, Article::class, Video::class, Question::class, ExamTopic::class, Topic::class, Page::class]);
+                    $n = app(SearchIndexer::class)->rebuild(SearchIndexer::MODELS);
                     SitemapGenerator::flush();
                     Notification::make()->success()->title("Indexed {$n} items")->send();
                 }),

@@ -141,7 +141,23 @@ The website already records privacy-friendly statistics without cookies. To also
 
 ---
 
-## 9. Backups
+## 9. Optional: selling membership, courses and webinar tickets (Stripe)
+
+Payments use **Stripe Checkout**: Stripe hosts the payment page, so card data never touches your hosting, and cards, Apple Pay, Google Pay, SEPA Direct Debit, iDEAL, Bancontact and more appear automatically for buyers in Europe and elsewhere. No extra software is needed on the server.
+
+1. Create a Stripe account at stripe.com and complete the business verification (Stripe needs a legal entity and bank account in a country it supports).
+2. Dashboard: **Sales › Payment settings** → paste the **test secret key** (`sk_test_…`), switch on *Accept payments*, **Save**, **Test connection**, then **Set up webhook automatically**. The webhook address is `https://YOURDOMAIN/stripe/webhook`.
+3. Create plans under **Sales › Membership plans** and set prices on courses/webinars. Buy something with the test card `4242 4242 4242 4242`. Check *Sales › Orders* and that access is granted.
+4. Switch to the **live** key (`sk_live_…`) and click **Set up webhook automatically** again (test and live webhooks are separate).
+5. In Stripe, enable customer emails (receipts, refunds), the **Customer portal** (cancellation, invoices, card update) and **Revenue recovery** (retries for failed renewals).
+6. VAT: prices are VAT-inclusive by default. For EU consumers you will usually need the OSS scheme; activate **Stripe Tax** and switch on *Calculate VAT automatically*. Confirm with your accountant.
+7. Review the **Terms of sale** and **Refund policy** pages (templates) with an adviser.
+
+The cron job (section 5) sends webinar reminders and queued emails; without it these are delayed.
+
+Webinars themselves run on **Zoom, YouTube Live, Teams or Google Meet** — paste the meeting link into the webinar. Shared hosting is not suitable for streaming live video, and the website does not try to: it handles the event page, registration and payment, calendar invites, reminders, the private join link and the recording.
+
+## 10. Backups
 
 **System › Backups** creates a zip with the full database (`database.sql`) and the media library, stored privately in `oct-academy/storage/app/backups`. Set a daily or weekly schedule (needs the cron job) and **download a copy regularly**.
 
@@ -151,7 +167,7 @@ DirectAdmin’s own *Create/Restore Backups* tool is a good additional safety ne
 
 ---
 
-## 10. Updating to a new version
+## 11. Updating to a new version
 
 1. **System › Backups → Create backup now**, and download it.
 2. **System › Health & maintenance → Enable maintenance mode** (keep the bypass link).
@@ -161,7 +177,13 @@ DirectAdmin’s own *Create/Restore Backups* tool is a good additional safety ne
 
 ---
 
-## 11. Troubleshooting
+### Upgrading from 1.0 to 1.1 (membership, courses, webinars)
+Follow the steps above. **Apply database updates** adds the new tables and, on an existing site, also: adds *Courses / Webinars / Membership* to the main menu and footer, creates *Terms of sale* and *Refund policy* template pages, turns the old “courses coming soon” page into a draft (the real course catalogue now lives at `/courses`) and replaces the homepage “coming soon” courses section with live course and webinar sections. Nothing else on your pages is changed. Then add the new paragraph about payments to your privacy policy (see the template in a fresh installation).
+
+### Upgrading from 1.1 to 1.2 (galleries, quizzes, certificates, currencies)
+Same steps. **Apply database updates** adds the new tables, gives editors/authors the gallery permissions and adds *Image galleries* under *OCT cases* in the main menu and to the footer. Certificates PDFs are generated on the server with Dompdf (pure PHP — nothing to install).
+
+## 12. Troubleshooting
 
 | Problem | Fix |
 |---|---|
@@ -173,6 +195,9 @@ DirectAdmin’s own *Create/Restore Backups* tool is a good additional safety ne
 | **Stuck in maintenance mode** | Delete `oct-academy/storage/framework/down` in File Manager. |
 | **Lost the authenticator phone** | Use a recovery code on the sign-in screen. Another super administrator can reset your 2FA in *Users*. With SSH: `php artisan cms:admin you@example.com --reset-2fa`. |
 | **Forgot password** | Use *Forgot password* on the sign-in page, or with SSH: `php artisan cms:admin you@example.com`. |
+| **Payment completed but no access** | Check *Sales › Payment settings*: the webhook secret must be set (use *Set up webhook automatically*). In Stripe › Developers › Webhooks you can see failed deliveries and resend them. Access is also granted when the buyer returns to the site after paying. |
+| **“We could not start the payment”** | Click *Test connection* in Payment settings; the error message from Stripe is shown there (wrong key, account not activated…). |
+| **No webinar reminders** | Reminders and emails are sent by the cron job — check *System › Health*. |
 | **Newsletters not sending** | The cron job is missing — see *System › Health*. While the campaign page is open, sending also progresses in the browser. |
 
 ### Useful commands (only if you have SSH)

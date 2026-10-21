@@ -1,3 +1,11 @@
+@if (($data['source'] ?? 'images') === 'album')
+    @if (! empty($data['album']))
+        <x-section-heading :heading="($data['heading'] ?? null) ?: $data['album']->title" :intro="$data['album']->summary" action-label="View the full gallery" :action-url="$data['album']->urlPath()" />
+        @include('galleries.grid', ['items' => $data['album_items'], 'layout' => $data['album']->layout])
+    @elseif ($context['preview'] ?? false)
+        <p class="rounded-ui bg-subtle p-6 text-center text-sm text-muted">Choose a published photo gallery for this section.</p>
+    @endif
+@else
 @php
     $items = $data['items'] ?? [];
     $cols = (int) ($data['columns'] ?? 3);
@@ -20,3 +28,5 @@
     </div>
     @include('cases.partials.lightbox')
 </div>
+
+@endif

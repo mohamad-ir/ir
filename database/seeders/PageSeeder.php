@@ -33,12 +33,8 @@ class PageSeeder extends Seeder
             ['profile', ['eyebrow' => 'Your teacher', 'show_social' => true, 'buttons' => [['label' => 'Full biography', 'url' => '/about', 'style' => 'secondary'], ['label' => 'Invite to speak', 'url' => '/contact', 'style' => 'ghost']], '_tone' => 'surface']],
             ['content_feed', ['eyebrow' => 'Articles', 'heading' => 'Systematic approaches & reviews', 'source' => 'articles', 'mode' => 'featured', 'limit' => 4, 'layout' => 'feature', 'view_all_label' => 'All articles', 'view_all_url' => '/articles']],
             ['exam_hub', ['eyebrow' => 'Exam preparation', 'heading' => 'FRCS & FRCOphth preparation', 'intro' => 'Revision notes, single best answer questions, image-based questions and viva practice.', 'limit' => 6, '_tone' => 'accent']],
-            ['interest', ['eyebrow' => 'Coming soon', 'heading' => 'Structured courses', 'intro' => 'In-depth programmes are in preparation. Register your interest and you will be the first to know when enrolment opens.', 'interest' => 'courses', 'items' => [
-                ['title' => 'OCT Interpretation Course', 'meta' => 'Foundations to advanced', 'text' => 'A systematic, layer-by-layer method for reading any macular OCT.'],
-                ['title' => 'Retina for Residents', 'meta' => 'Core curriculum', 'text' => 'High-yield medical retina for trainees, built around real cases.'],
-                ['title' => 'Uveitis Made Practical', 'meta' => 'Clinic-ready', 'text' => 'A structured approach to diagnosis, work-up and imaging in uveitis.'],
-                ['title' => 'FRCS Ophthalmology Preparation', 'meta' => 'Exam focused', 'text' => 'Viva technique, image-based questions and examiner insights.'],
-            ]]],
+            ['courses', ['eyebrow' => 'Courses', 'heading' => 'Structured online courses', 'intro' => 'Self-paced programmes with video lessons, real cases and clear take-home messages.', 'mode' => 'featured', 'limit' => 3]],
+            ['webinars', ['eyebrow' => 'Live teaching', 'heading' => 'Upcoming webinars', 'limit' => 2, '_tone' => 'muted']],
             ['newsletter', ['interests' => ['weekly_case'], 'style' => 'split', '_tone' => 'ink']],
         ]);
 
@@ -56,21 +52,11 @@ class PageSeeder extends Seeder
             ['contact_form', ['heading' => 'Collaboration & professional enquiries', 'text' => 'For scientific collaboration, invitations to speak or teach, research partnerships and media enquiries. Please include dates, audience and format for speaking invitations.', 'default_type' => 'collaboration', '_spacing' => 'loose']],
         ]);
 
-        $this->page('courses', 'Courses', false, [
-            ['hero', ['layout' => 'centered', 'eyebrow' => 'Coming soon', 'heading' => 'Structured *online courses*', 'subheading' => 'Self-paced programmes in OCT interpretation, medical retina, uveitis and exam preparation are being prepared.', '_spacing' => 'normal']],
-            ['interest', ['eyebrow' => '', 'heading' => 'Planned programmes', 'interest' => 'courses', 'items' => [
-                ['title' => 'OCT Interpretation Course', 'meta' => 'Foundations to advanced', 'text' => 'A systematic, layer-by-layer method for reading any macular OCT.'],
-                ['title' => 'Retina for Residents', 'meta' => 'Core curriculum', 'text' => 'High-yield medical retina for trainees.'],
-                ['title' => 'Uveitis Made Practical', 'meta' => 'Clinic-ready', 'text' => 'Diagnosis, work-up and imaging in uveitis.'],
-                ['title' => 'FRCS Ophthalmology Preparation', 'meta' => 'Exam focused', 'text' => 'Viva technique and image-based questions.'],
-            ]]],
-        ]);
-
         $legal = '<p><em>Template text — please review it with your data-protection adviser and adapt it to your practice before launch.</em></p>';
 
         $this->page('privacy', 'Privacy policy', true, [['rich_text', ['content' => $legal.'
 <h2>Who we are</h2><p>This website is an educational resource for healthcare professionals. The data controller is the website owner named on the About page. Contact us using the contact form for any privacy request.</p>
-<h2>What we collect</h2><ul><li><strong>Account data</strong> — name, email address, career stage, institution and country when you create an account.</li><li><strong>Newsletter data</strong> — your email address, the topics you chose and the date you confirmed your subscription.</li><li><strong>Enquiries</strong> — the details you send through the contact form.</li><li><strong>Usage statistics</strong> — anonymous, cookieless page-view statistics. We store an irreversible daily-rotating hash instead of your IP address.</li></ul>
+<h2>What we collect</h2><ul><li><strong>Account data</strong> — name, email address, career stage, institution and country when you create an account.</li><li><strong>Newsletter data</strong> — your email address, the topics you chose and the date you confirmed your subscription.</li><li><strong>Enquiries</strong> — the details you send through the contact form.</li><li><strong>Purchases</strong> — when you buy a course, ticket or membership: your name, email, billing country, VAT number (if given), what you bought and the amount. Card details are handled by our payment processor Stripe and never reach this website. Order records are kept for the period required by tax law.</li><li><strong>Usage statistics</strong> — anonymous, cookieless page-view statistics. We store an irreversible daily-rotating hash instead of your IP address.</li></ul>
 <h2>Cookies</h2><p>We use only essential cookies (session and security). Google Analytics is loaded only if you accept it in the cookie banner.</p>
 <h2>How long we keep data</h2><p>Account data is kept until you delete your account. Statistics are kept for up to two years. You can unsubscribe from emails at any time with one click.</p>
 <h2>Your rights</h2><p>You can download or delete your data at any time from <strong>My learning › Settings</strong>, or contact us to exercise your rights of access, correction, objection and erasure under UK GDPR / EU GDPR.</p>
@@ -83,6 +69,9 @@ class PageSeeder extends Seeder
 <h2>No medical advice</h2><p>We cannot provide opinions on individual patients through this website.</p>']]]);
 
         $this->page('disclaimer', 'Medical disclaimer', true, [['rich_text', ['content' => '<p>'.e(Settings::get('site.medical_disclaimer')).'</p><p>Case images are de-identified and published with appropriate consent or under institutional approval for teaching. Treatment information reflects published evidence at the time of writing and may change; always consult current guidelines and product information.</p>']]]);
+
+        $this->page('terms-of-sale', 'Terms of sale', true, [['rich_text', ['content' => \App\Support\LegalTemplates::termsOfSale()]]]);
+        $this->page('refund-policy', 'Refund policy', true, [['rich_text', ['content' => \App\Support\LegalTemplates::refundPolicy()]]]);
 
         if (! Settings::get('site.homepage_id')) {
             Settings::set('site.homepage_id', $home->id);

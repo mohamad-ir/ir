@@ -30,9 +30,13 @@ class BlockRegistry
         Blocks\FaqBlock::class,
         Blocks\VideoBlock::class,
         Blocks\GalleryBlock::class,
+        Blocks\GalleriesBlock::class,
         Blocks\ExamHubBlock::class,
         Blocks\ContactFormBlock::class,
         Blocks\InterestBlock::class,
+        Blocks\CoursesBlock::class,
+        Blocks\WebinarsBlock::class,
+        Blocks\PricingBlock::class,
         Blocks\SpacerBlock::class,
         Blocks\ReusableBlockRef::class,
     ];
@@ -83,6 +87,9 @@ class BlockRegistry
 
             try {
                 $prepared = $class::prepare($data);
+                if (! $class::shouldRender($prepared, $context)) {
+                    continue;
+                }
                 $html .= view('blocks._section', [
                     'type' => $block['type'],
                     'data' => $prepared,

@@ -42,13 +42,11 @@ abstract class SettingsPage extends Page implements HasSchemas
         $state = [];
         foreach ($this->groups() as $group) {
             $state[$group] = Settings::group($group);
-            if (in_array($group, ['mail', 'analytics', 'security'], true)) {
-                foreach (SettingDefaults::encrypted() as $key) {
-                    [$g, $k] = explode('.', $key, 2);
-                    if ($g === $group) {
-                        $state[$group][$k.'_set'] = filled($state[$group][$k] ?? null);
-                        $state[$group][$k] = null; // never send secrets to the browser
-                    }
+            foreach (SettingDefaults::encrypted() as $key) {
+                [$g, $k] = explode('.', $key, 2);
+                if ($g === $group) {
+                    $state[$group][$k.'_set'] = filled($state[$group][$k] ?? null);
+                    $state[$group][$k] = null; // never send secrets to the browser
                 }
             }
         }

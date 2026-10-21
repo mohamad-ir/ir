@@ -52,12 +52,8 @@
                     <h2 class="font-heading text-2xl font-semibold leading-snug text-ink">{{ $question->title }}</h2>
 
                     @if (! $canView)
-                        <div class="mt-6 rounded-card bg-accent/[.07] p-6 text-center ring-1 ring-accent/20">
-                            <p class="font-semibold text-ink">This question is free for registered members</p>
-                            <div class="mt-4 flex justify-center gap-3">
-                                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Create free account</a>
-                                <a href="{{ route('login') }}" class="btn btn-secondary btn-sm">Sign in</a>
-                            </div>
+                        <div class="mt-6 rounded-card bg-accent/[.07] p-6 ring-1 ring-accent/20">
+                            <x-locked-content :content="$question" :dark="false" thing="question" />
                         </div>
                     @else
                         <div class="prose prose-lg prose-clinical mt-5">{!! $stem !!}</div>

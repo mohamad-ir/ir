@@ -2,13 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Article;
-use App\Models\ClinicalCase;
-use App\Models\ExamTopic;
-use App\Models\Page;
-use App\Models\Question;
-use App\Models\Topic;
-use App\Models\Video;
 use App\Services\Search\SearchIndexer;
 use App\Services\Seo\SitemapGenerator;
 use Illuminate\Console\Command;
@@ -21,7 +14,7 @@ class ReindexCommand extends Command
 
     public function handle(SearchIndexer $indexer): int
     {
-        $n = $indexer->rebuild([ClinicalCase::class, Article::class, Video::class, Question::class, ExamTopic::class, Topic::class, Page::class]);
+        $n = $indexer->rebuild(SearchIndexer::MODELS);
         SitemapGenerator::flush();
         $this->info("Indexed {$n} items.");
 

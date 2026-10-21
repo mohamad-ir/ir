@@ -8,6 +8,12 @@ use Throwable;
 
 class SearchIndexer
 {
+    /** Every searchable content type, used when rebuilding the whole index. */
+    public const MODELS = [
+        \App\Models\ClinicalCase::class, \App\Models\Article::class, \App\Models\Video::class, \App\Models\Question::class,
+        \App\Models\ExamTopic::class, \App\Models\Topic::class, \App\Models\Page::class, \App\Models\Course::class, \App\Models\Webinar::class, \App\Models\Gallery::class,
+    ];
+
     public function sync(Model $model): void
     {
         try {
