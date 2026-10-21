@@ -9,7 +9,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="$(php -r "echo (require '$ROOT/config/cms.php')['version'];")"
+VERSION="$(grep -oP "'version' => '\K[^']+" "$ROOT/config/cms.php")"
 WORK="$(mktemp -d)"
 PKG="$WORK/package"
 APP="$PKG/oct-academy"
@@ -22,7 +22,9 @@ mkdir -p "$APP" "$DIST"
 git -C "$ROOT" archive HEAD | tar -x -C "$APP"
 
 # 2. Production dependencies and assets
-( cd "$APP" && COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --quiet )
+( cd "$APP" && COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --quiet )
+# Remove VCS metadata, tests and docs from dependencies (not needed at runtime)
+find "$APP/vendor" -type d \( -name .git -o -name tests -o -name test -o -name test_files -o -name docs -o -name .github \) -prune -exec rm -rf {} + 2>/dev/null || true
 ( cd "$ROOT" && npm ci --silent && npm run build --silent )
 rm -rf "$APP/public/build" && cp -a "$ROOT/public/build" "$APP/public/build"
 ( cd "$APP" && php artisan filament:assets --quiet 2>/dev/null || true )
