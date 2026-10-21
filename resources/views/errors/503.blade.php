@@ -1,0 +1,4 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Back shortly</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fbfaf7;color:#1c2733;font-family:-apple-system,'Segoe UI',Inter,sans-serif;text-align:center;padding:24px}h1{font-family:Georgia,serif;font-weight:500;font-size:2.4rem;color:#12324f;margin:.4em 0}p{color:#5d6670;max-width:28rem;margin:0 auto;line-height:1.6}a{display:inline-block;margin-top:28px;padding:11px 22px;border-radius:8px;background:#12324f;color:#fff;text-decoration:none;font-weight:600}.c{font-size:.8rem;letter-spacing:.16em;color:#0f8b8d;font-weight:700}</style></head>
+<body><main><p class="c">ERROR 503</p><h1>Back shortly</h1><p>We are performing scheduled maintenance and will be back online in a few minutes.</p><a href="/">Return home</a></main></body></html>

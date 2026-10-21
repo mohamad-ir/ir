@@ -1,0 +1,16 @@
+# Uploaded media must never be executed as code.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<FilesMatch "\.(?i:php\d?|phtml|phar|pl|py|cgi|sh|shtml|htaccess)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes -ExecCGI
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+AddType text/plain .php .phtml .phar
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    <FilesMatch "\.(jpe?g|png|webp|gif)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>

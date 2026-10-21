@@ -1,0 +1,55 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '../../fonts.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ * Dashboard theme. Built on Filament's design system, refined for a calm,
+ * editorial feel: Inter UI type, a serif display face for page titles,
+ * softer surfaces and a focused navigation rail.
+ */
+@theme {
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Newsreader Variable', Georgia, serif;
+}
+
+:root {
+    --oa-paper: #f6f5f1;
+}
+
+.fi-body {
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+}
+
+html:not(.dark) .fi-body { background-color: var(--oa-paper); }
+
+/* Page headings in the display serif */
+.fi-header-heading {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    font-size: 1.95rem;
+    line-height: 1.15;
+}
+
+/* Sidebar */
+.fi-sidebar { border-inline-end: 1px solid var(--gray-200); }
+.dark .fi-sidebar { border-color: rgb(255 255 255 / .06); }
+.fi-sidebar-header { height: 4.25rem; }
+.fi-sidebar-group-label { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+.fi-sidebar-item-btn { border-radius: .55rem; }
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn { box-shadow: inset 2px 0 0 var(--primary-600); }
+
+/* Sections & cards */
+.fi-section { border-radius: .9rem; }
+html:not(.dark) .fi-section, html:not(.dark) .fi-ta-ctn, html:not(.dark) .fi-wi-stats-overview-stat {
+    box-shadow: 0 1px 2px rgb(16 24 40 / .04), 0 1px 3px rgb(16 24 40 / .05);
+}
+.fi-wi-stats-overview-stat-value { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
+
+/* Page-builder live preview */
+.oa-preview-shell { position: sticky; top: 5rem; }
+.oa-preview-frame-wrap { overflow: hidden; border-radius: .75rem; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 12px 32px -12px rgb(16 24 40 / .25); }
+.oa-preview-frame { border: 0; transform-origin: 0 0; background: #fff; }
