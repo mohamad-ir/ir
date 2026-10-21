@@ -76,3 +76,27 @@ it('estimates reading time automatically', function () {
     $article = Article::factory()->create(['body' => '<p>'.str_repeat('word ', 660).'</p>']);
     expect($article->reading_time)->toBe(3);
 });
+
+it('caches the topic tree as plain arrays so a warm file cache keeps sub-topic counts', function () {
+    config(['cache.default' => 'file']);
+    \Illuminate\Support\Facades\Cache::forget('topics.tree');
+    $parent = \App\Models\Topic::create(['name' => 'Uveitis', 'slug' => 'uveitis-test']);
+    $child = \App\Models\Topic::create(['name' => 'VKH', 'slug' => 'vkh-test', 'parent_id' => $parent->id]);
+
+    $cold = $parent->fresh()->descendantIdsWithSelf();
+    $warm = $parent->fresh()->descendantIdsWithSelf();
+
+    expect($cold)->toBe([$parent->id, $child->id])->and($warm)->toBe($cold);
+    \Illuminate\Support\Facades\Cache::forget('topics.tree');
+});
+
+it('labels only the current weekly case as case of the week', function () {
+    $old = ClinicalCase::factory()->create(['is_case_of_week' => true, 'case_of_week_date' => today()->subWeek()]);
+    $current = ClinicalCase::factory()->create(['is_case_of_week' => true, 'case_of_week_date' => today()]);
+    $upcoming = ClinicalCase::factory()->create(['is_case_of_week' => true, 'case_of_week_date' => today()->addWeek()]);
+
+    expect($current->weeklyBadge())->toBe('Case of the week')
+        ->and($old->weeklyBadge())->toBe('Week of '.today()->subWeek()->format('j M'))
+        ->and($upcoming->weeklyBadge())->toBeNull()
+        ->and(ClinicalCase::factory()->create()->weeklyBadge())->toBeNull();
+});

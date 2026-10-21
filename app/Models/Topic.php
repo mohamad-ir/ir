@@ -69,7 +69,9 @@ class Topic extends Model
     /** @return array<int, int> */
     public function descendantIdsWithSelf(): array
     {
-        $all = Cache::rememberForever('topics.tree', fn () => self::query()->get(['id', 'parent_id'])->groupBy('parent_id')->map->pluck('id')->all());
+        // Plain int arrays only: the cache refuses to unserialize objects (cache.serializable_classes = false).
+        $all = Cache::rememberForever('topics.tree', fn () => self::query()->whereNotNull('parent_id')->get(['id', 'parent_id'])
+            ->groupBy('parent_id')->map(fn ($children) => $children->pluck('id')->map(fn ($id) => (int) $id)->all())->all());
 
         $ids = [$this->id];
         $stack = [$this->id];

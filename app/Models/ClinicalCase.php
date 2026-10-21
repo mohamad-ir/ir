@@ -25,6 +25,15 @@ class ClinicalCase extends Model
 {
     use CreatesSlugRedirects, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
+    /** Per-request memo for weeklyBadge(); reset whenever a case changes. */
+    protected static ?int $currentWeeklyId = null;
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => static::$currentWeeklyId = null);
+        static::deleted(fn () => static::$currentWeeklyId = null);
+    }
+
     protected $fillable = [
         'title', 'slug', 'summary', 'patient_age', 'patient_sex', 'eye', 'presenting_complaint', 'history',
         'findings', 'images', 'comparison', 'quiz_prompt', 'quiz_options', 'diagnosis', 'diagnosis_explanation',
@@ -75,6 +84,22 @@ class ClinicalCase extends Model
     public static function currentCaseOfWeek(): ?self
     {
         return static::query()->caseOfWeek()->first();
+    }
+
+    /** Badge text: only the current weekly case is "Case of the week"; earlier ones show their week. */
+    public function weeklyBadge(): ?string
+    {
+        if (! $this->is_case_of_week || $this->case_of_week_date?->isFuture()) {
+            return null;
+        }
+
+        static::$currentWeeklyId ??= static::query()->caseOfWeek()->value('id') ?? 0;
+
+        if ($this->id === static::$currentWeeklyId) {
+            return 'Case of the week';
+        }
+
+        return $this->case_of_week_date ? 'Week of '.$this->case_of_week_date->format('j M') : 'Weekly case';
     }
 
     /** Image entries resolved to Media models: [['media' => Media, 'caption' => ..., 'label' => ...]] */
