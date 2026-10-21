@@ -30,8 +30,8 @@
             @endif
             <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 to-transparent"></div>
             <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
-                @if ($case->is_case_of_week)
-                    <span class="inline-flex items-center gap-1 rounded-full bg-highlight px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-highlight-contrast">Case of the week</span>
+                @if ($badge = $case->weeklyBadge())
+                    <span class="inline-flex items-center gap-1 rounded-full bg-highlight px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-highlight-contrast">{{ $badge }}</span>
                 @endif
             </div>
             <div class="absolute bottom-3 left-3 flex flex-wrap gap-1.5">

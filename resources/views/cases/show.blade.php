@@ -37,8 +37,8 @@
             @endif
             <x-breadcrumbs :items="array_filter(['OCT cases' => route('cases.index'), ($case->topics->first()?->name ?? '') => $case->topics->first()?->url(), $case->title => null])" />
             <div class="mt-6 flex flex-wrap items-center gap-2">
-                @if ($case->is_case_of_week)
-                    <span class="inline-flex items-center gap-1 rounded-full bg-highlight px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-highlight-contrast"><x-heroicon-m-sparkles class="size-3.5" /> Case of the week</span>
+                @if ($badge = $case->weeklyBadge())
+                    <span class="inline-flex items-center gap-1 rounded-full bg-highlight px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-highlight-contrast"><x-heroicon-m-sparkles class="size-3.5" /> {{ $badge }}</span>
                 @endif
                 @foreach ($case->topics as $topic)
                     <a href="{{ $topic->urlPath() }}" class="chip chip-accent hover:bg-accent/20">{{ $topic->name }}</a>
