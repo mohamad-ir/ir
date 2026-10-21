@@ -78,8 +78,9 @@ class SchemaFactory
             'thumbnailUrl' => $v->thumbnail() ? [$v->thumbnail()] : null,
             'uploadDate' => $v->published_at?->toIso8601String(),
             'duration' => $v->isoDuration(),
-            'embedUrl' => $v->isFilePlayer() ? null : preg_replace('/[?&]autoplay=1/', '', (string) $v->embedUrl()),
-            'contentUrl' => $v->isFilePlayer() ? $v->embedUrl() : null,
+            'embedUrl' => ! $v->isPublicAccess() || $v->isFilePlayer() ? null : preg_replace('/[?&]autoplay=1/', '', (string) $v->embedUrl()),
+            'contentUrl' => $v->isPublicAccess() && $v->isFilePlayer() ? $v->embedUrl() : null,
+            'isAccessibleForFree' => $v->isPublicAccess(),
             'publisher' => self::publisher(),
             'hasPart' => collect($v->chapters)->filter(fn ($ch) => isset($ch['time'], $ch['title']))->values()->map(fn ($ch, $i) => [
                 '@type' => 'Clip',

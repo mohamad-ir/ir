@@ -75,7 +75,7 @@ class SitemapGenerator
             ])->all(),
             'videos' => Video::published()->where($noindex)->latest('published_at')->get()->map(fn ($v) => [
                 'loc' => $v->url(), 'lastmod' => $v->updated_at, 'priority' => '0.7',
-                'video' => $v->thumbnail() ? [
+                'video' => $v->thumbnail() && $v->isPublicAccess() ? [
                     'thumbnail' => $v->thumbnail(), 'title' => $v->title, 'description' => $v->seoDescription() ?: $v->title,
                     'player' => $v->isFilePlayer() ? null : preg_replace('/[?&]autoplay=1/', '', (string) $v->embedUrl()),
                     'content' => $v->isFilePlayer() ? $v->embedUrl() : null,

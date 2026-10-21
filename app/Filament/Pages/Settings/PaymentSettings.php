@@ -143,8 +143,8 @@ class PaymentSettings extends SettingsPage
                     ->helperText('Stripe charges a small fee per invoice. Membership payments always get an invoice.'),
             ]),
             Section::make('Legal')->columns(2)->schema([
-                Select::make('payments.terms_url')->label('Terms of sale page')->options($pages)->searchable(),
-                Select::make('payments.refund_url')->label('Refund policy page')->options($pages)->searchable(),
+                TextInput::make('payments.terms_url')->label('Terms of sale page')->datalist(fn () => array_keys($pages()))->placeholder('/terms-of-sale')->maxLength(300),
+                TextInput::make('payments.refund_url')->label('Refund policy page')->datalist(fn () => array_keys($pages()))->placeholder('/refund-policy')->maxLength(300),
                 Toggle::make('payments.withdrawal_waiver')->label('Ask EU/UK buyers to waive the 14-day withdrawal right for immediate access')->columnSpanFull()
                     ->helperText('Required to start access immediately to digital content sold to consumers in the EU and UK. Keep on unless your adviser says otherwise.'),
             ]),

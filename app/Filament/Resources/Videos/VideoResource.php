@@ -84,7 +84,7 @@ class VideoResource extends Resource
                         TextInput::make('duration_seconds')->label('Duration (seconds)')->numeric()->minValue(0),
                         TextInput::make('thumbnail_url')->label('Thumbnail URL')->url()->helperText('Filled automatically for YouTube/Vimeo.'),
                     ]),
-                    MediaPicker::make('thumbnail_media_id')->label('Custom thumbnail')->helperText('Overrides the provider thumbnail.'),
+                    MediaPicker::make('thumbnail_media_id')->label('Custom thumbnail')->helperText('Overrides the provider thumbnail. Members-only YouTube videos need one: the automatic YouTube thumbnail would reveal the video link.'),
                 ]),
                 Section::make('Description, chapters & transcript')->icon('heroicon-o-document-text')->schema([
                     Fields::richEditor('description', 'Description / notes'),
