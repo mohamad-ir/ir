@@ -46,7 +46,7 @@
                             @foreach ($question['options'] as $oi => $option)
                                 @php
                                     $isChosen = in_array($oi, $chosen, true);
-                                    $state = ! $submitted ? ($isChosen ? 'chosen' : 'idle') : ($option['correct'] ? 'correct' : ($isChosen ? 'wrong' : 'idle'));
+                                    $state = ! $submitted ? ($isChosen ? 'chosen' : 'idle') : ($option['correct'] ? ($isChosen ? 'correct' : 'missed') : ($isChosen ? 'wrong' : 'idle'));
                                 @endphp
                                 <button type="button" wire:click="choose({{ $qi }}, {{ $oi }}, {{ $multiple ? 'true' : 'false' }})" @disabled($submitted)
                                         role="{{ $multiple ? 'checkbox' : 'radio' }}" aria-checked="{{ $isChosen ? 'true' : 'false' }}"
@@ -57,13 +57,16 @@
                                             'bg-accent/10 ring-2 ring-accent' => $state === 'chosen',
                                             'bg-emerald-50 ring-2 ring-emerald-500' => $state === 'correct',
                                             'bg-red-50 ring-2 ring-red-400' => $state === 'wrong',
+                                            'bg-emerald-50/40 ring-0 outline-dashed outline-2 -outline-offset-2 outline-emerald-400' => $state === 'missed',
                                         ])>
                                     <span @class(['grid size-5 shrink-0 place-items-center border-2', 'rounded' => $multiple, 'rounded-full' => ! $multiple,
                                         'border-accent bg-accent text-white' => $state === 'chosen', 'border-emerald-500 bg-emerald-500 text-white' => $state === 'correct',
-                                        'border-red-400 bg-red-400 text-white' => $state === 'wrong', 'border-line-strong' => $state === 'idle'])>
+                                        'border-red-400 bg-red-400 text-white' => $state === 'wrong', 'border-line-strong' => $state === 'idle', 'border-emerald-500 text-emerald-600' => $state === 'missed'])>
                                         @if ($state === 'wrong')<x-heroicon-m-x-mark class="size-3.5" />@elseif ($state !== 'idle')<x-heroicon-m-check class="size-3.5" />@endif
                                     </span>
                                     <span class="flex-1">{{ $option['text'] }}</span>
+                                    @if ($state === 'missed')<span class="shrink-0 text-xs font-semibold text-emerald-700">Correct answer</span>@endif
+                                    @if ($state === 'wrong')<span class="shrink-0 text-xs font-semibold text-red-700">Your answer</span>@endif
                                 </button>
                             @endforeach
                         </div>

@@ -23,6 +23,8 @@ class Course extends Model
 {
     use CreatesSlugRedirects, HasFactory, HasPrices, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
+    protected $attributes = ['certificate_enabled' => true, 'included_in_membership' => true];
+
     protected $fillable = [
         'title', 'slug', 'subtitle', 'summary', 'description', 'outcomes', 'faqs', 'level', 'featured_media_id', 'trailer_url',
         'price', 'currency', 'prices', 'included_in_membership', 'certificate_enabled', 'cpd_hours', 'is_featured', 'status', 'published_at', 'author_id',

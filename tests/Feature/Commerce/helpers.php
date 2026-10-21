@@ -20,3 +20,11 @@ function stripeEvent(string $type, array $object, ?string $id = null)
         'CONTENT_TYPE' => 'application/json',
     ], $payload);
 }
+
+function makeMember(?\App\Models\User $user = null, string $status = 'active'): \App\Models\User
+{
+    $user ??= \App\Models\User::factory()->create();
+    \App\Models\Subscription::create(['user_id' => $user->id, 'membership_plan_id' => \App\Models\MembershipPlan::factory()->create()->id, 'stripe_subscription_id' => 'sub_'.uniqid(), 'status' => $status, 'amount' => 1500, 'currency' => 'EUR', 'interval' => 'month']);
+
+    return $user->fresh();
+}

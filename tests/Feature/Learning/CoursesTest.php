@@ -17,13 +17,6 @@ beforeEach(function () {
     Mail::fake();
 });
 
-function makeMember(?User $user = null, string $status = 'active'): User
-{
-    $user ??= User::factory()->create();
-    Subscription::create(['user_id' => $user->id, 'membership_plan_id' => MembershipPlan::factory()->create()->id, 'stripe_subscription_id' => 'sub_'.uniqid(), 'status' => $status, 'amount' => 1500, 'currency' => 'EUR', 'interval' => 'month']);
-
-    return $user->fresh();
-}
 
 it('lists published courses and renders the course page with Course structured data', function () {
     $course = Course::factory()->withLessons(3)->create(['title' => 'OCT Masterclass', 'slug' => 'oct-masterclass']);

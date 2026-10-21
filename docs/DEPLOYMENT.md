@@ -180,6 +180,9 @@ DirectAdmin’s own *Create/Restore Backups* tool is a good additional safety ne
 ### Upgrading from 1.0 to 1.1 (membership, courses, webinars)
 Follow the steps above. **Apply database updates** adds the new tables and, on an existing site, also: adds *Courses / Webinars / Membership* to the main menu and footer, creates *Terms of sale* and *Refund policy* template pages, turns the old “courses coming soon” page into a draft (the real course catalogue now lives at `/courses`) and replaces the homepage “coming soon” courses section with live course and webinar sections. Nothing else on your pages is changed. Then add the new paragraph about payments to your privacy policy (see the template in a fresh installation).
 
+### Upgrading from 1.1 to 1.2 (galleries, quizzes, certificates, currencies)
+Same steps. **Apply database updates** adds the new tables, gives editors/authors the gallery permissions and adds *Image galleries* under *OCT cases* in the main menu and to the footer. Certificates PDFs are generated on the server with Dompdf (pure PHP — nothing to install).
+
 ## 12. Troubleshooting
 
 | Problem | Fix |

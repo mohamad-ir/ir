@@ -56,6 +56,13 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 - **Email campaigns** — write, **Send test**, then **Send now** or **Schedule**. Sending is throttled (Settings › Email) to respect your host’s limits; the report shows opens and clicks.
 - **Enquiries** — messages from the contact form. **Reply** sends an email and records it in the notes.
 
+## Photo galleries (Content › Photo galleries)
+Albums on one subject — e.g. “Pachychoroid spectrum”, “Fundus autofluorescence” or “ESCRS 2026”. They appear at `/galleries` (linked under **OCT cases › Image galleries** in the main menu) and each album has its own page.
+1. **Gallery details** — title, short summary, optional introduction, topics, cover image, who can see it (everyone / registered / paying members), and the **layout**: *justified rows* (keeps every image’s shape — best for mixed scans), *masonry columns* or *even square grid*. Switch on **Dark background** for OCT and angiography.
+2. **Images tab** — **Upload images** adds many photos at once (location data is removed and web-optimised versions are created); **Add from media library** reuses existing images. Drag rows to reorder, click the star to choose the cover, and edit a caption per image (otherwise the media-library caption is used). Add alt text in the media library for accessibility and Google Images.
+3. Visitors open any photo full screen with arrows/swipe, zoom, captions and a thumbnail strip; each photo has its own shareable link (`…/galleries/album#photo-3`).
+4. To show an album inside any page, add the **Image gallery** section in the page builder and choose *Show a photo gallery*. The **Photo galleries** section shows album cards (e.g. on the homepage).
+
 ## Learning
 
 ### Courses (Learning › Courses)
@@ -64,8 +71,15 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 3. **Lessons tab** — **Add lesson** opens a side panel: title, section, duration, *free preview* (anyone can watch), video and lesson notes, plus downloadable files from the media library. Drag rows to reorder.
    - Video for paid lessons: use **Vimeo** with *Hide from Vimeo* and *domain-level privacy* (only plays on your website), or an **unlisted YouTube** video. The link is only sent to people who have access, but no web video can be made completely copy-proof.
    - Downloads are stored in the public media folder: anyone who obtains the exact file link can open it. Do not upload highly confidential material.
+   - **Quiz** (inside the lesson editor) — add questions with 2–6 answers each; mark one correct answer (single best answer) or several (“select all that apply”), add an explanation and set the pass mark. Learners must pass the quiz to complete the lesson; they see their score, the correct answers and the explanations, and can retry.
 4. **Sections tab** — group lessons into modules (“Foundations”, “Fluid”…).
-5. **Students tab** — who is enrolled, how (purchase, membership, free, staff), their progress and completion. **Give access** enrols anyone for free (e.g. a colleague or a prize winner).
+5. **Students tab** — who is enrolled, how (purchase, membership, free, staff), their progress, completion and certificate. **Give access** enrols anyone for free (e.g. a colleague or a prize winner); the trophy button issues a certificate manually.
+
+### Certificates (Learning › Certificates)
+When a learner completes every lesson of a course (and passes every lesson quiz), a **certificate of completion** is issued automatically: they receive it by email as a PDF and can download it from *My learning*. Each certificate has an ID (e.g. `OC-7K3F-9Q2M`) and a public verification page (`/certificates/OC-7K3F-9Q2M`) that employers or training programmes can check.
+- Per course: *Award a certificate* and the *hours* shown (default: total lesson time) — in the course’s **Certificate** box.
+- **Certificate design** (button on the Certificates list): signatory name and title, signature image (PNG), the wording, and **Preview sample PDF**. Your logo (PNG/JPEG) from Theme & branding is used.
+- **Revoke** marks a certificate as revoked on its verification page (reversible).
 
 ### Webinars (Learning › Webinars)
 - Set the **date and time** (in the site time zone shown under the field), duration and platform, and paste the **Zoom / YouTube Live / Teams link**. The link is stored encrypted and never shown publicly: registrants get a personal join button that opens 30 minutes before the start.
@@ -85,6 +99,9 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 6. In Stripe, also turn on: **Settings › Emails › Successful payments** (receipts) and **Refunds**; **Billing › Customer portal** (allow cancellation and invoice history); **Billing › Revenue recovery** (automatic retries and card-update emails for failed renewals).
 
 **VAT.** Prices include VAT by default. If you sell to consumers in several EU countries you normally need to register for the EU **One-Stop-Shop (OSS)**; then activate **Stripe Tax**, add your registrations there, and switch on *Calculate VAT automatically*. Please confirm your obligations with an accountant — the website cannot decide them for you. Review the **Terms of sale** and **Refund policy** pages (templates are included) before going live.
+
+### Prices in several currencies
+Every course, webinar ticket and membership plan has a **main price**; add **Prices in other currencies** (e.g. £85 and $109 next to €99) in the same box. Choose which currencies visitors can pick under *Payment settings › Currencies visitors can choose*. Visitors see prices in their own currency — detected from their country (Cloudflare or the GeoLite database) or chosen with the currency switcher on price boxes and in the footer — and pay in that currency. Items without a price in the visitor’s currency are sold in the main currency. Stripe converts and pays out in your bank currency.
 
 ### Membership plans (Sales › Membership plans)
 Create e.g. a monthly and a yearly plan: price, billing period, optional free-trial days, the benefits shown on the pricing card, and *Most popular*. Changing the price later applies to new members; existing members keep their price unless you change it in Stripe. To stop selling a plan, switch off *Available for new members* (existing members keep it).

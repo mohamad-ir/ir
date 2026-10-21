@@ -94,7 +94,7 @@ it('sends a member to Stripe Checkout with a subscription for the chosen plan', 
             && str_contains($p['success_url'], '{CHECKOUT_SESSION_ID}') && $request->hasHeader('Idempotency-Key');
     });
     Http::assertSent(fn (Request $r) => str_ends_with($r->url(), '/prices') && stripeParams($r)['recurring']['interval'] === 'year' && stripeParams($r)['unit_amount'] === '12000');
-    expect($user->fresh()->stripe_customer_id)->toBe('cus_123')->and($plan->fresh()->stripe_price_id)->toBe('price_123');
+    expect($user->fresh()->stripe_customer_id)->toBe('cus_123')->and($plan->fresh()->stripe_prices['EUR']['id'])->toBe('price_123');
 });
 
 it('creates a new Stripe price only when the plan price changes', function () {
