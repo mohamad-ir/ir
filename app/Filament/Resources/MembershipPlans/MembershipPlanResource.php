@@ -58,6 +58,7 @@ class MembershipPlanResource extends Resource
                     Select::make('currency')->options(array_combine(array_keys(Money::CURRENCIES), array_keys(Money::CURRENCIES)))
                         ->default(fn () => Settings::get('payments.currency', 'EUR'))->selectablePlaceholder(false)->required(),
                 ]),
+                \App\Filament\Support\Fields::otherPrices(),
                 ToggleButtons::make('interval')->label('Billed')->options(['month' => 'Monthly', 'year' => 'Yearly'])->inline()->default('month')->required(),
                 TextInput::make('trial_days')->label('Free trial (days)')->numeric()->minValue(0)->maxValue(90)->default(0),
                 Toggle::make('is_featured')->label('Highlight as “Most popular”'),

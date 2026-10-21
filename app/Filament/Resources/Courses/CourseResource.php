@@ -71,8 +71,15 @@ class CourseResource extends Resource
                         Select::make('currency')->options(array_combine(array_keys(Money::CURRENCIES), array_keys(Money::CURRENCIES)))
                             ->default(fn () => Settings::get('payments.currency', 'EUR'))->selectablePlaceholder(false)->required(),
                     ]),
+                    Fields::otherPrices()->visible(fn ($get) => (float) $get('price') > 0),
                     Toggle::make('included_in_membership')->label('Included in membership')->default(true)
                         ->helperText('Members get full access while their membership is active. Others can buy the course.'),
+                ]),
+                Section::make('Certificate')->icon('heroicon-o-trophy')->schema([
+                    Toggle::make('certificate_enabled')->label('Award a certificate of completion')->default(true)
+                        ->helperText('Issued automatically when every lesson is complete (and every lesson quiz passed). Learners receive it by email as a PDF.'),
+                    TextInput::make('cpd_hours')->label('Hours shown on the certificate')->numeric()->minValue(0.5)->maxValue(500)->step('0.5')
+                        ->helperText('Leave empty to use the total lesson duration.'),
                 ]),
                 Section::make('Details')->icon('heroicon-o-tag')->schema([
                     MediaPicker::make('featured_media_id')->label('Cover image'),

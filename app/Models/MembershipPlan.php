@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPrices;
 use App\Models\Concerns\LogsActivity;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,16 +12,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MembershipPlan extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, HasPrices, LogsActivity;
 
     protected $fillable = [
-        'name', 'slug', 'tagline', 'description', 'features', 'price', 'currency', 'interval', 'trial_days',
+        'name', 'slug', 'tagline', 'description', 'features', 'price', 'currency', 'prices', 'interval', 'trial_days',
         'is_featured', 'is_active', 'sort_order',
     ];
 
     protected function casts(): array
     {
-        return ['features' => 'array', 'is_featured' => 'boolean', 'is_active' => 'boolean', 'price' => 'integer', 'trial_days' => 'integer'];
+        return ['stripe_prices' => 'array', 'features' => 'array', 'is_featured' => 'boolean', 'is_active' => 'boolean', 'price' => 'integer', 'trial_days' => 'integer'];
     }
 
     public function subscriptions(): HasMany
@@ -35,7 +36,7 @@ class MembershipPlan extends Model
 
     public function priceLabel(): string
     {
-        return Money::format($this->price, $this->currency);
+        return $this->formattedPrice();
     }
 
     public function intervalLabel(): string
@@ -46,12 +47,14 @@ class MembershipPlan extends Model
     /** Monthly equivalent of a yearly plan, e.g. "€8.25 / month". */
     public function monthlyEquivalent(): ?string
     {
-        return $this->interval === 'year' ? Money::format((int) round($this->price / 12), $this->currency) : null;
+        [$amount, $currency] = $this->priceFor();
+
+        return $this->interval === 'year' ? Money::format((int) round($amount / 12), $currency) : null;
     }
 
     /** Changes whenever Stripe needs a new Price object (Stripe prices are immutable). */
-    public function priceFingerprint(): string
+    public function priceFingerprint(string $currency): string
     {
-        return implode(':', [$this->price, strtolower($this->currency), $this->interval]);
+        return implode(':', [$this->priceIn($currency), strtolower($currency), $this->interval]);
     }
 }

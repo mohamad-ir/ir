@@ -30,6 +30,7 @@ class PreviewController extends Controller
             'page' => $this->page(Page::withTrashed()->findOrFail($id), $seo),
             'course' => app(CourseController::class)->render(\App\Models\Course::withTrashed()->findOrFail($id), $request, $seo, $access, app(\App\Services\Learning\LearningService::class), true),
             'webinar' => app(WebinarController::class)->render(\App\Models\Webinar::withTrashed()->findOrFail($id), $request, $seo, $access, true),
+            'gallery' => app(GalleryController::class)->render(\App\Models\Gallery::withTrashed()->findOrFail($id), $request, $seo, $access, true),
             'question' => view('preview.question', ['question' => Question::withTrashed()->with(['media', 'examTopic'])->findOrFail($id), 'noTracking' => true]),
         };
     }

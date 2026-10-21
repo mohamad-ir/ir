@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Difficulty;
 use App\Models\Concerns\CreatesSlugRedirects;
+use App\Models\Concerns\HasPrices;
 use App\Models\Concerns\HasPublishing;
 use App\Models\Concerns\HasRevisions;
 use App\Models\Concerns\HasSeo;
@@ -20,11 +21,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Course extends Model
 {
-    use CreatesSlugRedirects, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
+    use CreatesSlugRedirects, HasFactory, HasPrices, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
     protected $fillable = [
         'title', 'slug', 'subtitle', 'summary', 'description', 'outcomes', 'faqs', 'level', 'featured_media_id', 'trailer_url',
-        'price', 'currency', 'included_in_membership', 'is_featured', 'status', 'published_at', 'author_id',
+        'price', 'currency', 'prices', 'included_in_membership', 'certificate_enabled', 'cpd_hours', 'is_featured', 'status', 'published_at', 'author_id',
     ];
 
     protected function casts(): array
@@ -35,6 +36,8 @@ class Course extends Model
             'level' => Difficulty::class,
             'price' => 'integer',
             'included_in_membership' => 'boolean',
+            'certificate_enabled' => 'boolean',
+            'cpd_hours' => 'float',
             'is_featured' => 'boolean',
         ];
     }
@@ -76,7 +79,7 @@ class Course extends Model
 
     public function priceLabel(): string
     {
-        return $this->isFree() ? 'Free' : Money::format($this->price, $this->currency);
+        return $this->isFree() ? 'Free' : $this->formattedPrice();
     }
 
     /** Lessons in curriculum order: by section, then lesson order. Lessons without a section come first. */

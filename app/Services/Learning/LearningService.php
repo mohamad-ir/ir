@@ -74,8 +74,13 @@ class LearningService
             ->each(fn (WebinarRegistration $r) => $r->update(['canceled_at' => now()]));
     }
 
-    public function completeLesson(User $user, Lesson $lesson): void
+    /** Marks a lesson complete. A lesson with a quiz is complete only once the quiz has been passed. */
+    public function completeLesson(User $user, Lesson $lesson): bool
     {
+        if ($lesson->hasQuiz() && ! $lesson->passedBy($user)) {
+            return false;
+        }
+
         LessonProgress::firstOrCreate(
             ['user_id' => $user->id, 'lesson_id' => $lesson->id],
             ['course_id' => $lesson->course_id, 'completed_at' => now()],
@@ -84,7 +89,16 @@ class LearningService
         $enrollment = Enrollment::where('user_id', $user->id)->where('course_id', $lesson->course_id)->first();
         if ($enrollment && ! $enrollment->completed_at && $this->progress($user, $lesson->course) >= 100) {
             $enrollment->update(['completed_at' => now()]);
+            $this->courseCompleted($user, $lesson->course, $enrollment);
         }
+
+        return true;
+    }
+
+    /** Hook for course completion: issues the certificate. */
+    protected function courseCompleted(User $user, Course $course, Enrollment $enrollment): void
+    {
+        app(CertificateService::class)->issue($user, $course);
     }
 
     public function uncompleteLesson(User $user, Lesson $lesson): void

@@ -71,6 +71,32 @@ class LessonsRelationManager extends RelationManager
                     ->visible(fn (Get $get) => $get('video_provider') === 'file')->required(fn (Get $get) => $get('video_provider') === 'file'),
             ]),
             Fields::richEditor('body', 'Lesson notes'),
+            Section::make('Quiz')->icon('heroicon-o-clipboard-document-check')->compact()->collapsible()
+                ->collapsed(fn (?Lesson $record) => ! $record?->hasQuiz())
+                ->description('Optional. Learners must reach the pass mark to complete the lesson (and to earn the course certificate).')
+                ->schema([
+                    TextInput::make('quiz.pass_mark')->label('Pass mark (%)')->numeric()->minValue(1)->maxValue(100)->default(70),
+                    \Filament\Forms\Components\Repeater::make('quiz.questions')->label('Questions')
+                        ->schema([
+                            Textarea::make('question')->required()->rows(2)->maxLength(1000),
+                            \Filament\Forms\Components\Repeater::make('options')->label('Answers')
+                                ->schema([
+                                    TextInput::make('text')->hiddenLabel()->required()->maxLength(500)->columnSpan(3),
+                                    Toggle::make('correct')->label('Correct')->inline(false),
+                                ])
+                                ->columns(4)->minItems(2)->maxItems(6)->defaultItems(4)->reorderable()->addActionLabel('Add answer')
+                                ->rule(fn () => function (string $attribute, $value, \Closure $fail) {
+                                    if (! collect($value)->contains(fn ($o) => ! empty($o['correct']))) {
+                                        $fail('Mark at least one answer as correct.');
+                                    }
+                                })
+                                ->helperText('Mark one correct answer (single best answer) or several (“select all that apply”).'),
+                            Textarea::make('explanation')->rows(2)->maxLength(2000)->helperText('Shown after the learner submits.'),
+                        ])
+                        ->defaultItems(0)->collapsible()->cloneable()->reorderable()
+                        ->itemLabel(fn (array $state) => \Illuminate\Support\Str::limit($state['question'] ?? '', 70) ?: null)
+                        ->addActionLabel('Add question'),
+                ]),
             Select::make('attachments')->label('Downloads (PDF, slides…)')->multiple()->searchable()
                 ->options(fn () => \App\Models\Media::where('mime_type', 'not like', 'video/%')->latest('id')->limit(100)->get()->mapWithKeys(fn ($m) => [$m->id => $m->title ?: $m->original_name]))
                 ->helperText('Upload files in Library › Media first. Note: downloads are stored in the public media folder.'),
@@ -88,6 +114,7 @@ class LessonsRelationManager extends RelationManager
                 TextColumn::make('title')->weight('medium')->searchable()->description(fn (Lesson $record) => $record->section?->title),
                 TextColumn::make('video_provider')->label('Video')->badge()->placeholder('—'),
                 TextColumn::make('duration_minutes')->label('Minutes')->alignEnd()->placeholder('—'),
+                TextColumn::make('quiz')->label('Quiz')->getStateUsing(fn (Lesson $record) => $record->hasQuiz() ? count($record->quizQuestions()).' Q' : null)->placeholder('—')->badge()->color('info'),
                 IconColumn::make('is_preview')->label('Preview')->boolean()->trueIcon('heroicon-o-eye')->falseIcon('heroicon-o-lock-closed'),
             ])
             ->headerActions([

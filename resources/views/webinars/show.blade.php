@@ -114,6 +114,7 @@
                 @elseif (! $webinar->isFree() && $webinar->free_for_members)
                     <p class="mt-1 text-sm text-muted">Free for members · <a href="{{ route('membership') }}" class="link">learn more</a></p>
                 @endif
+                @if (! $webinar->isFree() && ! $freeForUser)<x-currency-switcher class="mt-3" />@endif
                 @if ($webinar->seatsLeft() !== null && $webinar->seatsLeft() <= 20 && ! $webinar->isFull())
                     <p class="mt-3 text-sm font-medium text-highlight">Only {{ $webinar->seatsLeft() }} {{ \Illuminate\Support\Str::plural('place', $webinar->seatsLeft()) }} left</p>
                 @endif

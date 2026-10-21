@@ -10,6 +10,15 @@
         @if ($nextLesson)
             <a href="{{ route('courses.lesson', [$course->slug, $nextLesson->slug]) }}" class="btn btn-primary btn-lg mt-6 w-full">{{ count($completed) ? 'Continue learning' : 'Start the course' }} <x-heroicon-m-arrow-right /></a>
         @endif
+        @if ($certificate)
+            <div class="mt-5 flex items-center gap-3 rounded-ui bg-highlight/10 px-4 py-3 ring-1 ring-highlight/25">
+                <x-heroicon-s-trophy class="size-6 shrink-0 text-highlight" />
+                <div class="min-w-0 flex-1 text-sm"><p class="font-semibold text-ink">Course completed</p><a href="{{ $certificate->verifyUrl() }}" class="link">View certificate</a></div>
+                <a href="{{ $certificate->downloadUrl() }}" class="btn btn-secondary btn-sm">PDF</a>
+            </div>
+        @elseif ($course->certificate_enabled)
+            <p class="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted"><x-heroicon-m-trophy class="size-4" /> Certificate on completion</p>
+        @endif
         @if ($enrollment?->source === 'membership' || (! $enrollment && $isMember))
             <p class="mt-4 text-center text-xs text-muted">Included with your membership.</p>
         @endif
@@ -17,6 +26,7 @@
         <p class="font-heading text-4xl font-semibold text-ink">{{ $course->priceLabel() }}</p>
         @if (! $course->isFree())
             <p class="mt-1 text-sm text-muted">One-time payment · lifetime access{{ setting('payments.prices_include_tax', true) ? ' · VAT included' : '' }}</p>
+            <x-currency-switcher class="mt-3" />
         @endif
 
         @guest
@@ -56,5 +66,7 @@
         @if ($course->level)<li class="flex gap-2.5"><x-heroicon-o-signal class="size-5 shrink-0 text-muted" /> {{ $course->level->getLabel() }} level</li>@endif
         <li class="flex gap-2.5"><x-heroicon-o-clock class="size-5 shrink-0 text-muted" /> Self-paced — learn on any device</li>
         <li class="flex gap-2.5"><x-heroicon-o-check-badge class="size-5 shrink-0 text-muted" /> Progress saved automatically</li>
+        @if ($course->lessons->contains(fn ($l) => $l->hasQuiz()))<li class="flex gap-2.5"><x-heroicon-o-clipboard-document-check class="size-5 shrink-0 text-muted" /> Quizzes to check your understanding</li>@endif
+        @if ($course->certificate_enabled)<li class="flex gap-2.5"><x-heroicon-o-trophy class="size-5 shrink-0 text-muted" /> Certificate of completion</li>@endif
     </ul>
 </div>

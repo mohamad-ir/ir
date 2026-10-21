@@ -36,7 +36,7 @@ class StripeReferences
         if ($previous) {
             DB::transaction(function () {
                 User::whereNotNull('stripe_customer_id')->update(['stripe_customer_id' => null]);
-                MembershipPlan::query()->update(['stripe_product_id' => null, 'stripe_price_id' => null, 'stripe_price_fingerprint' => null]);
+                MembershipPlan::query()->update(['stripe_product_id' => null, 'stripe_price_id' => null, 'stripe_price_fingerprint' => null, 'stripe_prices' => null]);
                 Course::withTrashed()->update(['stripe_product_id' => null]);
                 Webinar::withTrashed()->update(['stripe_product_id' => null]);
             });

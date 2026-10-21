@@ -13,7 +13,7 @@ class Lesson extends Model
 
     protected $fillable = [
         'course_id', 'course_section_id', 'title', 'slug', 'summary', 'body', 'video_provider', 'video_url',
-        'provider_video_id', 'video_media_id', 'duration_minutes', 'attachments', 'is_preview', 'sort_order',
+        'provider_video_id', 'video_media_id', 'duration_minutes', 'attachments', 'quiz', 'is_preview', 'sort_order',
     ];
 
     protected function casts(): array
@@ -21,6 +21,7 @@ class Lesson extends Model
         return [
             'video_provider' => VideoProvider::class,
             'attachments' => 'array',
+            'quiz' => 'array',
             'is_preview' => 'boolean',
         ];
     }
@@ -87,6 +88,57 @@ class Lesson extends Model
         $ids = collect($this->attachments ?? [])->filter()->values();
 
         return $ids->isEmpty() ? collect() : Media::whereIn('id', $ids)->get()->sortBy(fn ($m) => $ids->search($m->id))->values();
+    }
+
+    // Quiz -----------------------------------------------------------------
+
+    /** @return array<int, array{question: string, options: array<int, array{text: string, correct: bool}>, explanation: ?string}> */
+    public function quizQuestions(): array
+    {
+        return collect($this->quiz['questions'] ?? [])
+            ->map(fn ($q) => [
+                'question' => trim((string) ($q['question'] ?? '')),
+                'options' => collect($q['options'] ?? [])->filter(fn ($o) => filled($o['text'] ?? null))
+                    ->map(fn ($o) => ['text' => (string) $o['text'], 'correct' => (bool) ($o['correct'] ?? false)])->values()->all(),
+                'explanation' => $q['explanation'] ?? null,
+            ])
+            ->filter(fn ($q) => $q['question'] !== '' && count($q['options']) >= 2 && collect($q['options'])->contains('correct', true))
+            ->values()->all();
+    }
+
+    public function hasQuiz(): bool
+    {
+        return count($this->quizQuestions()) > 0;
+    }
+
+    public function passMark(): int
+    {
+        return max(1, min(100, (int) ($this->quiz['pass_mark'] ?? 70)));
+    }
+
+    /**
+     * Grades answers ([question index => [option indexes]]). A question counts as correct only
+     * when exactly the correct options are chosen, so "select all that apply" questions work too.
+     *
+     * @return array{score: int, passed: bool, results: array<int, bool>}
+     */
+    public function gradeQuiz(array $answers): array
+    {
+        $questions = $this->quizQuestions();
+        $results = [];
+        foreach ($questions as $i => $q) {
+            $correct = collect($q['options'])->keys()->filter(fn ($k) => $q['options'][$k]['correct'])->values()->sort()->values()->all();
+            $given = collect((array) ($answers[$i] ?? []))->map(fn ($v) => (int) $v)->unique()->sort()->values()->all();
+            $results[$i] = $given === $correct;
+        }
+        $score = $questions ? (int) round(collect($results)->filter()->count() / count($questions) * 100) : 0;
+
+        return ['score' => $score, 'passed' => $score >= $this->passMark(), 'results' => $results];
+    }
+
+    public function passedBy(?User $user): bool
+    {
+        return $user && LessonQuizAttempt::where('user_id', $user->id)->where('lesson_id', $this->id)->where('passed', true)->exists();
     }
 
     public function url(): string

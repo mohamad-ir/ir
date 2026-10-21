@@ -160,7 +160,8 @@ class Fulfillment
         $item = $data['items']['data'][0] ?? [];
         $price = $item['price'] ?? [];
         $plan = MembershipPlan::find($metadata['plan_id'] ?? 0)
-            ?? (isset($price['id']) ? MembershipPlan::where('stripe_price_id', $price['id'])->first() : null);
+            ?? (isset($price['id']) ? MembershipPlan::all()->first(fn (MembershipPlan $p) => $p->stripe_price_id === $price['id']
+                || collect($p->stripe_prices ?? [])->pluck('id')->contains($price['id'])) : null);
 
         $status = SubscriptionStatus::tryFrom($data['status'] ?? '') ?? SubscriptionStatus::Incomplete;
 

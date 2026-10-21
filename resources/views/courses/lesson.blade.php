@@ -32,7 +32,9 @@
                     @if ($lesson->section)<p class="eyebrow">{{ $lesson->section->title }}</p>@endif
                     <h1 class="mt-1 font-heading text-3xl font-medium leading-tight text-ink sm:text-4xl">{{ $lesson->title }}</h1>
                 </div>
-                @if ($canAccessCourse)
+                @if ($canAccessCourse && $lesson->hasQuiz() && ! in_array($lesson->id, $completed, true))
+                    <a href="#quiz-heading" class="btn btn-secondary btn-sm"><x-heroicon-o-clipboard-document-check /> Take the quiz to complete</a>
+                @elseif ($canAccessCourse)
                     @php $isDone = in_array($lesson->id, $completed, true); @endphp
                     <form method="post" action="{{ route('courses.complete', [$course->slug, $lesson->slug]) }}">@csrf
                         @if ($isDone)
@@ -62,6 +64,17 @@
                 </div>
             @endif
 
+            @if ($lesson->hasQuiz())
+                @if ($canAccessCourse)
+                    <livewire:lesson-quiz :lesson-id="$lesson->id" :next-url="$next ? route('courses.lesson', [$course->slug, $next->slug]) : null" :key="'quiz-'.$lesson->id" />
+                @else
+                    <div class="mt-12 rounded-card bg-subtle p-6 text-center ring-1 ring-line">
+                        <p class="font-semibold text-ink">This lesson ends with a short quiz</p>
+                        <p class="mt-1 text-sm text-muted">Enrol in the course to take the quiz and track your progress.</p>
+                    </div>
+                @endif
+            @endif
+
             <div class="mt-12 flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
                 @if ($previous)
                     <a href="{{ route('courses.lesson', [$course->slug, $previous->slug]) }}" class="btn btn-ghost"><x-heroicon-m-arrow-left /> {{ \Illuminate\Support\Str::limit($previous->title, 40) }}</a>
@@ -70,12 +83,12 @@
                     @if ($canAccessCourse)
                         <form method="post" action="{{ route('courses.complete', [$course->slug, $lesson->slug]) }}">@csrf
                             <input type="hidden" name="continue" value="1">
-                            <button class="btn btn-primary">Complete & continue <x-heroicon-m-arrow-right /></button>
+                            <button class="btn btn-primary">{{ $lesson->hasQuiz() && ! in_array($lesson->id, $completed, true) ? 'Next lesson' : 'Complete & continue' }} <x-heroicon-m-arrow-right /></button>
                         </form>
                     @else
                         <a href="{{ route('courses.lesson', [$course->slug, $next->slug]) }}" class="btn btn-primary">Next lesson <x-heroicon-m-arrow-right /></a>
                     @endif
-                @elseif ($canAccessCourse && ! in_array($lesson->id, $completed, true))
+                @elseif ($canAccessCourse && ! in_array($lesson->id, $completed, true) && ! $lesson->hasQuiz())
                     <form method="post" action="{{ route('courses.complete', [$course->slug, $lesson->slug]) }}">@csrf
                         <button class="btn btn-primary">Finish the course <x-heroicon-m-check /></button>
                     </form>

@@ -55,6 +55,8 @@ class EnrollmentsRelationManager extends RelationManager
                     ->getStateUsing(fn (Enrollment $record) => $record->user ? $learning->progress($record->user, $this->getOwnerRecord()).'%' : '—'),
                 TextColumn::make('created_at')->label('Enrolled')->date('j M Y')->sortable(),
                 TextColumn::make('completed_at')->label('Completed')->date('j M Y')->placeholder('—')->sortable(),
+                TextColumn::make('certificate')->label('Certificate')->placeholder('—')
+                    ->getStateUsing(fn (Enrollment $record) => \App\Models\Certificate::where('user_id', $record->user_id)->where('course_id', $record->course_id)->value('code')),
                 TextColumn::make('order.number')->label('Order')->placeholder('—')->toggleable(),
             ])
             ->filters([SelectFilter::make('source')->options(Enrollment::SOURCES)])
@@ -73,6 +75,14 @@ class EnrollmentsRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
+                Action::make('certificate')->label('Issue certificate')->icon('heroicon-o-trophy')->iconButton()->requiresConfirmation()
+                    ->visible(fn (Enrollment $record) => $this->getOwnerRecord()->certificate_enabled && $record->user && auth()->user()?->can('courses.update')
+                        && ! \App\Models\Certificate::where('user_id', $record->user_id)->where('course_id', $record->course_id)->exists())
+                    ->modalDescription('Issues the certificate now, even if not every lesson is marked complete, and emails it to the learner.')
+                    ->action(function (Enrollment $record) {
+                        app(\App\Services\Learning\CertificateService::class)->issue($record->user, $this->getOwnerRecord());
+                        Notification::make()->success()->title('Certificate issued')->send();
+                    }),
                 DeleteAction::make()->label('Remove access')->iconButton()->visible(fn () => auth()->user()?->can('sales.manage'))
                     ->modalDescription('The student loses access to this course (members keep access through their membership). Payments are not refunded automatically.'),
             ])

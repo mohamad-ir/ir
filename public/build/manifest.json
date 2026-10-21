@@ -88,7 +88,7 @@
     "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DuEvUCQj.css",
+    "file": "assets/app-DxpIzr2V.css",
     "name": "app",
     "names": [
       "app.css"
@@ -154,7 +154,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-QSmB9-ff.js",
+    "file": "assets/app-C-n17rne.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

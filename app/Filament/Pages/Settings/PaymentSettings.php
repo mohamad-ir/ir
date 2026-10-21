@@ -130,7 +130,10 @@ class PaymentSettings extends SettingsPage
                         ->content(fn () => new HtmlString('<code class="text-sm">'.e(route('stripe.webhook')).'</code><br><span class="text-xs text-gray-500">Events: '.e(implode(', ', Fulfillment::EVENTS)).'</span>')),
                 ]),
             Section::make('Prices & tax')->columns(2)->schema([
-                Select::make('payments.currency')->label('Default currency for new courses, tickets and plans')->options(Money::CURRENCIES)->selectablePlaceholder(false),
+                Select::make('payments.currency')->label('Main currency')->options(Money::CURRENCIES)->selectablePlaceholder(false)
+                    ->helperText('Used for new courses, tickets and plans, and for visitors whose currency has no price.'),
+                \Filament\Forms\Components\CheckboxList::make('payments.currencies')->label('Currencies visitors can choose')->options(Money::CURRENCIES)->columns(2)
+                    ->helperText('Set the actual prices on each course, webinar and plan (“Prices in other currencies”). Stripe pays out in your bank currency and converts automatically.'),
                 Toggle::make('payments.prices_include_tax')->label('Prices include VAT')->inline(false)
                     ->helperText('Recommended for consumers in Europe: the price shown is the price paid.'),
                 Toggle::make('payments.automatic_tax')->label('Calculate VAT automatically with Stripe Tax')

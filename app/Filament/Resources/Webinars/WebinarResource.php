@@ -78,6 +78,7 @@ class WebinarResource extends Resource
                         Select::make('currency')->options(array_combine(array_keys(Money::CURRENCIES), array_keys(Money::CURRENCIES)))
                             ->default(fn () => Settings::get('payments.currency', 'EUR'))->selectablePlaceholder(false)->required(),
                     ]),
+                    Fields::otherPrices()->visible(fn ($get) => (float) $get('price') > 0),
                     Toggle::make('free_for_members')->label('Free for members')->default(true),
                     TextInput::make('capacity')->label('Maximum participants')->numeric()->minValue(1)->helperText('Leave empty for no limit.'),
                     Toggle::make('registration_open')->label('Registration open')->default(true),

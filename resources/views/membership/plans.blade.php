@@ -6,6 +6,7 @@
     $current = $subscription?->membership_plan_id;
 @endphp
 <div x-data="{ interval: @js($intervals->contains('year') ? 'year' : ($intervals->first() ?? 'month')) }">
+    <div class="mb-6 flex justify-center"><x-currency-switcher /></div>
     @if ($hasToggle)
         <div class="mb-10 flex justify-center">
             <div class="inline-flex rounded-full bg-subtle p-1 ring-1 ring-line" role="group" aria-label="Billing period">
@@ -16,7 +17,11 @@
     @endif
     <div class="mx-auto grid max-w-5xl justify-center gap-6 md:grid-cols-[repeat(auto-fit,minmax(18rem,22rem))]">
         @foreach ($plans as $plan)
-            @php $saving = $plan->interval === 'year' && $monthly && $monthly->currency === $plan->currency && $monthly->price * 12 > $plan->price ? (int) round((1 - $plan->price / ($monthly->price * 12)) * 100) : null; @endphp
+            @php
+                [$yearAmount, $yearCurrency] = $plan->priceFor();
+                [$monthAmount, $monthCurrency] = $monthly ? $monthly->priceFor() : [0, null];
+                $saving = $plan->interval === 'year' && $monthly && $monthCurrency === $yearCurrency && $monthAmount * 12 > $yearAmount ? (int) round((1 - $yearAmount / ($monthAmount * 12)) * 100) : null;
+            @endphp
             <div @if($hasToggle) x-show="interval === @js($plan->interval)" x-cloak @endif
                  @class(['relative flex flex-col rounded-card bg-surface p-7 ring-1', 'ring-2 ring-accent shadow-[var(--shadow-pop)]' => $plan->is_featured, 'ring-line' => ! $plan->is_featured])>
                 @if ($plan->is_featured)

@@ -1,5 +1,23 @@
 @extends('account.layout')
 @section('account')
+    @if ($certificates->isNotEmpty())
+        <section class="mb-10">
+            <h2 class="font-heading text-2xl font-semibold text-ink">My certificates</h2>
+            <ul class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                @foreach ($certificates as $certificate)
+                    <li class="card flex items-center gap-4 p-4">
+                        <span class="grid size-11 shrink-0 place-items-center rounded-full bg-highlight/15 text-highlight"><x-heroicon-s-trophy class="size-5" /></span>
+                        <div class="min-w-0 flex-1">
+                            <a href="{{ $certificate->verifyUrl() }}" class="block truncate font-semibold text-ink hover:text-accent-ink">{{ $certificate->course_title }}</a>
+                            <p class="text-xs text-muted">{{ $certificate->issued_at->format('j M Y') }} · {{ $certificate->code }}</p>
+                        </div>
+                        <a href="{{ $certificate->downloadUrl() }}" class="btn btn-secondary btn-sm" aria-label="Download PDF certificate for {{ $certificate->course_title }}"><x-heroicon-m-arrow-down-tray /></a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if ($enrollments->isNotEmpty() || $webinars->isNotEmpty())
         <div class="mb-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <section>

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\VideoProvider;
 use App\Enums\WebinarPlatform;
 use App\Models\Concerns\CreatesSlugRedirects;
+use App\Models\Concerns\HasPrices;
 use App\Models\Concerns\HasPublishing;
 use App\Models\Concerns\HasRevisions;
 use App\Models\Concerns\HasSeo;
@@ -27,14 +28,14 @@ use Illuminate\Support\Carbon;
  */
 class Webinar extends Model
 {
-    use CreatesSlugRedirects, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
+    use CreatesSlugRedirects, HasFactory, HasPrices, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
     /** Registrants can open the join link from this many minutes before the start. */
     public const JOIN_OPENS_MINUTES = 30;
 
     protected $fillable = [
         'title', 'slug', 'summary', 'description', 'featured_media_id', 'starts_at', 'duration_minutes', 'platform',
-        'join_url', 'join_details', 'recording_url', 'price', 'currency', 'free_for_members', 'capacity',
+        'join_url', 'join_details', 'recording_url', 'price', 'currency', 'prices', 'free_for_members', 'capacity',
         'registration_open', 'is_featured', 'status', 'published_at', 'author_id',
     ];
 
@@ -110,7 +111,7 @@ class Webinar extends Model
 
     public function priceLabel(): string
     {
-        return $this->isFree() ? 'Free' : Money::format($this->price, $this->currency);
+        return $this->isFree() ? 'Free' : $this->formattedPrice();
     }
 
     public function seatsLeft(): ?int

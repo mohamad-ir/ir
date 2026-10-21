@@ -116,6 +116,7 @@ class SettingDefaults
                 'stripe_secret_key' => null,
                 'stripe_webhook_secret' => null,
                 'currency' => 'EUR',
+                'currencies' => ['EUR', 'GBP', 'USD'],
                 'prices_include_tax' => true,
                 'automatic_tax' => false,
                 'collect_tax_id' => true,
@@ -136,6 +137,13 @@ class SettingDefaults
                     ['question' => 'Which payment methods are accepted?', 'answer' => 'All major credit and debit cards, Apple Pay and Google Pay, plus local methods such as SEPA Direct Debit, iDEAL and Bancontact where available. Payments are processed securely by Stripe.'],
                     ['question' => 'Is VAT included?', 'answer' => 'Prices shown include any applicable VAT. Business customers can add their VAT number at checkout.'],
                 ],
+            ],
+            'certificates' => [
+                'enabled' => true,
+                'signatory_name' => null,
+                'signatory_title' => null,
+                'signature_id' => null,
+                'statement' => 'has successfully completed the online course',
             ],
             'backup' => [
                 'schedule' => 'weekly',

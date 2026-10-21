@@ -8,6 +8,7 @@ use App\Models\MembershipPlan;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Webinar;
+use App\Support\Currency;
 use App\Support\Settings;
 
 /**
@@ -22,7 +23,8 @@ class Checkout
     /** Returns the Stripe-hosted URL to redirect the member to. */
     public function membership(User $user, MembershipPlan $plan): string
     {
-        $priceId = $this->ensurePlanPrice($plan);
+        [, $currency] = $plan->priceFor(Currency::current());
+        $priceId = $this->ensurePlanPrice($plan, $currency);
 
         $session = $this->stripe->post('checkout/sessions', [
             'mode' => 'subscription',
@@ -53,6 +55,8 @@ class Checkout
 
     protected function oneTime(User $user, Course|Webinar $item, string $type, string $description, bool $consent): string
     {
+        [$amount, $currency] = $item->priceFor(Currency::current());
+
         $order = Order::create([
             'user_id' => $user->id,
             'email' => $user->email,
@@ -61,9 +65,9 @@ class Checkout
             'purchasable_type' => $item->getMorphClass(),
             'purchasable_id' => $item->id,
             'description' => $description,
-            'subtotal' => $item->price,
-            'total' => $item->price,
-            'currency' => strtoupper($item->currency),
+            'subtotal' => $amount,
+            'total' => $amount,
+            'currency' => $currency,
             'status' => OrderStatus::Pending,
             'consent_at' => $consent ? now() : null,
             'meta' => ['ip' => request()?->ip()],
@@ -78,8 +82,8 @@ class Checkout
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => strtolower($item->currency),
-                    'unit_amount' => $item->price,
+                    'currency' => strtolower($currency),
+                    'unit_amount' => $amount,
                     'product' => $this->ensureProduct($item),
                     'tax_behavior' => $this->taxBehavior(),
                 ],
@@ -163,12 +167,16 @@ class Checkout
         return $product['id'];
     }
 
-    /** Stripe prices are immutable: a new Price is created whenever the amount, currency, interval or tax mode changes. */
-    public function ensurePlanPrice(MembershipPlan $plan): string
+    /** Stripe prices are immutable: a new Price is created whenever the amount, interval or tax mode changes for that currency. */
+    public function ensurePlanPrice(MembershipPlan $plan, ?string $currency = null): string
     {
-        $fingerprint = $plan->priceFingerprint().':'.$this->taxBehavior();
-        if ($plan->stripe_price_id && $plan->stripe_price_fingerprint === $fingerprint) {
-            return $plan->stripe_price_id;
+        $currency = strtoupper($currency ?? $plan->currency);
+        $amount = $plan->priceIn($currency) ?? throw new StripeException("This plan has no price in {$currency}.");
+        $fingerprint = $plan->priceFingerprint($currency).':'.$this->taxBehavior();
+        $known = $plan->stripe_prices[$currency] ?? null;
+
+        if ($known && ($known['fingerprint'] ?? null) === $fingerprint) {
+            return $known['id'];
         }
 
         if (! $plan->stripe_product_id) {
@@ -181,16 +189,16 @@ class Checkout
 
         $price = $this->stripe->post('prices', [
             'product' => $plan->stripe_product_id,
-            'currency' => strtolower($plan->currency),
-            'unit_amount' => $plan->price,
+            'currency' => strtolower($currency),
+            'unit_amount' => $amount,
             'recurring' => ['interval' => $plan->interval],
             'tax_behavior' => $this->taxBehavior(),
             'metadata' => ['plan_id' => $plan->id],
         ], 'plan-price-'.$plan->id.'-'.md5($fingerprint));
 
-        if ($plan->stripe_price_id && $plan->stripe_price_id !== $price['id']) {
+        if ($known && $known['id'] !== $price['id']) {
             try {
-                $this->stripe->post('prices/'.$plan->stripe_price_id, ['active' => false]);
+                $this->stripe->post('prices/'.$known['id'], ['active' => false]);
             } catch (StripeException) {
                 // The old price stays usable for existing subscribers; archiving only hides it.
             }
@@ -198,8 +206,7 @@ class Checkout
 
         $plan->forceFill([
             'stripe_product_id' => $plan->stripe_product_id,
-            'stripe_price_id' => $price['id'],
-            'stripe_price_fingerprint' => $fingerprint,
+            'stripe_prices' => [...($plan->stripe_prices ?? []), $currency => ['id' => $price['id'], 'fingerprint' => $fingerprint]],
         ])->saveQuietly();
 
         return $price['id'];

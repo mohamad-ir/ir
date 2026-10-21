@@ -42,13 +42,17 @@ class SalesOverview extends StatsOverviewWidget
         $daily = collect(range(13, 0))->map(fn ($d) => (int) Order::whereIn('status', ['paid', 'partially_refunded'])->where('currency', $currency)
             ->whereDate('paid_at', now()->subDays($d)->toDateString())->sum('total'))->all();
 
+        $others = Order::whereIn('status', ['paid', 'partially_refunded'])->where('currency', '!=', $currency)->where('paid_at', '>=', now()->subDays(30))
+            ->selectRaw('currency, SUM(total - refunded_amount) as net')->groupBy('currency')->pluck('net', 'currency')
+            ->map(fn ($net, $code) => '+ '.Money::format((int) $net, $code))->implode(' · ');
+
         $active = Subscription::grantingAccess()->with('plan')->get();
         $mrr = $active->where('currency', $currency)->sum(fn ($s) => $s->interval === 'year' ? $s->amount / 12 : $s->amount);
         $next = Webinar::published()->where('starts_at', '>', now())->orderBy('starts_at')->first();
 
         return [
             Stat::make('Revenue · 30 days', Money::format($current, $currency))
-                ->description($change === null ? (StripeClient::configured() ? 'Net of refunds' : 'Payments are not switched on yet') : ($change >= 0 ? '+' : '').$change.'% vs previous 30 days')
+                ->description(trim(($others ? $others.' · ' : '').($change === null ? (StripeClient::configured() ? 'Net of refunds' : 'Payments are not switched on yet') : ($change >= 0 ? '+' : '').$change.'% vs previous 30 days')))
                 ->descriptionIcon($change !== null && $change < 0 ? 'heroicon-m-arrow-trending-down' : 'heroicon-m-banknotes')
                 ->color($change !== null && $change < 0 ? 'danger' : 'success')->chart($daily),
             Stat::make('Active members', number_format($active->count()))

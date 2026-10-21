@@ -72,6 +72,7 @@ class CourseController extends Controller
             'progress' => $canAccess ? $learning->progress($user, $course) : 0,
             'nextLesson' => $next,
             'paymentsEnabled' => StripeClient::configured(),
+            'certificate' => $user ? \App\Models\Certificate::valid()->where('user_id', $user->id)->where('course_id', $course->id)->first() : null,
             'isPreview' => $preview,
         ]);
     }
@@ -156,13 +157,21 @@ class CourseController extends Controller
             return back();
         }
 
-        $learning->completeLesson($request->user(), $lesson);
         $next = $course->orderedLessons()->skipUntil(fn ($l) => $l->id === $lesson->id)->skip(1)->first();
+        if (! $learning->completeLesson($request->user(), $lesson)) {
+            if ($request->boolean('continue') && $next) {
+                return redirect()->route('courses.lesson', [$course->slug, $next->slug]);
+            }
+
+            return back()->with('error', 'Pass the lesson quiz to complete this lesson.');
+        }
 
         if ($request->boolean('continue') && $next) {
             return redirect()->route('courses.lesson', [$course->slug, $next->slug]);
         }
 
-        return back()->with('status', $next ? 'Lesson completed.' : 'Course completed — congratulations!');
+        $certificate = $next ? null : \App\Models\Certificate::where('user_id', $request->user()->id)->where('course_id', $course->id)->whereNull('revoked_at')->first();
+
+        return back()->with('status', $next ? 'Lesson completed.' : ($certificate ? 'Course completed — congratulations! Your certificate is ready in My learning.' : 'Course completed — congratulations!'));
     }
 }

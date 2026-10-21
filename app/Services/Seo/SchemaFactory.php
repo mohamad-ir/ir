@@ -93,14 +93,14 @@ class SchemaFactory
 
     public static function course(Course $c): array
     {
-        $offer = array_filter([
+        $offers = collect($c->allPrices())->map(fn ($amount, $currency) => [
             '@type' => 'Offer',
             'category' => $c->isFree() ? 'Free' : 'Paid',
-            'price' => number_format($c->price / 100, 2, '.', ''),
-            'priceCurrency' => $c->currency,
+            'price' => number_format($amount / 100, 2, '.', ''),
+            'priceCurrency' => $currency,
             'availability' => 'https://schema.org/InStock',
             'url' => $c->url(),
-        ]);
+        ])->values()->all();
 
         return array_filter([
             '@type' => 'Course',
@@ -114,7 +114,7 @@ class SchemaFactory
             'inLanguage' => 'en',
             'audience' => ['@type' => 'MedicalAudience', 'audienceType' => 'Clinician'],
             'teaches' => collect($c->outcomes)->pluck('text')->filter()->values()->all() ?: null,
-            'offers' => [$offer],
+            'offers' => $offers,
             'hasCourseInstance' => [array_filter([
                 '@type' => 'CourseInstance',
                 'courseMode' => 'Online',
@@ -138,14 +138,39 @@ class SchemaFactory
             'location' => ['@type' => 'VirtualLocation', 'url' => $w->url()],
             'organizer' => self::publisher(),
             'performer' => $w->author ? self::author($w->author) : null,
-            'offers' => array_filter([
+            'offers' => collect($w->allPrices())->map(fn ($amount, $currency) => array_filter([
                 '@type' => 'Offer',
-                'price' => number_format($w->price / 100, 2, '.', ''),
-                'priceCurrency' => $w->currency,
+                'price' => number_format($amount / 100, 2, '.', ''),
+                'priceCurrency' => $currency,
                 'availability' => $w->acceptsRegistrations() ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
                 'url' => $w->url(),
                 'validFrom' => $w->published_at?->toIso8601String(),
-            ]),
+            ]))->values()->all(),
+        ]);
+    }
+
+    /** @param \Illuminate\Support\Collection<int, \App\Models\GalleryItem> $items only images that may be shown publicly */
+    public static function gallery(\App\Models\Gallery $g, $items): array
+    {
+        return array_filter([
+            '@type' => 'ImageGallery',
+            'name' => $g->title,
+            'description' => $g->seoDescription() ?: $g->title,
+            'url' => $g->url(),
+            'datePublished' => $g->published_at?->toIso8601String(),
+            'dateModified' => $g->updated_at?->toIso8601String(),
+            'author' => self::author($g->author),
+            'publisher' => self::publisher(),
+            'isAccessibleForFree' => ($g->access_level?->value ?? 'public') === 'public',
+            'image' => $items->take(30)->map(fn ($i) => array_filter([
+                '@type' => 'ImageObject',
+                'contentUrl' => $i->media->url('lg'),
+                'thumbnailUrl' => $i->media->thumbUrl(),
+                'caption' => $i->captionText(),
+                'width' => $i->media->width,
+                'height' => $i->media->height,
+                'creditText' => $i->media->credit,
+            ]))->values()->all() ?: null,
         ]);
     }
 

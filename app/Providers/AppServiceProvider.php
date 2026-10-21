@@ -60,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
             'order' => Models\Order::class,
             'enrollment' => Models\Enrollment::class,
             'webinar_registration' => Models\WebinarRegistration::class,
+            'gallery' => Models\Gallery::class,
+            'gallery_item' => Models\GalleryItem::class,
+            'certificate' => Models\Certificate::class,
         ]);
 
         if (str_starts_with((string) config('app.url'), 'https://') && $this->app->isProduction() && \App\Support\Installer::isInstalled()) {
@@ -77,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\Spatie\Permission\Models\Role::class, \App\Policies\RolePolicy::class);
 
         // Clear cached sitemaps/feeds whenever public content changes.
-        foreach ([Models\ClinicalCase::class, Models\Article::class, Models\Video::class, Models\Page::class, Models\Topic::class, Models\ExamTopic::class, Models\Course::class, Models\Webinar::class] as $content) {
+        foreach ([Models\ClinicalCase::class, Models\Article::class, Models\Video::class, Models\Page::class, Models\Topic::class, Models\ExamTopic::class, Models\Course::class, Models\Webinar::class, Models\Gallery::class] as $content) {
             $content::saved(fn () => \App\Services\Seo\SitemapGenerator::flush());
             $content::deleted(fn () => \App\Services\Seo\SitemapGenerator::flush());
         }

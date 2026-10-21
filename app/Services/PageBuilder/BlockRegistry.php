@@ -30,6 +30,7 @@ class BlockRegistry
         Blocks\FaqBlock::class,
         Blocks\VideoBlock::class,
         Blocks\GalleryBlock::class,
+        Blocks\GalleriesBlock::class,
         Blocks\ExamHubBlock::class,
         Blocks\ContactFormBlock::class,
         Blocks\InterestBlock::class,

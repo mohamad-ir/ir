@@ -41,6 +41,7 @@ class AccountController extends Controller
             'webinars' => $user->webinarRegistrations()->whereNull('canceled_at')->with('webinar')->get()
                 ->filter(fn ($r) => $r->webinar && $r->webinar->isPublished() && ! $r->webinar->hasEnded())->sortBy(fn ($r) => $r->webinar->starts_at)->values(),
             'subscription' => $user->activeSubscription(),
+            'certificates' => \App\Models\Certificate::valid()->where('user_id', $user->id)->latest('issued_at')->get(),
             'bookmarks' => $bookmarks,
             'answered' => $answered,
             'accuracy' => $total ? round($correct / $total * 100) : null,
@@ -131,6 +132,8 @@ class AccountController extends Controller
             'bookmarks' => $user->bookmarks()->with('bookmarkable')->get()->map(fn ($b) => ['type' => $b->bookmarkable_type, 'title' => $b->bookmarkable?->title, 'saved_at' => $b->created_at])->all(),
             'question_attempts' => $user->questionAttempts()->with('question:id,title')->get()->map(fn ($a) => ['question' => $a->question?->title, 'answer' => $a->selected_key, 'correct' => $a->is_correct, 'at' => $a->created_at])->all(),
             'newsletter' => Subscriber::where('email', $user->email)->first()?->only(['email', 'status', 'interests', 'confirmed_at']),
+            'certificates' => \App\Models\Certificate::where('user_id', $user->id)->get()->map(fn ($c) => $c->only(['code', 'course_title', 'recipient_name', 'issued_at', 'revoked_at']))->all(),
+            'quiz_attempts' => \App\Models\LessonQuizAttempt::where('user_id', $user->id)->with('lesson:id,title')->get()->map(fn ($a) => ['lesson' => $a->lesson?->title, 'score' => $a->score, 'passed' => $a->passed, 'at' => $a->created_at])->all(),
             'courses' => $user->enrollments()->with('course:id,title')->get()->map(fn ($e) => ['course' => $e->course?->title, 'access' => $e->source, 'enrolled_at' => $e->created_at, 'completed_at' => $e->completed_at])->all(),
             'webinars' => $user->webinarRegistrations()->with('webinar:id,title,starts_at')->get()->map(fn ($r) => ['webinar' => $r->webinar?->title, 'starts_at' => $r->webinar?->starts_at, 'registered_at' => $r->created_at, 'cancelled_at' => $r->canceled_at])->all(),
             'membership' => $user->subscriptions()->get()->map(fn ($s) => $s->only(['status', 'amount', 'currency', 'interval', 'current_period_end', 'created_at', 'canceled_at']))->all(),

@@ -21,6 +21,7 @@ class SearchService
         'video' => 'Videos',
         'course' => 'Courses',
         'webinar' => 'Webinars',
+        'gallery' => 'Galleries',
         'question' => 'Exam questions',
         'exam_topic' => 'Exam topics',
         'topic' => 'Topics',

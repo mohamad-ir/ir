@@ -256,6 +256,53 @@ document.addEventListener('alpine:init', () => {
             this.label = d > 0 ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         },
     }));
+
+    /* ---------------- Photo gallery viewer ---------------- */
+    Alpine.data('galleryViewer', (slides = [], deepLink = false) => ({
+        slides, deepLink, current: null, zoomed: false, touchX: null, opener: null,
+        get slide() { return this.current === null ? null : this.slides[this.current]; },
+        init() {
+            if (!this.deepLink) return;
+            const m = window.location.hash.match(/^#photo-(\d+)$/);
+            if (m && this.slides[m[1] - 1]) this.$nextTick(() => this.open(m[1] - 1));
+        },
+        open(i) {
+            this.opener = document.activeElement;
+            this.current = i; this.zoomed = false;
+            document.documentElement.style.overflow = 'hidden';
+            this.sync(); this.preload();
+            this.$nextTick(() => this.$refs.closeButton?.focus());
+        },
+        close() {
+            this.current = null; this.zoomed = false;
+            document.documentElement.style.overflow = '';
+            if (this.deepLink) history.replaceState(null, '', window.location.pathname + window.location.search);
+            this.opener?.focus();
+        },
+        go(i) { this.current = (i + this.slides.length) % this.slides.length; this.zoomed = false; this.sync(); this.preload(); },
+        next() { this.go(this.current + 1); },
+        prev() { this.go(this.current - 1); },
+        key(e) {
+            if (this.current === null) return;
+            if (e.key === 'Escape') this.close();
+            else if (e.key === 'ArrowRight') this.next();
+            else if (e.key === 'ArrowLeft') this.prev();
+        },
+        touchStart(e) { this.touchX = e.changedTouches[0].clientX; },
+        touchEnd(e) {
+            if (this.touchX === null || this.zoomed) return;
+            const dx = e.changedTouches[0].clientX - this.touchX;
+            if (Math.abs(dx) > 50) dx < 0 ? this.next() : this.prev();
+            this.touchX = null;
+        },
+        sync() { if (this.deepLink) history.replaceState(null, '', '#photo-' + (this.current + 1)); },
+        preload() {
+            [this.current + 1, this.current - 1].forEach((i) => {
+                const s = this.slides[(i + this.slides.length) % this.slides.length];
+                if (s) { const img = new Image(); img.src = s.src; }
+            });
+        },
+    }));
 });
 
 /* Reveal-on-scroll animations */

@@ -19,6 +19,7 @@ class Permissions
         'pages' => 'Pages',
         'courses' => 'Courses',
         'webinars' => 'Webinars',
+        'galleries' => 'Photo galleries',
     ];
 
     public const CONTENT_ACTIONS = ['view', 'create', 'update', 'delete', 'publish'];
@@ -89,11 +90,11 @@ class Permissions
                 'menus.manage', 'seo.manage', 'analytics.view', 'newsletter.manage', 'enquiries.manage', 'activity.view', 'sales.view',
             ],
             'author' => [
-                ...collect(['cases', 'articles', 'videos', 'questions'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),
+                ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),
                 'media.view', 'media.create', 'media.update', 'analytics.view',
             ],
             'contributor' => [
-                ...collect(['cases', 'articles', 'videos', 'questions'])->crossJoin(['view', 'create', 'update'])->map(fn ($p) => implode('.', $p))->all(),
+                ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update'])->map(fn ($p) => implode('.', $p))->all(),
                 'media.view', 'media.create',
             ],
             'member' => [],
