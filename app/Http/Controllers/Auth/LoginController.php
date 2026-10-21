@@ -10,11 +10,21 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    public function show(SeoManager $seo)
+    public function show(Request $request, SeoManager $seo)
     {
+        self::rememberRedirect($request);
         $seo->title('Sign in')->noindex();
 
         return view('auth.login');
+    }
+
+    /** ?redirect=/courses/x returns the visitor to that page after signing in or registering (local paths only). */
+    public static function rememberRedirect(Request $request): void
+    {
+        $to = (string) $request->query('redirect');
+        if (str_starts_with($to, '/') && ! str_starts_with($to, '//') && ! str_contains($to, '\\')) {
+            $request->session()->put('url.intended', url($to));
+        }
     }
 
     public function login(Request $request)

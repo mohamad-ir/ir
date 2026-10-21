@@ -1,5 +1,50 @@
 @extends('account.layout')
 @section('account')
+    @if ($enrollments->isNotEmpty() || $webinars->isNotEmpty())
+        <div class="mb-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <section>
+                <h2 class="font-heading text-2xl font-semibold text-ink">My courses</h2>
+                @if ($enrollments->isEmpty())
+                    <p class="mt-4 text-muted">You are not enrolled in a course yet. <a href="{{ route('courses.index') }}" class="link">Browse courses</a></p>
+                @else
+                    <ul class="mt-5 space-y-3" role="list">
+                        @foreach ($enrollments as $e)
+                            @php $resume = $e->lastLesson ?? $e->course->orderedLessons()->first(); @endphp
+                            <li class="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                                <div class="min-w-0 flex-1">
+                                    <a href="{{ $e->course->urlPath() }}" class="font-heading text-lg font-semibold text-ink hover:text-accent-ink">{{ $e->course->title }}</a>
+                                    <div class="mt-2 flex items-center gap-3">
+                                        <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-line"><span class="block h-full rounded-full bg-accent" style="width: {{ $e->progress }}%"></span></span>
+                                        <span class="text-sm tabular-nums text-muted">{{ $e->progress }}%</span>
+                                    </div>
+                                </div>
+                                @if ($resume)
+                                    <a href="{{ route('courses.lesson', [$e->course->slug, $resume->slug]) }}" class="btn btn-secondary btn-sm shrink-0">{{ $e->completed_at ? 'Review' : ($e->progress ? 'Continue' : 'Start') }} <x-heroicon-m-arrow-right /></a>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
+            <aside>
+                <h2 class="font-heading text-2xl font-semibold text-ink">Upcoming webinars</h2>
+                @if ($webinars->isEmpty())
+                    <p class="mt-4 text-sm text-muted">No registrations. <a href="{{ route('webinars.index') }}" class="link">See webinars</a></p>
+                @else
+                    <ul class="mt-5 space-y-3" role="list">
+                        @foreach ($webinars as $r)
+                            <li class="card p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-accent-ink">{{ $r->webinar->displayStart('D j M, H:i') }}</p>
+                                <a href="{{ $r->webinar->urlPath() }}" class="mt-1 block font-semibold leading-snug text-ink hover:text-accent-ink">{{ $r->webinar->title }}</a>
+                                @if ($r->webinar->joinWindowOpen())<a href="{{ route('webinars.join', $r->webinar->slug) }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm mt-3">Join now</a>@endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </aside>
+        </div>
+    @endif
+
     <div class="grid gap-5 sm:grid-cols-3">
         <div class="card p-6"><p class="text-sm text-muted">Saved items</p><p class="mt-2 font-heading text-4xl font-semibold text-ink tabular-nums">{{ $bookmarks->count() }}</p></div>
         <div class="card p-6"><p class="text-sm text-muted">Questions practised</p><p class="mt-2 font-heading text-4xl font-semibold text-ink tabular-nums">{{ $answered }}<span class="text-lg text-muted"> / {{ $totalQuestions }}</span></p>
@@ -46,6 +91,16 @@
             @endif
         </section>
         <aside class="space-y-6">
+            <div class="rounded-card bg-surface p-5 ring-1 ring-line">
+                <p class="font-heading text-lg font-semibold text-ink">Membership</p>
+                @if ($subscription)
+                    <p class="mt-1 text-sm text-muted">{{ $subscription->plan?->name ?? 'Member' }} · {{ $subscription->status->getLabel() }}</p>
+                    <a href="{{ route('account.billing') }}" class="link-arrow mt-3 text-sm">Manage membership <x-heroicon-m-arrow-right /></a>
+                @else
+                    <p class="mt-1 text-sm text-muted">Unlock every course, live webinars and the full library.</p>
+                    <a href="{{ route('membership') }}" class="link-arrow mt-3 text-sm">See membership options <x-heroicon-m-arrow-right /></a>
+                @endif
+            </div>
             <div class="rounded-card bg-accent/[.07] p-5 ring-1 ring-accent/15">
                 <p class="font-heading text-lg font-semibold text-ink">Weekly case email</p>
                 @if ($subscriber && $subscriber->status->value === 'subscribed')

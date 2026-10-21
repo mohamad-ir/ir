@@ -28,7 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     protected $fillable = [
         'name', 'email', 'password', 'title', 'career_stage', 'specialty', 'institution',
-        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at',
+        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id',
     ];
 
     protected $hidden = ['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'];
@@ -90,6 +90,46 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function questionAttempts(): HasMany
     {
         return $this->hasMany(QuestionAttempt::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
+    public function webinarRegistrations(): HasMany
+    {
+        return $this->hasMany(WebinarRegistration::class);
+    }
+
+    /** The subscription currently granting member access, if any. */
+    public function activeSubscription(): ?Subscription
+    {
+        if (! array_key_exists('activeSubscription', $this->relations)) {
+            $this->setRelation('activeSubscription', $this->subscriptions()->grantingAccess()->with('plan')->latest('id')->first());
+        }
+
+        return $this->getRelation('activeSubscription');
+    }
+
+    public function isMember(): bool
+    {
+        return $this->activeSubscription() !== null;
+    }
+
+    public function forgetMembership(): void
+    {
+        $this->unsetRelation('activeSubscription');
     }
 
     public function hasBookmarked($model): bool

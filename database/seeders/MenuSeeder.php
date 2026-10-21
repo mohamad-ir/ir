@@ -22,6 +22,11 @@ class MenuSeeder extends Seeder
                     ['label' => 'FRCS / FRCOphth topics', 'url' => '/exam-prep', 'description' => 'Revision notes and exam tips'],
                     ['label' => 'Question bank', 'url' => '/exam-prep/practice', 'description' => 'SBA, image-based and viva practice'],
                 ]],
+                ['label' => 'Courses', 'url' => '/courses', 'children' => [
+                    ['label' => 'Online courses', 'url' => '/courses', 'description' => 'Self-paced programmes with video lessons'],
+                    ['label' => 'Live webinars', 'url' => '/webinars', 'description' => 'Interactive sessions with Q&A and recordings'],
+                    ['label' => 'Membership', 'url' => '/membership', 'description' => 'Unlock every course, webinar and members-only case'],
+                ]],
                 ['label' => 'About', 'url' => '/about'],
                 ['label' => 'Contact', 'url' => '/contact'],
             ]],
@@ -45,12 +50,16 @@ class MenuSeeder extends Seeder
                 ['label' => 'About', 'url' => '/about'],
                 ['label' => 'Collaboration & contact', 'url' => '/contact'],
                 ['label' => 'Newsletter', 'url' => '/newsletter'],
-                ['label' => 'Courses (coming soon)', 'url' => '/courses'],
+                ['label' => 'Courses', 'url' => '/courses'],
+                ['label' => 'Webinars', 'url' => '/webinars'],
+                ['label' => 'Membership', 'url' => '/membership'],
             ]],
             'footer_legal' => ['Legal', [
                 ['label' => 'Privacy', 'url' => '/privacy'],
                 ['label' => 'Terms of use', 'url' => '/terms'],
                 ['label' => 'Medical disclaimer', 'url' => '/disclaimer'],
+                ['label' => 'Terms of sale', 'url' => '/terms-of-sale'],
+                ['label' => 'Refund policy', 'url' => '/refund-policy'],
             ]],
         ];
 

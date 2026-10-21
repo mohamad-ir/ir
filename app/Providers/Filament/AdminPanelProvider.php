@@ -65,9 +65,11 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make('Content'),
                 NavigationGroup::make('Exam preparation'),
+                NavigationGroup::make('Learning'),
                 NavigationGroup::make('Library'),
                 NavigationGroup::make('Design'),
                 NavigationGroup::make('Audience'),
+                NavigationGroup::make('Sales'),
                 NavigationGroup::make('Insights'),
                 NavigationGroup::make('SEO'),
                 NavigationGroup::make('System')->collapsed(),

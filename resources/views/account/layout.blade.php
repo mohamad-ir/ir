@@ -9,8 +9,9 @@
                     <p class="text-sm text-muted">{{ auth()->user()->career_stage?->getLabel() }} @if(auth()->user()->institution) · {{ auth()->user()->institution }} @endif</p>
                 </div>
             </div>
-            <nav class="flex gap-1 rounded-full bg-subtle p-1 ring-1 ring-line" aria-label="Account">
+            <nav class="flex flex-wrap gap-1 rounded-full bg-subtle p-1 ring-1 ring-line" aria-label="Account">
                 <a href="{{ route('account.dashboard') }}" class="rounded-full px-4 py-2 text-sm font-medium transition {{ request()->routeIs('account.dashboard') ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink' }}">My learning</a>
+                <a href="{{ route('account.billing') }}" class="rounded-full px-4 py-2 text-sm font-medium transition {{ request()->routeIs('account.billing') ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink' }}">Billing</a>
                 <a href="{{ route('account.profile') }}" class="rounded-full px-4 py-2 text-sm font-medium transition {{ request()->routeIs('account.profile') ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink' }}">Settings</a>
                 <form method="post" action="{{ route('logout') }}">@csrf<button class="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink">Sign out</button></form>
             </nav>
@@ -19,6 +20,9 @@
     <div class="container-site py-10 lg:py-12">
         @if (session('status'))
             <div class="mb-8 rounded-ui bg-accent/10 px-4 py-3 text-sm ring-1 ring-accent/20" role="status">{{ session('status') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="mb-8 rounded-ui bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-200" role="alert">{{ session('error') }}</div>
         @endif
         @if (! auth()->user()->hasVerifiedEmail())
             <div class="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-ui bg-highlight/10 px-4 py-3 text-sm ring-1 ring-highlight/25">

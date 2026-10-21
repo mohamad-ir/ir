@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
 /** XML sitemaps (index + one per content type, with image/video extensions) and an RSS feed. Cached for an hour and cleared on publish. */
 class SitemapGenerator
 {
-    public const TYPES = ['pages', 'cases', 'articles', 'videos', 'topics', 'exam'];
+    public const TYPES = ['pages', 'cases', 'articles', 'videos', 'topics', 'exam', 'courses', 'webinars'];
 
     public static function flush(): void
     {
@@ -45,6 +45,8 @@ class SitemapGenerator
             'videos' => Video::published()->max('updated_at'),
             'topics' => Topic::max('updated_at'),
             'exam' => ExamTopic::published()->max('updated_at'),
+            'courses' => \App\Models\Course::published()->max('updated_at'),
+            'webinars' => \App\Models\Webinar::published()->max('updated_at'),
             default => Page::published()->max('updated_at'),
         };
 
@@ -58,7 +60,7 @@ class SitemapGenerator
         return match ($type) {
             'pages' => array_merge(
                 [['loc' => url('/'), 'lastmod' => now(), 'priority' => '1.0']],
-                collect(['cases.index' => '0.9', 'videos.index' => '0.8', 'articles.index' => '0.8', 'exam.index' => '0.8', 'topics.index' => '0.7'])
+                collect(['cases.index' => '0.9', 'videos.index' => '0.8', 'articles.index' => '0.8', 'exam.index' => '0.8', 'topics.index' => '0.7', 'courses.index' => '0.8', 'webinars.index' => '0.7', 'membership' => '0.6'])
                     ->map(fn ($p, $r) => ['loc' => route($r), 'lastmod' => null, 'priority' => $p])->values()->all(),
                 Page::published()->where($noindex)->get()->reject(fn ($p) => $p->isHomepage())
                     ->map(fn ($p) => ['loc' => $p->url(), 'lastmod' => $p->updated_at, 'priority' => '0.6'])->values()->all(),
@@ -85,6 +87,13 @@ class SitemapGenerator
                 [['loc' => route('exam.practice'), 'lastmod' => null, 'priority' => '0.6']],
                 ExamTopic::published()->get()->map(fn ($t) => ['loc' => $t->url(), 'lastmod' => $t->updated_at, 'priority' => '0.6'])->all(),
             ),
+            'courses' => \App\Models\Course::published()->where($noindex)->with('featuredMedia')->latest('published_at')->get()->map(fn ($c) => [
+                'loc' => $c->url(), 'lastmod' => $c->updated_at, 'priority' => '0.8',
+                'images' => $c->featuredMedia ? [['loc' => $c->featuredMedia->url('lg'), 'title' => $c->featuredMedia->altText()]] : [],
+            ])->all(),
+            'webinars' => \App\Models\Webinar::published()->where($noindex)->latest('starts_at')->get()->map(fn ($w) => [
+                'loc' => $w->url(), 'lastmod' => $w->updated_at, 'priority' => $w->hasEnded() ? '0.5' : '0.7',
+            ])->all(),
             default => null,
         };
     }

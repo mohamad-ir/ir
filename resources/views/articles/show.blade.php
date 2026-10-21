@@ -56,10 +56,8 @@
                 <div class="prose prose-lg prose-clinical mx-auto" style="max-width: var(--container-prose)" data-toc-root>{!! $content['html'] !!}</div>
             @else
                 <div class="prose prose-lg prose-clinical mx-auto max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_40%,transparent)]" style="max-width: var(--container-prose)">{!! \App\Support\Html::teaser($content['html'], 3) !!}</div>
-                <div class="mx-auto mt-4 max-w-xl rounded-card bg-ink p-8 text-center text-ink-contrast">
-                    <p class="font-heading text-2xl font-semibold">Continue reading for free</p>
-                    <p class="mt-2 text-white/70">This article is available to registered members.</p>
-                    <div class="mt-6 flex justify-center gap-3"><a href="{{ route('register') }}" class="btn btn-light">Create free account</a><a href="{{ route('login') }}" class="btn btn-outline-light">Sign in</a></div>
+                <div class="mx-auto mt-4 max-w-xl rounded-card bg-ink p-8 text-ink-contrast">
+                    <x-locked-content :content="$article" thing="article" />
                 </div>
             @endif
 

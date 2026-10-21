@@ -16,9 +16,10 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
-    public function show(SeoManager $seo)
+    public function show(Request $request, SeoManager $seo)
     {
         abort_unless(Settings::get('site.registration_enabled', true), 404);
+        LoginController::rememberRedirect($request);
         $seo->title('Create a free account')->noindex();
 
         return view('auth.register');
@@ -53,6 +54,7 @@ class RegisterController extends Controller
             $newsletter->subscribe($user->email, $user->name, ['weekly_case'], 'registration', $user->id);
         }
 
-        return redirect()->route('verification.notice');
+        return redirect()->intended(route('verification.notice'))
+            ->with('status', 'Welcome! Your account is ready. Please confirm your email address using the link we sent you.');
     }
 }

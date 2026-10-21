@@ -28,6 +28,8 @@ class PreviewController extends Controller
             'exam_topic' => app(ExamController::class)->renderTopic(ExamTopic::findOrFail($id), $seo, true),
             'topic' => redirect(Topic::findOrFail($id)->urlPath()),
             'page' => $this->page(Page::withTrashed()->findOrFail($id), $seo),
+            'course' => app(CourseController::class)->render(\App\Models\Course::withTrashed()->findOrFail($id), $request, $seo, $access, app(\App\Services\Learning\LearningService::class), true),
+            'webinar' => app(WebinarController::class)->render(\App\Models\Webinar::withTrashed()->findOrFail($id), $request, $seo, $access, true),
             'question' => view('preview.question', ['question' => Question::withTrashed()->with(['media', 'examTopic'])->findOrFail($id), 'noTracking' => true]),
         };
     }

@@ -237,6 +237,25 @@ document.addEventListener('alpine:init', () => {
             window.gtag('config', measurementId, { anonymize_ip: true });
         },
     }));
+
+    /* ---------------- Webinar countdown ---------------- */
+    Alpine.data('countdown', (iso) => ({
+        label: '', timer: null,
+        init() { this.tick(); this.timer = setInterval(() => this.tick(), 1000); },
+        destroy() { clearInterval(this.timer); },
+        tick() {
+            const ms = new Date(iso) - new Date();
+            if (ms <= 30 * 60 * 1000) {
+                clearInterval(this.timer);
+                this.label = 'Starting soon';
+                // Reload once so the server can show the join button (never loops if clocks differ).
+                try { if (!sessionStorage.getItem('cd:' + iso)) { sessionStorage.setItem('cd:' + iso, '1'); window.location.reload(); } } catch (e) {}
+                return;
+            }
+            const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60, s = Math.floor(ms / 1e3) % 60;
+            this.label = d > 0 ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        },
+    }));
 });
 
 /* Reveal-on-scroll animations */

@@ -13,12 +13,8 @@
             @else
                 <div class="viewer-frame relative aspect-video">
                     @if ($video->thumbnail())<img src="{{ $video->thumbnail() }}" alt="" class="size-full object-cover opacity-40">@endif
-                    <div class="absolute inset-0 grid place-items-center p-6 text-center">
-                        <div>
-                            <x-heroicon-o-lock-closed class="mx-auto size-8 text-white/70" />
-                            <p class="mt-3 font-heading text-2xl font-semibold">Free for registered members</p>
-                            <div class="mt-5 flex justify-center gap-3"><a href="{{ route('register') }}" class="btn btn-light">Create free account</a><a href="{{ route('login') }}" class="btn btn-outline-light">Sign in</a></div>
-                        </div>
+                    <div class="absolute inset-0 grid place-items-center p-6">
+                        <x-locked-content :content="$video" thing="video" />
                     </div>
                 </div>
             @endif

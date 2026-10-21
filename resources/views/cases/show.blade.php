@@ -150,14 +150,8 @@
             @endif
 
             @if (! $canView)
-                <div class="mt-12 overflow-hidden rounded-card bg-ink p-8 text-center text-ink-contrast sm:p-12">
-                    <x-heroicon-o-lock-closed class="mx-auto size-8 text-white/60" />
-                    <p class="mt-4 font-heading text-2xl font-semibold">The answer and discussion are free for registered members</p>
-                    <p class="mx-auto mt-2 max-w-md text-white/70">Create a free account to reveal the diagnosis, differentials, discussion and teaching points for every case.</p>
-                    <div class="mt-6 flex justify-center gap-3">
-                        <a href="{{ route('register') }}" class="btn btn-light">Create free account</a>
-                        <a href="{{ route('login') }}" class="btn btn-outline-light">Sign in</a>
-                    </div>
+                <div class="mt-12 overflow-hidden rounded-card bg-ink p-8 text-ink-contrast sm:p-12">
+                    <x-locked-content :content="$case" thing="case discussion" />
                 </div>
             @else
                 {{-- Diagnostic challenge --}}

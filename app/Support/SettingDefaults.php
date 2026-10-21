@@ -111,6 +111,32 @@ class SettingDefaults
                 'turnstile_site_key' => null,
                 'turnstile_secret' => null,
             ],
+            'payments' => [
+                'enabled' => false,
+                'stripe_secret_key' => null,
+                'stripe_webhook_secret' => null,
+                'currency' => 'EUR',
+                'prices_include_tax' => true,
+                'automatic_tax' => false,
+                'collect_tax_id' => true,
+                'allow_promotion_codes' => true,
+                'invoice_one_time' => false,
+                'terms_url' => '/terms-of-sale',
+                'refund_url' => '/refund-policy',
+                'withdrawal_waiver' => true,
+                'key_mode' => null,
+                'webhook_endpoint_id' => null,
+            ],
+            'membership' => [
+                'heading' => 'Become a member',
+                'intro' => 'Unlock the complete teaching library: every case discussion, the full exam question bank, members-only videos, all courses and live webinars.',
+                'faq' => [
+                    ['question' => 'Can I cancel at any time?', 'answer' => 'Yes. Cancel from your account in two clicks; you keep access until the end of the period you have paid for.'],
+                    ['question' => 'Do I get an invoice?', 'answer' => 'Yes. Every payment comes with a receipt and invoice by email, and all invoices are available in your account under Billing.'],
+                    ['question' => 'Which payment methods are accepted?', 'answer' => 'All major credit and debit cards, Apple Pay and Google Pay, plus local methods such as SEPA Direct Debit, iDEAL and Bancontact where available. Payments are processed securely by Stripe.'],
+                    ['question' => 'Is VAT included?', 'answer' => 'Prices shown include any applicable VAT. Business customers can add their VAT number at checkout.'],
+                ],
+            ],
             'backup' => [
                 'schedule' => 'weekly',
                 'keep' => 6,
@@ -138,7 +164,7 @@ class SettingDefaults
     /** Settings stored encrypted at rest. */
     public static function encrypted(): array
     {
-        return ['mail.password', 'analytics.google_credentials', 'security.turnstile_secret'];
+        return ['mail.password', 'analytics.google_credentials', 'security.turnstile_secret', 'payments.stripe_secret_key', 'payments.stripe_webhook_secret'];
     }
 
     public static function default(string $key): mixed
