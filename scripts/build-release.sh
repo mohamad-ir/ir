@@ -31,7 +31,7 @@ rm -rf "$APP/public/build" && cp -a "$ROOT/public/build" "$APP/public/build"
 ( cd "$APP" && php artisan filament:assets --quiet 2>/dev/null || true )
 
 # 3. Strip development-only files
-rm -rf "$APP"/{tests,release,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc}
+rm -rf "$APP"/{tests,release,preview,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc}
 rm -f "$APP/.env" "$APP/storage/app/installed.lock"
 find "$APP/storage" -type f ! -name .gitignore -delete
 mkdir -p "$APP/storage/app/backups" "$APP/storage/framework/"{cache/data,sessions,views} "$APP/storage/logs" "$APP/bootstrap/cache"
