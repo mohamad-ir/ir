@@ -25,12 +25,13 @@ git -C "$ROOT" archive HEAD | tar -x -C "$APP"
 ( cd "$APP" && COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --quiet )
 # Remove VCS metadata, tests and docs from dependencies (not needed at runtime)
 find "$APP/vendor" -type d \( -name .git -o -name tests -o -name test -o -name test_files -o -name docs -o -name .github \) -prune -exec rm -rf {} + 2>/dev/null || true
+rm -rf "$APP/vendor/laravel/framework/bin"  # monorepo split tooling, not used at runtime
 ( cd "$ROOT" && npm ci --silent && npm run build --silent )
 rm -rf "$APP/public/build" && cp -a "$ROOT/public/build" "$APP/public/build"
 ( cd "$APP" && php artisan filament:assets --quiet 2>/dev/null || true )
 
 # 3. Strip development-only files
-rm -rf "$APP"/{tests,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc}
+rm -rf "$APP"/{tests,release,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc}
 rm -f "$APP/.env" "$APP/storage/app/installed.lock"
 find "$APP/storage" -type f ! -name .gitignore -delete
 mkdir -p "$APP/storage/app/backups" "$APP/storage/framework/"{cache/data,sessions,views} "$APP/storage/logs" "$APP/bootstrap/cache"
