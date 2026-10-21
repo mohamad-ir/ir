@@ -51,10 +51,54 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 
 ## Audience
 - **Users & members** — invite team members and give them a role. *Roles & permissions* (System) lets you fine-tune what each role may do.
-  - *Super administrator* — everything. *Administrator* — everything except roles. *Editor* — all content, menus, SEO, newsletter, enquiries. *Author* — own cases/articles/videos/questions, can publish. *Contributor* — drafts for review. *Member* — public account only.
+  - *Super administrator* — everything. *Administrator* — everything except roles. *Editor* — all content including courses and webinars, menus, SEO, newsletter, enquiries, and read-only sales. *Author* — own cases/articles/videos/questions, can publish. *Contributor* — drafts for review. *Member* — public account only.
 - **Newsletter subscribers** — import/export CSV; people who unsubscribed are never re-added.
 - **Email campaigns** — write, **Send test**, then **Send now** or **Schedule**. Sending is throttled (Settings › Email) to respect your host’s limits; the report shows opens and clicks.
 - **Enquiries** — messages from the contact form. **Reply** sends an email and records it in the notes.
+
+## Learning
+
+### Courses (Learning › Courses)
+1. **Course details** — title, subtitle, summary, learning outcomes, description, optional introduction video (YouTube/Vimeo), questions & answers, cover image, level and topics.
+2. **Price & access** — enter the price in euros (e.g. `49` or `49.50`); `0` makes the course free (an account is needed so progress can be saved). **Included in membership** gives members access for as long as their membership is active; everyone else can buy the course for lifetime access.
+3. **Lessons tab** — **Add lesson** opens a side panel: title, section, duration, *free preview* (anyone can watch), video and lesson notes, plus downloadable files from the media library. Drag rows to reorder.
+   - Video for paid lessons: use **Vimeo** with *Hide from Vimeo* and *domain-level privacy* (only plays on your website), or an **unlisted YouTube** video. The link is only sent to people who have access, but no web video can be made completely copy-proof.
+   - Downloads are stored in the public media folder: anyone who obtains the exact file link can open it. Do not upload highly confidential material.
+4. **Sections tab** — group lessons into modules (“Foundations”, “Fluid”…).
+5. **Students tab** — who is enrolled, how (purchase, membership, free, staff), their progress and completion. **Give access** enrols anyone for free (e.g. a colleague or a prize winner).
+
+### Webinars (Learning › Webinars)
+- Set the **date and time** (in the site time zone shown under the field), duration and platform, and paste the **Zoom / YouTube Live / Teams link**. The link is stored encrypted and never shown publicly: registrants get a personal join button that opens 30 minutes before the start.
+- **Tickets** — price (`0` = free), *free for members*, an optional maximum number of participants, and *registration open*.
+- Registrants automatically receive a confirmation with a **calendar invitation**, a reminder **the day before** and **one hour before** (the cron job must be active).
+- **Registrations tab** — list, CSV export, add a participant, cancel a place.
+- **Registrants › Email all registrants** sends an update (e.g. slides, a changed time). After the event, paste the **recording link** (unlisted YouTube / private Vimeo) and use **Registrants › Email recording link**.
+
+## Sales
+
+### Payment settings (Sales › Payment settings) — first-time setup
+1. Create an account at **stripe.com** (business details, bank account for payouts). Stripe handles cards, Apple Pay, Google Pay and local European methods (SEPA, iDEAL, Bancontact…), sends receipts and invoices, and deals with 3-D Secure.
+2. In Stripe, open **Developers › API keys** and copy the **secret key**. Start with the **test** key (`sk_test_…`).
+3. Paste it here, switch on **Accept payments on the website**, save, then click **Test connection** and **Set up webhook automatically** (your site must be online for this).
+4. Try a purchase with the test card **4242 4242 4242 4242** (any future date, any CVC). Check that the order appears under *Sales › Orders* and that the course unlocks.
+5. When everything works, repeat steps 2–3 with the **live** key (`sk_live_…`). The website notices the change of mode and creates customers, products and prices again in live mode.
+6. In Stripe, also turn on: **Settings › Emails › Successful payments** (receipts) and **Refunds**; **Billing › Customer portal** (allow cancellation and invoice history); **Billing › Revenue recovery** (automatic retries and card-update emails for failed renewals).
+
+**VAT.** Prices include VAT by default. If you sell to consumers in several EU countries you normally need to register for the EU **One-Stop-Shop (OSS)**; then activate **Stripe Tax**, add your registrations there, and switch on *Calculate VAT automatically*. Please confirm your obligations with an accountant — the website cannot decide them for you. Review the **Terms of sale** and **Refund policy** pages (templates are included) before going live.
+
+### Membership plans (Sales › Membership plans)
+Create e.g. a monthly and a yearly plan: price, billing period, optional free-trial days, the benefits shown on the pricing card, and *Most popular*. Changing the price later applies to new members; existing members keep their price unless you change it in Stripe. To stop selling a plan, switch off *Available for new members* (existing members keep it).
+
+What membership unlocks:
+- every item whose **Who can see this** is set to **Paying members** (cases, articles, videos, exam questions),
+- every course marked **Included in membership**,
+- a free place at every webinar marked **Free for members**, plus their recordings.
+
+### Orders (Sales › Orders)
+Every course purchase, webinar ticket and membership payment, with VAT, billing country and the customer’s VAT number. **Refund** returns money through Stripe (full or partial); a full refund of a course or ticket also removes the access it bought. **Export CSV (accounting)** gives your accountant everything in one file.
+
+### Members (Sales › Members)
+Active memberships, kept in sync with Stripe. Members manage their own card, invoices and cancellation under **Account › Billing**. You can also **cancel at period end**, **cancel immediately** or **resume** from here.
 
 ## Insights
 - **Analytics** — page views, visits, sources, devices, countries, most visited pages, popular cases (with reveal and correct-answer rates), video engagement, on-site searches (including searches with no results — great ideas for new content) and subscriber growth. Export to CSV.

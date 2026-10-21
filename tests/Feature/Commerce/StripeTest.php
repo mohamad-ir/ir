@@ -343,3 +343,13 @@ it('forgets test-mode Stripe IDs when switching to live keys', function () {
     expect(StripeReferences::syncMode())->toBeTrue()
         ->and($user->fresh()->stripe_customer_id)->toBeNull()->and($plan->fresh()->stripe_price_id)->toBeNull();
 });
+
+it('handles Stripe being unreachable without an error page', function () {
+    enablePayments();
+    Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('Connection refused'));
+    $course = Course::factory()->create();
+
+    $this->actingAs(User::factory()->create())->from($course->url())
+        ->post("/checkout/course/{$course->slug}", ['terms' => '1', 'waiver' => '1'])
+        ->assertRedirect($course->url())->assertSessionHas('error');
+});

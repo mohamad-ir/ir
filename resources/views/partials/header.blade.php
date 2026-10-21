@@ -63,9 +63,9 @@
 
             @if (setting('header.show_account', true))
                 @auth
-                    <a href="{{ route('account.dashboard') }}" class="hidden sm:inline-flex items-center gap-2 rounded-full p-1 pr-3 text-sm font-medium transition {{ $dark ? 'hover:bg-white/10' : 'hover:bg-ink/5' }}">
+                    <a href="{{ route('account.dashboard') }}" aria-label="My learning" class="hidden sm:inline-flex items-center gap-2 rounded-full p-1 pr-3 text-sm font-medium transition {{ $dark ? 'hover:bg-white/10' : 'hover:bg-ink/5' }}">
                         <span class="grid size-8 place-items-center rounded-full bg-accent text-xs font-bold text-accent-contrast">{{ auth()->user()->initials() }}</span>
-                        <span class="hidden md:inline">My learning</span>
+                        <span class="hidden whitespace-nowrap xl:inline">My learning</span>
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="hidden sm:inline-flex btn btn-sm {{ $dark ? 'btn-outline-light' : 'btn-ghost' }}">Sign in</a>

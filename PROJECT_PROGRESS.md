@@ -8,8 +8,9 @@
 - No Node.js, Redis, Docker or daemons at runtime. Cron (`schedule:run`) for newsletters/backups; web-cron fallback.
 
 ## Scope decisions
-- Phase-1 exclusions honoured (payments, paid memberships, course sales/LMS, live webinars, paid gating).
-  Hooks for later: `access_level` on content + `App\Services\Access\ContentAccess`; "register interest" lists (courses/webinars) via newsletter interests + InterestBlock.
+- v1.0: Phase-1 exclusions honoured. v1.1 (owner request): paid membership, course sales and live webinars added.
+- Payments: Stripe Checkout (hosted page, PCI SAQ-A) via a small REST client (`App\Services\Payments\StripeClient`, no SDK). Audience is international/EU → Stripe; VAT-inclusive prices, optional Stripe Tax, VAT-ID collection, EU withdrawal-waiver consent.
+- Live webinars run on Zoom/YouTube Live/Teams; the site handles registration, payment, ICS invites, reminders, private join link, recordings.
 - Uploads stored in `public/media` (no storage:link symlink needed on shared hosting).
 - First-party cookieless analytics (daily-rotating visitor hash) + optional GA4 (consent banner) + GA4/Search Console reporting via service account.
 
@@ -30,12 +31,30 @@
 - ✅ Stage 7 — Automated tests (Pest: 97 tests / 261 assertions passing), browser QA (desktop + mobile), installer tested end-to-end twice
 - ✅ Stage 8 — Release package (`release/oct-academy-1.0.0.zip`, built by `scripts/build-release.sh`), docs/DEPLOYMENT.md, docs/ADMIN_GUIDE.md, README, final report (below)
 
-## Verification log (2026-10-21)
+- ✅ Stage 9 (v1.1) — Membership, courses, webinars
+  - Schema: membership_plans, subscriptions, orders, payment_events, courses, course_sections, lessons, enrollments, lesson_progress, webinars, webinar_registrations, users.stripe_customer_id
+  - Stripe: Checkout (subscription + one-time), webhook with HMAC verification and idempotent event log, success-page fulfilment, Customer Portal, refunds, cancellation, test→live reference reset, one-click webhook creation; parses classic and 2025 ("basil") object shapes
+  - Access: new `members` access level; ContentAccess handles courses (purchase/free/admin permanent, membership while active) and webinars
+  - Public: /membership, /courses, /courses/{slug}, lesson player with progress, /webinars, webinar page with countdown/ICS/join/recording, /account/billing, checkout result pages, page-builder blocks (courses, webinars, pricing)
+  - Admin: Learning (courses + lessons/sections/students, webinars + registrations/messages), Sales (orders + refunds + CSV, members, plans, payment settings), sales widget, permissions sales.view / sales.manage
+  - Upgrade migration for 1.0 sites (menus, legal pages, old /courses placeholder → draft)
+
+## Verification log (2026-10-21, v1.1)
+- `vendor/bin/pest` → 159 passed, 534 assertions (60 new: payments, learning, admin).
+- Bugs found and fixed during v1.1 QA: cache unserialization of topic tree (1.0), members-only YouTube IDs leaked via thumbnail/JSON-LD/sitemap (pre-existing for "registered" level too), webinar join link would have been wiped on edit ($hidden + Filament fill), Stripe network failure caused 500 on checkout, simple-repeater state lost outcomes in the editor, payment settings unsavable when legal page missing.
+- Browser QA: learner journey (sign in → enrol free course → complete → 100%), paid course buy box with consent, Stripe-unreachable handling, signed webhook to dev server → member state, billing page, member-free webinar, admin lesson creation through the slide-over.
+- NOT verified: real Stripe API calls (api.stripe.com is blocked from the build environment). All Stripe requests/responses are covered by faked HTTP tests that follow Stripe's documented API; a test-mode purchase must be done once on the real server before going live (see docs/DEPLOYMENT.md §9).
+
+## Verification log (2026-10-21, v1.0)
 - `php artisan test` → 97 passed, 261 assertions (MariaDB test DB).
 - Browser QA: home, case page (quiz submit → answer reveal, lightbox, compare slider), video playback + analytics events, builder live preview of unsaved edits, theme preview of unsaved colours, MFA enrolment enforced on fresh install.
 - Release zip extracted into a DirectAdmin-style `domains/site/{oct-academy,public_html}` layout and installed through the browser installer: MEDIA_ROOT auto-set, media served from `public_html/media` (WebP 200), admin login + Filament assets 200, `schedule:run` heartbeat recorded, CLI backup included all 70 media files.
 
 ## Known limitations (not claimed as done)
+- Stripe integration is tested against faked API responses only — run one test-mode purchase on the live server before accepting real payments.
+- EU VAT compliance (OSS registration, Stripe Tax) is the owner's responsibility; the site supports it but cannot decide it.
+- Course videos are protected by access checks and private Vimeo/unlisted YouTube links, not DRM; lesson downloads are in the public media folder (unguessable names, but not access-controlled).
+- No certificates of completion, quizzes inside lessons, coupons managed in the dashboard (use Stripe coupons), or multiple currencies per item.
 - GA4 Data API / Search Console reporting: implemented (service-account JWT) but **not tested against live Google accounts** — no credentials available in the build environment.
 - Visitor country stats need a GeoLite2-Country.mmdb upload (or Cloudflare `CF-IPCountry`).
 - Demo images are synthetic (generated, labelled) and the doctor profile/CV is placeholder text — replace before launch or run `cms:demo --remove` / the dashboard "Remove demo content" action.

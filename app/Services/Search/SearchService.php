@@ -19,6 +19,8 @@ class SearchService
         'case' => 'OCT cases',
         'article' => 'Articles',
         'video' => 'Videos',
+        'course' => 'Courses',
+        'webinar' => 'Webinars',
         'question' => 'Exam questions',
         'exam_topic' => 'Exam topics',
         'topic' => 'Topics',

@@ -64,12 +64,16 @@ class StripeClient
         $url = self::API.ltrim($path, '/');
         $encoded = self::encode($params);
 
-        /** @var Response $response */
-        $response = match ($method) {
-            'get' => $request->get($url.($encoded ? '?'.$encoded : '')),
-            'delete' => $request->delete($url),
-            default => $request->withBody($encoded, 'application/x-www-form-urlencoded')->post($url),
-        };
+        try {
+            /** @var Response $response */
+            $response = match ($method) {
+                'get' => $request->get($url.($encoded ? '?'.$encoded : '')),
+                'delete' => $request->delete($url),
+                default => $request->withBody($encoded, 'application/x-www-form-urlencoded')->post($url),
+            };
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new StripeException('Could not reach Stripe: '.$e->getMessage(), 0, 'connection_error');
+        }
 
         if ($response->failed()) {
             $error = $response->json('error') ?? [];

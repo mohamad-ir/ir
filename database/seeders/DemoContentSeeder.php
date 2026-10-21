@@ -171,6 +171,7 @@ class DemoContentSeeder extends Seeder
                 'status' => ContentStatus::Published, 'published_at' => now()->subDays(4 + $i * 5), 'author_id' => $author?->id,
             ]));
             $course->topics()->sync($this->topicIds($c['topics']));
+            $position = 0;
             foreach ($c['sections'] as $s => $section) {
                 $sectionModel = CourseSection::create(['course_id' => $course->id, 'title' => $section['title'], 'sort_order' => $s]);
                 foreach ($section['lessons'] as $l => $lesson) {
@@ -178,7 +179,7 @@ class DemoContentSeeder extends Seeder
                         'course_id' => $course->id, 'course_section_id' => $sectionModel->id, 'title' => $lesson['title'],
                         'summary' => $lesson['summary'], 'duration_minutes' => $lesson['minutes'], 'is_preview' => $lesson['preview'] ?? false,
                         'body' => '<p>'.e($lesson['summary']).'</p><p><em>Sample lesson — replace the video and notes in the dashboard under Learning › Courses.</em></p>',
-                        'video_provider' => 'file', 'video_media_id' => $this->media['demo-oct-fluid.mp4']->id ?? null, 'sort_order' => $l,
+                        'video_provider' => 'file', 'video_media_id' => $this->media['demo-oct-fluid.mp4']->id ?? null, 'sort_order' => ++$position,
                     ]);
                 }
             }
