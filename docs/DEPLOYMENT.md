@@ -183,6 +183,9 @@ Follow the steps above. **Apply database updates** adds the new tables and, on a
 ### Upgrading from 1.1 to 1.2 (galleries, quizzes, certificates, currencies)
 Same steps. **Apply database updates** adds the new tables, gives editors/authors the gallery permissions and adds *Image galleries* under *OCT cases* in the main menu and to the footer. Certificates PDFs are generated on the server with Dompdf (pure PHP — nothing to install).
 
+### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
+Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
+
 ## 12. Troubleshooting
 
 | Problem | Fix |

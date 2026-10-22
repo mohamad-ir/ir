@@ -45,6 +45,17 @@
   - Certificates: certificates table, auto-issue on completion, Dompdf PDF (A4 landscape), public verification /certificates/{code}, email with PDF, revoke/reinstate, design settings with sample preview
   - Currencies: prices list on courses/webinars/plans, Currency::current() (cookie → country → main), switcher, checkout + orders in chosen currency, one Stripe price per currency per plan, offers per currency in JSON-LD
 
+- ✅ Stage 11 (v1.3) — Comments, banner sliders, videos in content
+  - Comments: comments + comment_likes + comment_reports; CommentService (moderation modes first/all/none, link & blocked-word holds, rate limits, duplicate check, honeypot, access & verified-email checks), Livewire discussion (sort, load more, one-level replies, helpful votes, edit window, delete with thread-preserving placeholder, reports → auto-hide at 3, author/team badges, pinning, inline moderation), reply emails with signed opt-out + profile toggle, staff email for pending comments, admin queue with tabs/bulk actions/reply-as-team, Comment settings page, per-item “Allow comments”, GDPR export/erasure, commentCount in JSON-LD, upgrade migration (editor permission)
+  - Banners: banners + banner_slides, 9 placements + page-builder block, desktop/mobile images, text overlay & position, internal/external links (new tab), schedule, autoplay/fade/slide, swipe, keyboard & reduced motion, click counting
+  - Videos in content: rich-editor “Video” block (link / upload / library) expanded after sanitising, gated library videos show a locked card, emails get a linked thumbnail; case “Videos” field; page-builder Video block gained link/upload sources (and members-only library videos are now locked — previously they played for anyone)
+  - About page: demo Featured video + Gallery sections; gallery block layouts reuse the album viewer
+
+## Verification log (2026-10-22, v1.3)
+- `php artisan test` → 201 passed (27 new for v1.3).
+- Browser QA: guest/learner/admin comment flows (first comment pending → approved inline → staff reply → pin → helpful → edit → report), mobile layout, case spoiler fold, admin queue, banner sliders on home/courses (desktop + mobile, autoplay, arrows), About video + gallery.
+- Bugs found and fixed: page-builder Video block played members-only library videos for anyone (pre-existing); video placeholders whose base64 ended in “=” were dropped because the sanitiser entity-encodes “=”.
+
 ## Verification log (2026-10-21, v1.2)
 - `vendor/bin/pest` → 174 passed, 622 assertions (15 new for v1.2).
 - Browser QA: gallery index/album/viewer (deep links, arrows, Esc), header menu, admin bulk upload (2 images added), quiz fail → retry → pass 100%, certificate auto-issued, verification page, PDF rendered and inspected, currency by country (GB → £, US → $), plan editor with GBP/USD prices.
@@ -62,6 +73,7 @@
 - Release zip extracted into a DirectAdmin-style `domains/site/{oct-academy,public_html}` layout and installed through the browser installer: MEDIA_ROOT auto-set, media served from `public_html/media` (WebP 200), admin login + Filament assets 200, `schedule:run` heartbeat recorded, CLI backup included all 70 media files.
 
 ## Known limitations (not claimed as done)
+- Comments are plain text (links auto-linked, no images or formatting) and have one level of replies. There is no automatic spam service (e.g. Akismet); spam control is approval of first comments, link/word holds, rate limits, a honeypot and member reports.
 - Stripe integration is tested against faked API responses only — run one test-mode purchase on the live server before accepting real payments.
 - EU VAT compliance (OSS registration, Stripe Tax) is the owner's responsibility; the site supports it but cannot decide it.
 - Course videos are protected by access checks and private Vimeo/unlisted YouTube links, not DRM; lesson downloads are in the public media folder (unguessable names, but not access-controlled).
