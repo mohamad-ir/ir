@@ -12,6 +12,7 @@ class BlockRegistry
     /** @var array<int, class-string<PageBlock>> */
     public const BLOCKS = [
         Blocks\HeroBlock::class,
+        Blocks\BannerSliderBlock::class,
         Blocks\RichTextBlock::class,
         Blocks\ContentFeedBlock::class,
         Blocks\CaseOfWeekBlock::class,

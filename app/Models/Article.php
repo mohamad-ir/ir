@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AccessLevel;
 use App\Models\Concerns\CreatesSlugRedirects;
+use App\Models\Concerns\HasComments;
 use App\Models\Concerns\HasPublishing;
 use App\Models\Concerns\HasRevisions;
 use App\Models\Concerns\HasSeo;
@@ -18,11 +19,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Article extends Model
 {
-    use CreatesSlugRedirects, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
+    use CreatesSlugRedirects, HasComments, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
     protected $fillable = [
         'title', 'slug', 'excerpt', 'body', 'category_id', 'featured_media_id', 'reading_time', 'references',
-        'is_featured', 'access_level', 'status', 'published_at', 'author_id',
+        'is_featured', 'access_level', 'comments_enabled', 'status', 'published_at', 'author_id',
     ];
 
     protected function casts(): array

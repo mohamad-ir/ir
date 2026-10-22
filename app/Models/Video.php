@@ -6,6 +6,7 @@ use App\Enums\AccessLevel;
 use App\Enums\Difficulty;
 use App\Enums\VideoProvider;
 use App\Models\Concerns\CreatesSlugRedirects;
+use App\Models\Concerns\HasComments;
 use App\Models\Concerns\HasPublishing;
 use App\Models\Concerns\HasRevisions;
 use App\Models\Concerns\HasSeo;
@@ -20,12 +21,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Video extends Model
 {
-    use CreatesSlugRedirects, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
+    use CreatesSlugRedirects, HasComments, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
     protected $fillable = [
         'title', 'slug', 'summary', 'description', 'provider', 'provider_video_id', 'video_url', 'video_media_id',
         'thumbnail_media_id', 'thumbnail_url', 'duration_seconds', 'chapters', 'transcript', 'category_id', 'level',
-        'is_featured', 'access_level', 'status', 'published_at', 'author_id',
+        'is_featured', 'access_level', 'comments_enabled', 'status', 'published_at', 'author_id',
     ];
 
     protected function casts(): array

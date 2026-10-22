@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="galleries" />
     <x-page-header eyebrow="Image galleries" title="Galleries" :breadcrumbs="['Galleries' => null]"
         intro="Curated collections of OCT, fundus and angiography images, organised by topic. Open any album to browse the images full screen." />
 

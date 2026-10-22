@@ -115,6 +115,9 @@ class CaseResource extends Resource
                                 TextInput::make('after_label')->default('After'),
                                 TextInput::make('caption')->columnSpanFull(),
                             ]),
+                        Section::make('Videos')->description('OCT cine scans, angiography or examination videos shown with the case images. To place a video inside a text, use the “Video” block in the editor.')
+                            ->collapsible()->collapsed(fn (?\App\Models\ClinicalCase $record) => empty($record?->videos))
+                            ->schema([Fields::videoList('videos')]),
                         CheckboxList::make('modalities')->label('Imaging modalities')->relationship('modalities', 'name')->columns(3),
                     ]),
                     Tab::make('Diagnostic challenge')->icon('heroicon-o-question-mark-circle')->schema([

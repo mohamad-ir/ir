@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="articles" />
     <x-page-header eyebrow="Articles" :title="$category ? $category->name : 'Clinical articles & guides'"
                    :intro="$category?->description ?: 'Systematic approaches, OCT signs and practical reviews for residents, fellows and consultants.'"
                    :breadcrumbs="$category ? ['Articles' => route('articles.index'), $category->name => null] : ['Articles' => null]" />

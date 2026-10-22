@@ -149,6 +149,14 @@
                 </section>
             @endif
 
+            @if (! empty($case->videos))
+                <section class="mt-10" aria-label="Case videos">
+                    @foreach ($case->videos as $video)
+                        {!! \App\Support\VideoEmbed::html($video) !!}
+                    @endforeach
+                </section>
+            @endif
+
             @if (! $canView)
                 <div class="mt-12 overflow-hidden rounded-card bg-ink p-8 text-ink-contrast sm:p-12">
                     <x-locked-content :content="$case" thing="case discussion" />

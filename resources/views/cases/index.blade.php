@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="cases" />
     <x-page-header eyebrow="OCT Case Library" title="Learn OCT one real case at a time"
                    intro="De-identified retina and uveitis cases with imaging, findings, differential diagnosis, discussion and clinical pearls — filter by disease, imaging modality and difficulty."
                    :breadcrumbs="['OCT cases' => null]">

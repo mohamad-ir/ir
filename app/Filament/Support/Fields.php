@@ -63,6 +63,28 @@ class Fields
             ->helperText('Visitors see and pay the price in their currency (chosen by them, or detected from their country). Without one, they pay the main price.');
     }
 
+    /** A list of videos (YouTube/Vimeo link, uploaded file or library video) with title and caption. */
+    public static function videoList(string $name = 'videos'): Repeater
+    {
+        return Repeater::make($name)->label('Videos')
+            ->schema([
+                ToggleButtons::make('source')->label('Video from')->options(\App\Support\VideoEmbed::SOURCES)->default('url')->inline()->live()->columnSpanFull(),
+                TextInput::make('url')->label('YouTube or Vimeo link')->url()->columnSpanFull()
+                    ->visible(fn ($get) => ($get('source') ?? 'url') === 'url')->required(fn ($get) => ($get('source') ?? 'url') === 'url'),
+                MediaPicker::make('media_id')->label('Video file')->videosOnly()->columnSpanFull()
+                    ->visible(fn ($get) => $get('source') === 'upload')->required(fn ($get) => $get('source') === 'upload'),
+                Select::make('video_id')->label('Video')->searchable()->columnSpanFull()
+                    ->options(fn () => \App\Models\Video::latest()->limit(50)->pluck('title', 'id'))
+                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Video::where('title', 'like', "%{$search}%")->limit(30)->pluck('title', 'id'))
+                    ->visible(fn ($get) => $get('source') === 'library')->required(fn ($get) => $get('source') === 'library'),
+                TextInput::make('title')->maxLength(160),
+                TextInput::make('caption')->maxLength(300),
+            ])
+            ->columns(2)->defaultItems(0)->reorderable()->collapsible()
+            ->itemLabel(fn (array $state) => $state['title'] ?? null)
+            ->addActionLabel('Add video');
+    }
+
     public static function title(string $prefix): TextInput
     {
         return TextInput::make('title')

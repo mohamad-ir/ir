@@ -60,6 +60,13 @@ Route::post('/currency', function (\Illuminate\Http\Request $request) {
     return back()->withCookie(cookie()->forever(\App\Support\Currency::COOKIE, $currency));
 })->name('currency')->middleware('throttle:30,1');
 
+// Banner click counter (sent with navigator.sendBeacon)
+Route::post('/banner-click/{slide}', function (\App\Models\BannerSlide $slide) {
+    $slide->increment('clicks_count');
+
+    return response()->noContent();
+})->name('banner.click')->middleware('throttle:30,1');
+
 // Stripe webhooks (signature-verified, CSRF-exempt)
 Route::post('/stripe/webhook', Controllers\StripeWebhookController::class)->name('stripe.webhook')->middleware('throttle:120,1');
 

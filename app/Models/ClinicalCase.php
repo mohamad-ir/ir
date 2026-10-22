@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AccessLevel;
 use App\Enums\Difficulty;
 use App\Models\Concerns\CreatesSlugRedirects;
+use App\Models\Concerns\HasComments;
 use App\Models\Concerns\HasPublishing;
 use App\Models\Concerns\HasRevisions;
 use App\Models\Concerns\HasSeo;
@@ -23,7 +24,7 @@ use Illuminate\Support\Collection;
 /** An OCT / retina teaching case. */
 class ClinicalCase extends Model
 {
-    use CreatesSlugRedirects, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
+    use CreatesSlugRedirects, HasComments, HasFactory, HasPublishing, HasRevisions, HasSeo, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
     /** Per-request memo for weeklyBadge(); reset whenever a case changes. */
     protected static ?int $currentWeeklyId = null;
@@ -38,7 +39,7 @@ class ClinicalCase extends Model
         'title', 'slug', 'summary', 'patient_age', 'patient_sex', 'eye', 'presenting_complaint', 'history',
         'findings', 'images', 'comparison', 'quiz_prompt', 'quiz_options', 'diagnosis', 'diagnosis_explanation',
         'differentials', 'discussion', 'management', 'teaching_points', 'references', 'difficulty',
-        'featured_media_id', 'is_case_of_week', 'case_of_week_date', 'is_featured', 'access_level',
+        'featured_media_id', 'videos', 'comments_enabled', 'is_case_of_week', 'case_of_week_date', 'is_featured', 'access_level',
         'status', 'published_at', 'author_id',
     ];
 
@@ -47,6 +48,7 @@ class ClinicalCase extends Model
         return [
             'images' => 'array',
             'comparison' => 'array',
+            'videos' => 'array',
             'quiz_options' => 'array',
             'differentials' => 'array',
             'teaching_points' => 'array',

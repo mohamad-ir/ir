@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ContentStatus;
 use App\Models\Article;
+use App\Models\Banner;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Gallery;
@@ -146,8 +147,34 @@ class DemoContentSeeder extends Seeder
 
         $this->learning($author);
         $this->galleries($author);
+        $this->banners();
 
         DemoContent::remember($this->registry);
+    }
+
+    protected function banners(): void
+    {
+        $sets = [
+            ['name' => 'Homepage highlights', 'placement' => 'home', 'slides' => [
+                ['image' => 'oct-pachychoroid.jpg', 'eyebrow' => 'New course', 'title' => 'Systematic OCT Interpretation', 'text' => 'A layer-by-layer method for reading any macular OCT — with quizzes and a certificate.', 'button_label' => 'View the course', 'link_url' => '/courses/systematic-oct-interpretation'],
+                ['image' => 'fundus-normal.jpg', 'eyebrow' => 'Live webinar', 'title' => 'Difficult OCTs in medical retina', 'text' => 'Bring your questions — live case review with Q&A.', 'button_label' => 'Reserve your place', 'link_url' => '/webinars/live-case-review-difficult-octs'],
+            ]],
+            ['name' => 'Courses page', 'placement' => 'courses', 'height' => 'compact', 'slides' => [
+                ['image' => 'oct-normal.jpg', 'eyebrow' => 'Membership', 'title' => 'Every course included', 'text' => 'Members get every course, live webinars and the full case library.', 'button_label' => 'See membership', 'link_url' => '/membership'],
+            ]],
+        ];
+        foreach ($sets as $i => $set) {
+            if (Banner::where('name', $set['name'])->exists()) {
+                continue;
+            }
+            $banner = Banner::create(['name' => $set['name'], 'placement' => $set['placement'], 'height' => $set['height'] ?? 'standard', 'sort_order' => $i]);
+            foreach ($set['slides'] as $n => $slide) {
+                if (isset($this->media[$slide['image']])) {
+                    $banner->slides()->create([...collect($slide)->except('image')->all(), 'media_id' => $this->media[$slide['image']]->id, 'sort_order' => $n]);
+                }
+            }
+            $this->track($banner);
+        }
     }
 
     protected function galleries(?User $author): void

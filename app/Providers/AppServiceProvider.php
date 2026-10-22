@@ -63,6 +63,9 @@ class AppServiceProvider extends ServiceProvider
             'gallery' => Models\Gallery::class,
             'gallery_item' => Models\GalleryItem::class,
             'certificate' => Models\Certificate::class,
+            'banner' => Models\Banner::class,
+            'banner_slide' => Models\BannerSlide::class,
+            'comment' => Models\Comment::class,
         ]);
 
         if (str_starts_with((string) config('app.url'), 'https://') && $this->app->isProduction() && \App\Support\Installer::isInstalled()) {
