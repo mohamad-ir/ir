@@ -115,6 +115,9 @@ class CaseResource extends Resource
                                 TextInput::make('after_label')->default('After'),
                                 TextInput::make('caption')->columnSpanFull(),
                             ]),
+                        Section::make('Videos')->description('OCT cine scans, angiography or examination videos shown with the case images. To place a video inside a text, use the “Video” block in the editor.')
+                            ->collapsible()->collapsed(fn (?\App\Models\ClinicalCase $record) => empty($record?->videos))
+                            ->schema([Fields::videoList('videos')]),
                         CheckboxList::make('modalities')->label('Imaging modalities')->relationship('modalities', 'name')->columns(3),
                     ]),
                     Tab::make('Diagnostic challenge')->icon('heroicon-o-question-mark-circle')->schema([
@@ -147,7 +150,7 @@ class CaseResource extends Resource
                 Fields::seo('title', 'summary'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Fields::publishing('cases'),
+                Fields::publishing('cases', hasComments: true),
                 Section::make('Case of the Week')->icon('heroicon-o-sparkles')->schema([
                     Toggle::make('is_case_of_week')->label('Feature as Case of the Week')->live(),
                     DatePicker::make('case_of_week_date')->label('Week starting')->native(false)->displayFormat('j M Y')

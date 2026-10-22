@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="membership" />
     <section class="relative overflow-hidden border-b border-line bg-surface">
         <div class="bg-retina-lines absolute inset-0 opacity-70" aria-hidden="true"></div>
         <div class="container-site relative py-14 text-center sm:py-20">

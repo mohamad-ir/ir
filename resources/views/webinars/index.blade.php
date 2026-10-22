@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="webinars" />
     <x-page-header eyebrow="Live teaching" title="Webinars" :breadcrumbs="['Webinars' => null]"
         intro="Interactive online sessions with case discussion and live Q&A. Can’t make it live? Registered participants receive the recording." />
 

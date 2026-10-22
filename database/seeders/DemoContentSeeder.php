@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ContentStatus;
 use App\Models\Article;
+use App\Models\Banner;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Gallery;
@@ -19,6 +20,7 @@ use App\Models\ProfileEntry;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Models\User;
+use App\Models\Page;
 use App\Models\Video;
 use App\Services\Demo\DemoContent;
 use App\Services\Media\MediaService;
@@ -146,8 +148,61 @@ class DemoContentSeeder extends Seeder
 
         $this->learning($author);
         $this->galleries($author);
+        $this->banners();
+        $this->aboutMedia();
 
         DemoContent::remember($this->registry);
+    }
+
+    /** Shows the gallery and video blocks on the About page (editable in Design › Pages › About). */
+    protected function aboutMedia(): void
+    {
+        $about = Page::where('slug', 'about')->first();
+        if (! $about || collect($about->blocks)->contains(fn ($b) => in_array($b['type'] ?? null, ['gallery', 'video'], true))) {
+            return;
+        }
+
+        $images = collect([
+            ['oct-normal.jpg', 'Sample image — replace with photos of your clinic, teaching or conferences'],
+            ['oct-namd.jpg', 'Sample image'],
+            ['fundus-vasculitis.jpg', 'Sample image'],
+            ['oct-dme.jpg', 'Sample image'],
+        ])->filter(fn ($i) => isset($this->media[$i[0]]))->map(fn ($i) => ['media_id' => $this->media[$i[0]]->id, 'caption' => $i[1]])->values()->all();
+
+        $blocks = collect($about->blocks);
+        $cta = $blocks->search(fn ($b) => ($b['type'] ?? null) === 'cta');
+        $new = array_values(array_filter([
+            ($video = Video::published()->where('access_level', 'public')->first() ?? Video::published()->first()) ? ['type' => 'video', 'data' => ['eyebrow' => 'Watch', 'heading' => 'A short introduction', 'text' => 'Sample video — choose your own video, YouTube/Vimeo link or uploaded file in Design › Pages › About.', 'source' => 'library', 'video_id' => $video->id, '_tone' => 'surface']] : null,
+            $images ? ['type' => 'gallery', 'data' => ['heading' => 'In clinic & teaching', 'source' => 'images', 'images' => $images, 'layout' => 'grid', 'style' => 'light']] : null,
+        ]));
+        $blocks->splice($cta === false ? $blocks->count() : $cta, 0, $new);
+
+        Page::withoutRevisions(fn () => $about->forceFill(['blocks' => $blocks->values()->all()])->save());
+    }
+
+    protected function banners(): void
+    {
+        $sets = [
+            ['name' => 'Homepage highlights', 'placement' => 'home', 'slides' => [
+                ['image' => 'oct-pachychoroid.jpg', 'eyebrow' => 'New course', 'title' => 'Systematic OCT Interpretation', 'text' => 'A layer-by-layer method for reading any macular OCT — with quizzes and a certificate.', 'button_label' => 'View the course', 'link_url' => '/courses/systematic-oct-interpretation'],
+                ['image' => 'fundus-normal.jpg', 'eyebrow' => 'Live webinar', 'title' => 'Difficult OCTs in medical retina', 'text' => 'Bring your questions — live case review with Q&A.', 'button_label' => 'Reserve your place', 'link_url' => '/webinars/live-case-review-difficult-octs'],
+            ]],
+            ['name' => 'Courses page', 'placement' => 'courses', 'height' => 'compact', 'slides' => [
+                ['image' => 'oct-normal.jpg', 'eyebrow' => 'Membership', 'title' => 'Every course included', 'text' => 'Members get every course, live webinars and the full case library.', 'button_label' => 'See membership', 'link_url' => '/membership'],
+            ]],
+        ];
+        foreach ($sets as $i => $set) {
+            if (Banner::where('name', $set['name'])->exists()) {
+                continue;
+            }
+            $banner = Banner::create(['name' => $set['name'], 'placement' => $set['placement'], 'height' => $set['height'] ?? 'standard', 'sort_order' => $i]);
+            foreach ($set['slides'] as $n => $slide) {
+                if (isset($this->media[$slide['image']])) {
+                    $banner->slides()->create([...collect($slide)->except('image')->all(), 'media_id' => $this->media[$slide['image']]->id, 'sort_order' => $n]);
+                }
+            }
+            $this->track($banner);
+        }
     }
 
     protected function galleries(?User $author): void

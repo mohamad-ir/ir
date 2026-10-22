@@ -28,7 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     protected $fillable = [
         'name', 'email', 'password', 'title', 'career_stage', 'specialty', 'institution',
-        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id',
+        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id', 'notify_replies',
     ];
 
     protected $hidden = ['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'];
@@ -40,10 +40,22 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'notify_replies' => 'boolean',
             'career_stage' => CareerStage::class,
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Comments with replies are anonymised rather than removed, so threads stay readable.
+        static::deleting(fn (User $user) => app(\App\Services\Comments\CommentService::class)->eraseUser($user));
+    }
+
+    public function comments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 
     public function canAccessPanel(Panel $panel): bool

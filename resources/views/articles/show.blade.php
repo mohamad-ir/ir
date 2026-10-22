@@ -86,6 +86,10 @@
                         </div>
                     </div>
                 @endif
+
+                @if ($canView && $article->commentsVisible() && ($article->commentsOpen() || $article->comments_count))
+                    <div class="mt-14"><livewire:comments :item="$article" /></div>
+                @endif
             </div>
         </div>
         <aside class="hidden lg:block"></aside>

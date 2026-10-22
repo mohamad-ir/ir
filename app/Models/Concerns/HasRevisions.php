@@ -40,7 +40,7 @@ trait HasRevisions
     /** @return array<int, string> */
     public function revisionIgnoredAttributes(): array
     {
-        return ['updated_at', 'created_at', 'views_count', 'reveals_count', 'guesses_count', 'correct_guesses_count', 'plays_count', 'completions_count', 'attempts_count', 'correct_count'];
+        return ['updated_at', 'created_at', 'views_count', 'reveals_count', 'guesses_count', 'correct_guesses_count', 'plays_count', 'completions_count', 'attempts_count', 'correct_count', 'comments_count'];
     }
 
     public function revisionSnapshot(): array

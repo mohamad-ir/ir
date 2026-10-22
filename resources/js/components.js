@@ -303,6 +303,26 @@ document.addEventListener('alpine:init', () => {
             });
         },
     }));
+
+    /* ---------------- Banner slider ---------------- */
+    Alpine.data('bannerSlider', ({ count, autoplay, interval }) => ({
+        current: 0, count, timer: null, paused: false, stopped: false, touchX: null,
+        reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        init() {
+            if (autoplay && !this.reduced && count > 1) this.start(); else this.stopped = true;
+            document.addEventListener('visibilitychange', () => { this.paused = document.hidden; });
+            this.$el.querySelectorAll('[data-banner-slide]').forEach((a) => a.addEventListener('click', () => {
+                try { navigator.sendBeacon('/banner-click/' + a.dataset.bannerSlide); } catch (e) {}
+            }));
+        },
+        start() { clearInterval(this.timer); this.stopped = false; this.timer = setInterval(() => { if (!this.paused) this.next(); }, interval * 1000); },
+        toggle() { if (this.stopped) { this.start(); } else { clearInterval(this.timer); this.stopped = true; } },
+        pause() { this.paused = true; }, resume() { this.paused = false; },
+        go(i) { this.current = (i + this.count) % this.count; },
+        next() { this.go(this.current + 1); }, prev() { this.go(this.current - 1); },
+        touchStart(e) { this.touchX = e.changedTouches[0].clientX; },
+        touchEnd(e) { if (this.touchX === null) return; const dx = e.changedTouches[0].clientX - this.touchX; if (Math.abs(dx) > 40) dx < 0 ? this.next() : this.prev(); this.touchX = null; },
+    }));
 });
 
 /* Reveal-on-scroll animations */

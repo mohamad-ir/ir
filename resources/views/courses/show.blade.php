@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="course" />
 <section class="relative overflow-hidden bg-ink text-ink-contrast">
     @if ($course->featuredMedia)
         <x-media-img :media="$course->featuredMedia" variant="lg" sizes="100vw" class="absolute inset-0 size-full object-cover opacity-20" :eager="true" alt="" />

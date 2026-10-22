@@ -97,7 +97,7 @@ class VideoResource extends Resource
                 Fields::seo('title', 'summary'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Fields::publishing('videos'),
+                Fields::publishing('videos', hasComments: true),
                 Section::make('Classification')->icon('heroicon-o-tag')->schema([
                     Select::make('category_id')->label('Category')->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'video'))
                         ->createOptionForm([TextInput::make('name')->required()])

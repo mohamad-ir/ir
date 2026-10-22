@@ -26,7 +26,7 @@ class WebinarMessage extends Mailable
     {
         return new Content(view: 'emails.learning.webinar-message', with: [
             'webinar' => $this->webinar,
-            'html' => (string) RichText::render($this->body),
+            'html' => (string) RichText::renderForEmail($this->body),
             'joinUrl' => route('webinars.join', $this->webinar->slug),
         ]);
     }

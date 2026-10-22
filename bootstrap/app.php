@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(prepend: [EnsureInstalled::class], append: [SecurityHeaders::class]);
         $middleware->trustProxies(at: '*');
-        $middleware->preventRequestForgery(except: ['_a', '_e', 'newsletter/open/*', 'stripe/webhook']);
+        $middleware->preventRequestForgery(except: ['_a', '_e', 'newsletter/open/*', 'stripe/webhook', 'banner-click/*']);
         $middleware->alias([
             'staff' => \App\Http\Middleware\EnsureStaff::class,
         ]);

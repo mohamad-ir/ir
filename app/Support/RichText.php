@@ -24,9 +24,22 @@ class RichText
         return [CalloutBlock::class, FigureBlock::class, VideoEmbedBlock::class];
     }
 
+    protected static bool $forEmail = false;
+
     public static function render(string|array|null $html, array $references = []): HtmlString
     {
         return new HtmlString(static::process($html, $references)['html']);
+    }
+
+    /** For emails: videos become a linked thumbnail, since email clients cannot play them. */
+    public static function renderForEmail(string|array|null $html): HtmlString
+    {
+        static::$forEmail = true;
+        try {
+            return static::render($html);
+        } finally {
+            static::$forEmail = false;
+        }
     }
 
     /** @return array{html: string, toc: array<int, array{id: string, text: string, level: int}>} */
@@ -52,6 +65,7 @@ class RichText
         }
 
         $html = static::sanitizer()->sanitize($html);
+        $html = static::expandVideos($html);
 
         $toc = [];
         $used = [];
@@ -98,6 +112,20 @@ class RichText
         return ['html' => $html, 'toc' => $toc];
     }
 
+    /**
+     * Video blocks are stored as safe placeholders and replaced with the player after
+     * sanitizing, built only from the block's own settings (never from raw HTML).
+     */
+    public static function expandVideos(string $html): string
+    {
+        // The sanitizer may entity-encode characters of the attribute (e.g. "=" becomes "&#61;").
+        return preg_replace_callback('~<div data-video-embed="([A-Za-z0-9+/=_&#;-]+)"[^>]*>\s*</div>~', function ($m) {
+            $config = json_decode((string) base64_decode(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5), true), true);
+
+            return is_array($config) ? VideoEmbed::html($config, static::$forEmail) : '';
+        }, $html) ?? $html;
+    }
+
     protected static function citeLink(int $n, int $count): string
     {
         return $n >= 1 && $n <= $count ? '<a href="#ref-'.$n.'">'.$n.'</a>' : (string) $n;
@@ -127,6 +155,7 @@ class RichText
                 ->allowAttribute('sizes', ['img'])
                 ->allowAttribute('width', ['img'])
                 ->allowAttribute('height', ['img'])
+                ->allowAttribute('data-video-embed', ['div'])
                 ->allowAttribute('data-col-span', '*')
                 ->allowAttribute('data-cols', '*')
                 ->allowAttribute('data-from-breakpoint', '*')

@@ -21,6 +21,8 @@
             </div>
             <input type="hidden" name="newsletter" value="0">
             <label class="flex items-center gap-2.5 text-sm"><input type="checkbox" name="newsletter" value="1" class="checkbox" @checked($subscriber?->status?->value === 'subscribed')> Receive the weekly OCT case email</label>
+            <input type="hidden" name="notify_replies" value="0">
+            <label class="flex items-center gap-2.5 text-sm"><input type="checkbox" name="notify_replies" value="1" class="checkbox" @checked($user->notify_replies ?? true)> Email me when someone replies to my comments</label>
             <button class="btn btn-primary">Save profile</button>
         </form>
 

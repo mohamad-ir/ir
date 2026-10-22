@@ -39,7 +39,7 @@ class CampaignMail extends Mailable
 
     public function content(): Content
     {
-        $html = (string) RichText::render($this->campaign->body);
+        $html = (string) RichText::renderForEmail($this->campaign->body);
         $token = $this->subscriber->token;
 
         if (! $this->test) {

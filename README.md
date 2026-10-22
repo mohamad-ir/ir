@@ -1,6 +1,6 @@
 # OCT Academy — ophthalmology education platform
 
-A complete, database-driven website for ophthalmology education: OCT case library with interactive diagnostic challenges, Case of the Week, video library, articles, FRCS/FRCOphth question bank, topic hubs, newsletter, member accounts, **paid membership, online courses with quizzes and certificates, live webinars (Stripe, multi-currency)**, photo galleries — and a full administration dashboard with a live visual page builder.
+A complete, database-driven website for ophthalmology education: OCT case library with interactive diagnostic challenges, Case of the Week, video library, articles, FRCS/FRCOphth question bank, topic hubs, newsletter, member accounts, **paid membership, online courses with quizzes and certificates, live webinars (Stripe, multi-currency)**, photo galleries, **member comments with moderation, image banner sliders and videos inside cases and articles** — and a full administration dashboard with a live visual page builder.
 
 Built with **Laravel 13**, **Filament 5**, **Livewire 4**, **Alpine.js** and **Tailwind CSS 4**, designed for **standard DirectAdmin shared hosting** (PHP 8.3+, MySQL/MariaDB, cron — no Node.js, Redis or SSH needed in production).
 

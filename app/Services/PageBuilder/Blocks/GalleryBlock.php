@@ -33,7 +33,8 @@ class GalleryBlock extends PageBlock
                 MediaPicker::make('media_id')->label('Image')->required(),
                 TextInput::make('caption'),
             ])->columns(2)->reorderable()->collapsible()->addActionLabel('Add image'),
-            Select::make('columns')->options([2 => 2, 3 => 3, 4 => 4])->default(3)->selectablePlaceholder(false),
+            Select::make('layout')->label('Layout')->options(\App\Models\Gallery::LAYOUTS)->default('grid')->selectablePlaceholder(false)
+                ->visible(fn ($get) => $get('source') !== 'album'),
             ToggleButtons::make('style')->inline()->options(['light' => 'Light', 'dark' => 'Dark viewer (best for OCT)'])->default('light'),
         ];
     }

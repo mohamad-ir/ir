@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="courses" />
     <x-page-header eyebrow="Courses" title="Structured online courses" :breadcrumbs="['Courses' => null]"
         intro="Self-paced programmes in OCT interpretation, medical retina, uveitis and exam preparation — video lessons, real cases and clear take-home messages.">
         @unless ($isMember)

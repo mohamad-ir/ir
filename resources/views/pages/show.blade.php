@@ -9,6 +9,9 @@
     @if ($page->show_title && ! ($isHome ?? false))
         <x-page-header :title="$page->title" :intro="$page->summary" :breadcrumbs="[$page->title => null]" />
     @endif
+    @if ($isHome ?? false)
+        <x-banner-slider placement="home" />
+    @endif
     {!! app(\App\Services\PageBuilder\BlockRegistry::class)->render($page->blocks, ['page' => $page, 'preview' => $isPreview ?? false]) !!}
     @if (empty($page->blocks) && ($isPreview ?? false))
         <div class="container-site section"><x-empty-state icon="heroicon-o-squares-plus" title="This page has no sections yet" text="Add sections with the page builder on the left." /></div>

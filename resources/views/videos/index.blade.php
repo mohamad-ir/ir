@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+<x-banner-slider placement="videos" />
     <x-page-header eyebrow="Video library" title="Watch, pause, learn"
                    intro="OCT interpretation, retina, uveitis, surgical cases, clinical examination and case discussions — with chapters and searchable transcripts."
                    :breadcrumbs="['Videos' => null]" />

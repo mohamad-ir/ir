@@ -15,6 +15,22 @@ Each case has tabs that follow the teaching flow:
 
 The sidebar holds **Publishing** (status, publish date, who can see it, featured), **Case of the Week** (tick and choose the week — schedule several weeks ahead), topics, difficulty, tags and the cover image.
 
+**Videos in a case** — the *Videos* section of a case takes one or more videos: a YouTube/Vimeo link, an uploaded MP4/WebM file, or a video from your Video library (members-only library videos stay locked for visitors without access). They play on the case page after the images.
+
+**Videos inside an article or case text** — in any rich-text editor, click the **Video** button (film icon) in the toolbar, choose the source (link, upload or library), add an optional title, caption and cover image. The video appears exactly where you placed it. In newsletters the same block becomes a linked thumbnail, because email programs cannot play videos.
+
+### Comments (Audience › Comments)
+Signed-in members can discuss OCT cases, articles and videos. On a case the discussion is folded behind **Show discussion** with a spoiler warning, so visitors read it after working through the case.
+
+- **Approval** — by default each member’s **first** comment waits for approval; once approved, their later comments appear immediately. Comments with many links or a *blocked word* are always held. Change this in **Comment settings** (button on the Comments page): approve everything, approve first comments only, or publish immediately.
+- **Moderation queue** — tabs *Awaiting approval*, *Reported*, *Published*, *Spam*, *Hidden*. Approve, reply as the team, pin to the top, hide or mark as spam — one at a time or in bulk. The menu badge shows how many comments wait.
+- **On the page** — editors and administrators also see *Approve / Pin / Hide* links under each comment and can close the discussion on that page.
+- **Reports** — members can report a comment (spam, abuse, patient-identifiable information, misleading medical information). After **three reports** from different members the comment is hidden until a moderator reviews it.
+- **Members** can reply (one level of replies keeps threads readable), mark comments as *Helpful*, edit their comment for 15 minutes and delete it. They get an email when someone replies, with a one-click link to stop these emails (also in *My profile*).
+- **Closing a discussion** — switch off *Allow comments* in the Publishing box of a case, article or video. Existing comments stay visible.
+- **Privacy** — comments are included in a member’s data export. When an account is deleted, its comments are deleted; a comment that already has replies is kept as “[This comment was removed.]” so the thread still makes sense.
+- Editors have the *Moderate comments* permission by default (System › Roles & permissions).
+
 ### Publishing workflow
 - **Draft** → only visible in the dashboard and via **Preview**.
 - **In review** → for contributors; an editor publishes it.
@@ -37,7 +53,19 @@ Pages are built from **sections**. Click **Add section** to choose from 24 types
 - Each section has **Content** and **Appearance** tabs (background, spacing, width, show on desktop/mobile only, anchor link).
 - The **live preview** on the right shows unsaved changes; switch between desktop, tablet and mobile.
 - **Set as homepage** is in the page list’s row actions.
+- **About page: video and photo gallery** — open *Design › Pages › About*, **Add section** → **Featured video** (a library video, a YouTube/Vimeo link or an uploaded file) or **Gallery** (pick images from the media library with captions, or show an existing photo album; grid, masonry or justified layout). Drag the section to where you want it. A sample of each is included in a fresh installation.
 - **Reusable blocks** are sections you edit once and place on many pages (e.g. a newsletter banner).
+
+### Banners & sliders (Design › Banners & sliders)
+Image banners — a single banner or a slider with several slides — for the **homepage**, the **OCT cases**, **Videos**, **Articles**, **Courses** and **Webinars** pages, **every course page**, **Photo galleries** and **Membership**.
+
+1. **New banner** → give it a name, choose **Where it appears**, the height (compact / standard / tall), slide or fade transition, autoplay and its speed, arrows and dots.
+2. Add **slides**: a wide image (about 2400 × 900 px), optionally a separate **mobile image** (about 1080 × 1350 px), alt text, and optional small heading, title, text and button.
+3. **Link**: a page on your site (`/courses/oct-basics`) or any external address (`https://…`), optionally opening in a new tab. Without a button label the whole slide is clickable.
+4. **Schedule**: *Show from* / *Show until* dates let you prepare a campaign in advance; switched-off or expired slides are hidden automatically.
+5. Drag slides to reorder. The *Clicks* column shows how often each slide was clicked.
+
+One banner per location is shown (the first active one). You can also place a banner anywhere with the **Banner slider** section of the page builder.
 
 ### Navigation menus
 Header, header buttons, three footer columns and legal links. Drag to reorder; header items can have dropdowns. Pick a destination from the list or type any URL.

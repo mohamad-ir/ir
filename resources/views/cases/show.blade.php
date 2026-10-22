@@ -149,6 +149,14 @@
                 </section>
             @endif
 
+            @if (! empty($case->videos))
+                <section class="mt-10" aria-label="Case videos">
+                    @foreach ($case->videos as $video)
+                        {!! \App\Support\VideoEmbed::html($video) !!}
+                    @endforeach
+                </section>
+            @endif
+
             @if (! $canView)
                 <div class="mt-12 overflow-hidden rounded-card bg-ink p-8 text-ink-contrast sm:p-12">
                     <x-locked-content :content="$case" thing="case discussion" />
@@ -275,6 +283,21 @@
             @if ($case->tags->isNotEmpty())
                 <div class="mt-6 flex flex-wrap gap-2">
                     @foreach ($case->tags as $tag)<a href="{{ route('search', ['q' => $tag->name]) }}" class="chip chip-outline hover:text-ink">#{{ $tag->name }}</a>@endforeach
+                </div>
+            @endif
+
+            @if ($canView && $case->commentsVisible() && ($case->commentsOpen() || $case->comments_count))
+                <div class="mt-12" x-data="{ show: window.location.hash.startsWith('#comment') }">
+                    <button type="button" x-show="! show" x-on:click="show = true" class="flex w-full items-center justify-between gap-4 rounded-card bg-subtle p-5 text-left ring-1 ring-line transition hover:ring-accent/40">
+                        <span>
+                            <span class="flex items-center gap-2 font-heading text-lg font-semibold text-ink"><x-heroicon-o-chat-bubble-left-right class="size-5 text-accent-ink" /> Discussion{{ $case->comments_count ? ' ('.$case->comments_count.')' : '' }}</span>
+                            <span class="mt-0.5 block text-sm text-muted">Comments may reveal the diagnosis — read them after working through the case.</span>
+                        </span>
+                        <span class="btn btn-secondary btn-sm shrink-0">Show discussion</span>
+                    </button>
+                    <div x-show="show" x-cloak>
+                        <livewire:comments :item="$case" />
+                    </div>
                 </div>
             @endif
 
