@@ -6,6 +6,7 @@ use App\Mail\CommentAwaitingModeration;
 use App\Mail\CommentReply;
 use App\Models\Comment;
 use App\Models\User;
+use App\Services\Access\ContentAccess;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -25,12 +26,17 @@ class CommentService
 {
     public const MAX_LENGTH = 3000;
 
+    public const REMOVED = '[This comment was removed.]';
+
     public function post(User $user, Model $commentable, string $body, ?Comment $parent = null): Comment
     {
         $body = trim(preg_replace("/\n{3,}/", "\n\n", str_replace("\r\n", "\n", $body)));
 
         if (! $commentable->commentsOpen()) {
             throw ValidationException::withMessages(['body' => 'Comments are closed for this page.']);
+        }
+        if (! app(ContentAccess::class)->canView($commentable, $user)) {
+            throw ValidationException::withMessages(['body' => 'Only members with access to this page can join the discussion.']);
         }
         if (Settings::get('comments.require_verified', true) && ! $user->hasVerifiedEmail() && ! $user->isStaff()) {
             throw ValidationException::withMessages(['body' => 'Please confirm your email address before commenting — check your inbox for the link.']);
@@ -137,6 +143,12 @@ class CommentService
     {
         abort_unless($comment->user_id === $user->id || $user->can('comments.moderate'), 403);
         $wasApproved = $comment->isApproved();
+        if ($comment->replies()->where('status', 'approved')->exists()) {
+            // Keep the thread readable: replies stay, the removed comment becomes a placeholder.
+            $comment->forceFill(['body' => self::REMOVED, 'user_id' => null])->saveQuietly();
+
+            return;
+        }
         $comment->delete();
         if ($wasApproved) {
             $comment->commentable?->refreshCommentsCount();
@@ -179,7 +191,7 @@ class CommentService
         foreach (Comment::withTrashed()->where('user_id', $user->id)->withCount('replies')->get() as $comment) {
             $target = $comment->commentable;
             if ($comment->replies_count > 0) {
-                $comment->forceFill(['body' => '[This comment was removed when its author deleted their account.]', 'user_id' => null])->saveQuietly();
+                $comment->forceFill(['body' => self::REMOVED, 'user_id' => null])->saveQuietly();
             } else {
                 $comment->forceDelete();
             }

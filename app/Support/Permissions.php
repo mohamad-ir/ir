@@ -39,6 +39,7 @@ class Permissions
         'analytics.view' => 'View analytics and reports',
         'newsletter.manage' => 'Manage subscribers and send campaigns',
         'enquiries.manage' => 'Read and answer contact enquiries',
+        'comments.moderate' => 'Approve, hide, pin and delete member comments',
         'users.manage' => 'Manage user accounts',
         'roles.manage' => 'Manage roles and permissions',
         'settings.manage' => 'Change website settings and email configuration',
@@ -88,6 +89,7 @@ class Permissions
                 ...$content(self::CONTENT_ACTIONS), 'content.edit_others',
                 'media.view', 'media.create', 'media.update', 'media.delete', 'taxonomy.manage', 'profile.manage', 'reusable_blocks.manage',
                 'menus.manage', 'seo.manage', 'analytics.view', 'newsletter.manage', 'enquiries.manage', 'activity.view', 'sales.view',
+                'comments.moderate',
             ],
             'author' => [
                 ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),

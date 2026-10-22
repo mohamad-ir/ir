@@ -19,14 +19,19 @@ trait HasComments
         return $this->morphMany(Comment::class, 'commentable');
     }
 
-    /** Whether comments are shown and accepted on this item. */
+    /** Whether the discussion is shown at all (closed discussions stay readable). */
+    public function commentsVisible(): bool
+    {
+        return (bool) Settings::get('comments.enabled', true)
+            && in_array($this->getMorphClass(), (array) Settings::get('comments.types', ['case', 'article', 'video']), true);
+    }
+
+    /** Whether new comments are accepted on this item. */
     public function commentsOpen(): bool
     {
-        $type = $this->getMorphClass();
-
-        return (bool) Settings::get('comments.enabled', true)
-            && in_array($type, (array) Settings::get('comments.types', ['case', 'article', 'video']), true)
-            && ($this->comments_enabled ?? true);
+        return $this->commentsVisible()
+            && ($this->comments_enabled ?? true)
+            && (! method_exists($this, 'isPublished') || $this->isPublished());
     }
 
     public function refreshCommentsCount(): void

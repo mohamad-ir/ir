@@ -50,6 +50,10 @@
             <x-share-buttons :url="$video->url()" :title="$video->title" />
             @include('partials.bookmark', ['type' => 'video', 'model' => $video])
         </div>
+
+        @if ($canView && $video->commentsVisible() && ($video->commentsOpen() || $video->comments_count))
+            <div class="mt-12"><livewire:comments :item="$video" /></div>
+        @endif
     </div>
 
     <aside class="space-y-8">

@@ -113,7 +113,7 @@ class Fields
     }
 
     /** Status, schedule, visibility and author — shown in the sidebar of every content editor. */
-    public static function publishing(string $permissionPrefix, bool $hasAuthor = true, bool $hasAccess = true, bool $hasFeatured = true): Section
+    public static function publishing(string $permissionPrefix, bool $hasAuthor = true, bool $hasAccess = true, bool $hasFeatured = true, bool $hasComments = false): Section
     {
         return Section::make('Publishing')
             ->icon('heroicon-o-paper-airplane')
@@ -148,6 +148,8 @@ class Fields
                     ->selectablePlaceholder(false)
                     ->helperText('Members-only content shows a teaser and a free sign-up prompt.') : null,
                 $hasFeatured ? Toggle::make('is_featured')->label('Feature this item')->helperText('Featured items are highlighted on the homepage and in listings.') : null,
+                $hasComments ? Toggle::make('comments_enabled')->label('Allow comments')->default(true)
+                    ->helperText(fn (?Model $record) => ($record?->comments_count ? number_format($record->comments_count).' published comments. ' : '').'Signed-in members can discuss this item. Turn off to close the discussion (existing comments stay visible).') : null,
                 $hasAuthor ? Select::make('author_id')
                     ->label('Author')
                     ->options(fn () => User::role(User::STAFF_ROLES)->orderBy('name')->pluck('name', 'id'))

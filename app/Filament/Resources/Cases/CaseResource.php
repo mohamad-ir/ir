@@ -150,7 +150,7 @@ class CaseResource extends Resource
                 Fields::seo('title', 'summary'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Fields::publishing('cases'),
+                Fields::publishing('cases', hasComments: true),
                 Section::make('Case of the Week')->icon('heroicon-o-sparkles')->schema([
                     Toggle::make('is_case_of_week')->label('Feature as Case of the Week')->live(),
                     DatePicker::make('case_of_week_date')->label('Week starting')->native(false)->displayFormat('j M Y')

@@ -45,7 +45,7 @@ class ArticleResource extends Resource
                 Fields::seo('title', 'excerpt'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Fields::publishing('articles'),
+                Fields::publishing('articles', hasComments: true),
                 Section::make('Classification')->icon('heroicon-o-tag')->schema([
                     Select::make('category_id')->label('Category')->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'article'))
                         ->createOptionForm([\Filament\Forms\Components\TextInput::make('name')->required()])

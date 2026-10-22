@@ -74,6 +74,8 @@ Route::post('/stripe/webhook', Controllers\StripeWebhookController::class)->name
 Route::get('/topics', [Controllers\TopicController::class, 'index'])->name('topics.index');
 Route::get('/topics/{slug}', [Controllers\TopicController::class, 'show'])->name('topics.show');
 
+Route::get('/comments/stop-reply-emails/{user}', [Controllers\AccountController::class, 'stopReplyEmails'])->name('comments.unsubscribe')->middleware(['signed', 'throttle:20,1']);
+
 // Search
 Route::get('/search', [Controllers\SearchController::class, 'index'])->name('search')->middleware('throttle:search');
 Route::get('/search/suggest', [Controllers\SearchController::class, 'suggest'])->name('search.suggest')->middleware('throttle:search');

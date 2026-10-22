@@ -63,6 +63,11 @@ class Comment extends Model
         return $this->status === 'approved';
     }
 
+    public function isRemoved(): bool
+    {
+        return $this->body === \App\Services\Comments\CommentService::REMOVED;
+    }
+
     public function authorName(): string
     {
         return $this->user?->displayName() ?? 'Former member';

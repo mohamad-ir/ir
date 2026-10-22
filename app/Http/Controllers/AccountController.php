@@ -8,6 +8,7 @@ use App\Models\Bookmark;
 use App\Models\ClinicalCase;
 use App\Models\Question;
 use App\Models\Subscriber;
+use App\Models\User;
 use App\Models\Video;
 use App\Services\Newsletter\NewsletterService;
 use App\Services\Seo\SeoManager;
@@ -61,6 +62,7 @@ class AccountController extends Controller
             'user' => $user,
             'subscription' => $user->subscriptions()->with('plan')->latest('id')->first(),
             'isMember' => $user->isMember(),
+            'comments' => $user->comments()->withTrashed()->with('commentable')->get()->map(fn ($c) => ['on' => $c->commentable?->title, 'comment' => $c->body, 'status' => $c->status, 'posted_at' => $c->created_at, 'deleted_at' => $c->deleted_at])->all(),
             'orders' => $user->orders()->whereIn('status', ['paid', 'partially_refunded', 'refunded'])->latest('paid_at')->latest('id')->get(),
             'paymentsEnabled' => \App\Services\Payments\StripeClient::configured(),
         ]);
@@ -88,7 +90,9 @@ class AccountController extends Controller
             'institution' => ['nullable', 'string', 'max:160'],
             'country' => ['nullable', 'string', 'size:2'],
             'newsletter' => ['nullable', 'boolean'],
+            'notify_replies' => ['nullable', 'boolean'],
         ]);
+        $data['notify_replies'] = $request->boolean('notify_replies');
 
         $emailChanged = $data['email'] !== $user->email;
         $user->fill(collect($data)->except('newsletter')->all());
@@ -161,6 +165,19 @@ class AccountController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/')->with('status', 'Your account and personal data have been deleted.');
+    }
+
+    /** One-click opt-out from the link in reply emails (signed, so no sign-in needed). */
+    public function stopReplyEmails(User $user)
+    {
+        $user->forceFill(['notify_replies' => false])->saveQuietly();
+
+        return view('newsletter.message', [
+            'icon' => 'heroicon-o-bell-slash',
+            'title' => 'Reply emails turned off',
+            'text' => 'You will no longer receive an email when someone replies to your comments. You can turn them back on in your profile at any time.',
+            'cta' => ['url' => route('account.profile'), 'label' => 'Open my profile'],
+        ]);
     }
 
     public function toggleBookmark(Request $request, string $type, int $id)

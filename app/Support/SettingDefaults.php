@@ -145,6 +145,17 @@ class SettingDefaults
                 'signature_id' => null,
                 'statement' => 'has successfully completed the online course',
             ],
+            'comments' => [
+                'enabled' => true,
+                'types' => ['case', 'article', 'video'],
+                'moderation' => 'first',
+                'require_verified' => true,
+                'max_links' => 2,
+                'blocked_words' => null,
+                'edit_minutes' => 15,
+                'notify_staff' => true,
+                'guidelines' => 'Keep discussions professional and evidence-based. Never post information that could identify a patient.',
+            ],
             'backup' => [
                 'schedule' => 'weekly',
                 'keep' => 6,

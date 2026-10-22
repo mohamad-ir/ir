@@ -43,6 +43,7 @@ class SchemaFactory
             'audience' => ['@type' => 'MedicalAudience', 'audienceType' => 'Clinician'],
             'isAccessibleForFree' => ($a->access_level?->value ?? 'public') === 'public',
             'citation' => collect($a->references)->pluck('citation')->filter()->values()->all() ?: null,
+            'commentCount' => $a->comments_count ?: null,
         ]);
     }
 
@@ -66,6 +67,7 @@ class SchemaFactory
             'keywords' => $c->topics->pluck('name')->merge($c->modalities->pluck('name'))->implode(', ') ?: null,
             'isAccessibleForFree' => ($c->access_level?->value ?? 'public') === 'public',
             'citation' => collect($c->references)->pluck('citation')->filter()->values()->all() ?: null,
+            'commentCount' => $c->comments_count ?: null,
         ]);
     }
 
@@ -82,6 +84,7 @@ class SchemaFactory
             'contentUrl' => $v->isPublicAccess() && $v->isFilePlayer() ? $v->embedUrl() : null,
             'isAccessibleForFree' => $v->isPublicAccess(),
             'publisher' => self::publisher(),
+            'commentCount' => $v->comments_count ?: null,
             'hasPart' => collect($v->chapters)->filter(fn ($ch) => isset($ch['time'], $ch['title']))->values()->map(fn ($ch, $i) => [
                 '@type' => 'Clip',
                 'name' => $ch['title'],
