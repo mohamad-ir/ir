@@ -118,8 +118,9 @@ class RichText
      */
     public static function expandVideos(string $html): string
     {
-        return preg_replace_callback('~<div data-video-embed="([A-Za-z0-9+/=]+)"[^>]*>\s*</div>~', function ($m) {
-            $config = json_decode((string) base64_decode($m[1], true), true);
+        // The sanitizer may entity-encode characters of the attribute (e.g. "=" becomes "&#61;").
+        return preg_replace_callback('~<div data-video-embed="([A-Za-z0-9+/=_&#;-]+)"[^>]*>\s*</div>~', function ($m) {
+            $config = json_decode((string) base64_decode(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5), true), true);
 
             return is_array($config) ? VideoEmbed::html($config, static::$forEmail) : '';
         }, $html) ?? $html;

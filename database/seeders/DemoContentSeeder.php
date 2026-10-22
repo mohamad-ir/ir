@@ -20,6 +20,7 @@ use App\Models\ProfileEntry;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Models\User;
+use App\Models\Page;
 use App\Models\Video;
 use App\Services\Demo\DemoContent;
 use App\Services\Media\MediaService;
@@ -148,8 +149,35 @@ class DemoContentSeeder extends Seeder
         $this->learning($author);
         $this->galleries($author);
         $this->banners();
+        $this->aboutMedia();
 
         DemoContent::remember($this->registry);
+    }
+
+    /** Shows the gallery and video blocks on the About page (editable in Design › Pages › About). */
+    protected function aboutMedia(): void
+    {
+        $about = Page::where('slug', 'about')->first();
+        if (! $about || collect($about->blocks)->contains(fn ($b) => in_array($b['type'] ?? null, ['gallery', 'video'], true))) {
+            return;
+        }
+
+        $images = collect([
+            ['oct-normal.jpg', 'Sample image — replace with photos of your clinic, teaching or conferences'],
+            ['oct-namd.jpg', 'Sample image'],
+            ['fundus-vasculitis.jpg', 'Sample image'],
+            ['oct-dme.jpg', 'Sample image'],
+        ])->filter(fn ($i) => isset($this->media[$i[0]]))->map(fn ($i) => ['media_id' => $this->media[$i[0]]->id, 'caption' => $i[1]])->values()->all();
+
+        $blocks = collect($about->blocks);
+        $cta = $blocks->search(fn ($b) => ($b['type'] ?? null) === 'cta');
+        $new = array_values(array_filter([
+            ($video = Video::published()->where('access_level', 'public')->first() ?? Video::published()->first()) ? ['type' => 'video', 'data' => ['eyebrow' => 'Watch', 'heading' => 'A short introduction', 'text' => 'Sample video — choose your own video, YouTube/Vimeo link or uploaded file in Design › Pages › About.', 'source' => 'library', 'video_id' => $video->id, '_tone' => 'surface']] : null,
+            $images ? ['type' => 'gallery', 'data' => ['heading' => 'In clinic & teaching', 'source' => 'images', 'images' => $images, 'layout' => 'grid', 'style' => 'light']] : null,
+        ]));
+        $blocks->splice($cta === false ? $blocks->count() : $cta, 0, $new);
+
+        Page::withoutRevisions(fn () => $about->forceFill(['blocks' => $blocks->values()->all()])->save());
     }
 
     protected function banners(): void

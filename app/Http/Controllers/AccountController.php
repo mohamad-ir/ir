@@ -62,7 +62,6 @@ class AccountController extends Controller
             'user' => $user,
             'subscription' => $user->subscriptions()->with('plan')->latest('id')->first(),
             'isMember' => $user->isMember(),
-            'comments' => $user->comments()->withTrashed()->with('commentable')->get()->map(fn ($c) => ['on' => $c->commentable?->title, 'comment' => $c->body, 'status' => $c->status, 'posted_at' => $c->created_at, 'deleted_at' => $c->deleted_at])->all(),
             'orders' => $user->orders()->whereIn('status', ['paid', 'partially_refunded', 'refunded'])->latest('paid_at')->latest('id')->get(),
             'paymentsEnabled' => \App\Services\Payments\StripeClient::configured(),
         ]);
@@ -141,6 +140,7 @@ class AccountController extends Controller
             'courses' => $user->enrollments()->with('course:id,title')->get()->map(fn ($e) => ['course' => $e->course?->title, 'access' => $e->source, 'enrolled_at' => $e->created_at, 'completed_at' => $e->completed_at])->all(),
             'webinars' => $user->webinarRegistrations()->with('webinar:id,title,starts_at')->get()->map(fn ($r) => ['webinar' => $r->webinar?->title, 'starts_at' => $r->webinar?->starts_at, 'registered_at' => $r->created_at, 'cancelled_at' => $r->canceled_at])->all(),
             'membership' => $user->subscriptions()->get()->map(fn ($s) => $s->only(['status', 'amount', 'currency', 'interval', 'current_period_end', 'created_at', 'canceled_at']))->all(),
+            'comments' => $user->comments()->withTrashed()->with('commentable')->get()->map(fn ($c) => ['on' => $c->commentable?->title, 'comment' => $c->body, 'status' => $c->status, 'posted_at' => $c->created_at, 'deleted_at' => $c->deleted_at])->all(),
             'orders' => $user->orders()->get()->map(fn ($o) => $o->only(['number', 'description', 'total', 'tax', 'currency', 'status', 'paid_at']))->all(),
         ];
 
