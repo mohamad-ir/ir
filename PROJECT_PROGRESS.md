@@ -54,6 +54,7 @@
 ## Verification log (2026-10-22, v1.3)
 - `php artisan test` → 201 passed (27 new for v1.3).
 - Browser QA: guest/learner/admin comment flows (first comment pending → approved inline → staff reply → pin → helpful → edit → report), mobile layout, case spoiler fold, admin queue, banner sliders on home/courses (desktop + mobile, autoplay, arrows), About video + gallery.
+- Release `release/oct-academy-1.3.0.zip`: fresh install through the web installer (DirectAdmin layout) and in-place upgrade of an installed 1.2.0 package (2 pending migrations applied, editor gets *Moderate comments*); public pages, comment posting, admin Comments/Banners/Comment settings/Health all 200 with no JS errors on both.
 - Bugs found and fixed: page-builder Video block played members-only library videos for anyone (pre-existing); video placeholders whose base64 ended in “=” were dropped because the sanitiser entity-encodes “=”.
 
 ## Verification log (2026-10-21, v1.2)
