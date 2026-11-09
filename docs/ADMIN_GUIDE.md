@@ -67,6 +67,24 @@ Image banners — a single banner or a slider with several slides — for the **
 
 One banner per location is shown (the first active one). You can also place a banner anywhere with the **Banner slider** section of the page builder.
 
+### Popups & announcements (Design › Popups & announcements)
+Three kinds of message, all managed in one list:
+- **Popup** — a window in the middle of the screen (optionally darkening the page), or a *bottom sheet* on phones.
+- **Slide-in** — a small box in the bottom-right or bottom-left corner that does not block reading.
+- **Announcement bar** — one line at the top of every page (above the header) or fixed to the bottom of the screen. This replaces the former *Header & footer › Announcement bar*; an existing announcement was moved here automatically.
+
+**Creating one**: *New popup* → optionally **Start from a template** (newsletter signup, course launch, webinar reminder, membership offer, announcement bar, important notice, welcome for new visitors) → adjust the tabs. The **live preview** on the right shows the unsaved popup on a real page of the site (computer / tablet / phone, light / dark, choice of page; *Replay* shows it again). The preview is never counted in the statistics.
+- **Content**: title, small label, text (bold, italic, links, lists), optional image, main button (text + link: `/page`, `#anchor` or `https://…`, optionally in a new tab), optional *No thanks* button, and optionally the **newsletter signup form** (subscribers go to Audience › Subscribers with the usual confirmation email).
+- **Design**: position, size, colours (page colours, brand, accent, highlight — these follow light/dark mode — or custom colours with automatic text contrast), image above / beside / behind the text, animation (fade, slide, zoom, none; never shown to visitors who ask for reduced motion), darkened background, close by clicking outside, close (×) button, automatic closing for slide-ins and bars.
+- **Display rules** — *when*: immediately, after N seconds, after scrolling N % of the page, when the visitor is about to leave (pointer towards the browser tabs; on phones a quick scroll back up), after N seconds of inactivity, from the Nth page of a visit, or **only when a link opens it** (link to `#popup-ID` from any page or menu). *Where*: only on / never on certain pages (`/courses/*` = every course page, `/` = homepage). *Who*: everyone, visitors not signed in, signed-in users, members with an active membership, signed-in users without a membership; computers / tablets / phones; first visit or returning visitors; visitors coming from a site or campaign (matches the referrer or the `utm_source` / `utm_medium` / `utm_campaign` of the visit).
+- **Schedule & limits**: Draft / Published / Paused, **priority** (when several popups could appear in the same place, only the highest priority is shown), start and end date, days of the week, daily hours (site time zone; overnight windows such as 22:00–06:00 work), frequency per visitor (every page view, once per visit, once every N days, only once), hide for N days after closing, maximum views per visitor, stop after the visitor clicks or signs up, and a **campaign limit** (stop after N views in total).
+
+**Site-wide settings** (*Popup settings* on the list): switch all popups on/off at once, maximum automatic popups per visit (default 2), minutes between two automatic popups (default 10) and pages where popups never appear. Popups never appear in the dashboard, on sign-in, registration, password or checkout pages, to search engines, or while the cookie notice or the app-install suggestion is open. Only one centre popup is open at a time; a bottom bar pushes slide-ins up instead of covering them.
+
+**Statistics**: the list shows views, clicks and click-through rate, sign-ups and the status (*Live*, *Scheduled*, *Ended*, *Paused*, *Limit reached*, *Outside its days/hours*). Each popup's page shows totals with 14-day trends and a daily chart (7/30/90 days) with a breakdown per device. Row menu: Publish / Pause, *Preview on the website*, *Duplicate as draft*, **Show again to everyone** (visitors who already saw or closed it see it again; statistics are kept) and *Reset statistics*. Staff visits are not counted when *Exclude staff* is on in analytics. The visitor's “already seen / closed” state is stored only in their own browser (no cookies, no personal data).
+
+Permission: **popups.manage** (Administrators and Editors by default).
+
 ### Navigation menus
 Header, header buttons, three footer columns and legal links. Drag to reorder; header items can have dropdowns. Pick a destination from the list or type any URL.
 

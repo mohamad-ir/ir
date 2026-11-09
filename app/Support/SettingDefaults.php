@@ -69,9 +69,6 @@ class SettingDefaults
             'header' => [
                 'show_search' => true,
                 'show_account' => true,
-                'announcement' => null,
-                'announcement_url' => null,
-                'announcement_enabled' => false,
             ],
             'footer' => [
                 'about' => 'An independent educational resource for ophthalmologists in training and practice, focused on OCT, medical retina and uveitis.',
@@ -165,6 +162,12 @@ class SettingDefaults
                 'edit_minutes' => 15,
                 'notify_staff' => true,
                 'guidelines' => 'Keep discussions professional and evidence-based. Never post information that could identify a patient.',
+            ],
+            'popups' => [
+                'enabled' => true,
+                'cooldown_minutes' => 10,
+                'max_per_session' => 2,
+                'exclude_paths' => null,
             ],
             'pwa' => [
                 'enabled' => true,

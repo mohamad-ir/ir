@@ -22,7 +22,7 @@ class PwaService
     /** Never cached by the service worker nor marked cacheable by the server (prefix or regex). */
     public const PRIVATE_PATHS = [
         '/account', '/checkout', '/login', '/register', '/logout', '/forgot-password', '/reset-password', '/email/',
-        '/stripe', '/install', '/_preview', '/_a', '/_e', '/cron', '/color-mode', '/banner-click', '/search',
+        '/stripe', '/install', '/_preview', '/_a', '/_e', '/_p', '/cron', '/color-mode', '/banner-click', '/search',
         '/newsletter/', '/comments/', '/certificates/', '/livewire', '/up',
     ];
 

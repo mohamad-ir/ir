@@ -87,6 +87,7 @@ function maybeSuggest() {
     suggestTimer = setTimeout(() => {
         const consent = document.querySelector('[aria-label="Cookie consent"]');
         if (consent && consent.offsetParent !== null) { suggestTimer = null; return; }
+        if (document.documentElement.dataset.popupOpen) { suggestTimer = null; return; }
         store.suggest = true;
         track('pwa_suggestion_shown');
     }, 4000);

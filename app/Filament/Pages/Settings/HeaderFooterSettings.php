@@ -44,10 +44,8 @@ class HeaderFooterSettings extends SettingsPage
                 Toggle::make('header.show_account')->label(__('Show sign-in / account link')),
                 Placeholder::make('menus')->hiddenLabel()->content($menus)->columnSpanFull(),
             ]),
-            Section::make('Announcement bar')->heading(__('Announcement bar'))->description(__('A slim bar above the header for news, e.g. a new course or webinar.'))->columns(2)->schema([
-                Toggle::make('header.announcement_enabled')->label(__('Show announcement'))->columnSpanFull(),
-                TextInput::make('header.announcement')->label(__('Message'))->maxLength(160),
-                TextInput::make('header.announcement_url')->label(__('Link (optional)')),
+            Section::make('Announcement bar')->heading(__('Announcement bar'))->schema([
+                Placeholder::make('announcements')->hiddenLabel()->content(new HtmlString(e(__('Announcement bars, popups and slide-ins — with scheduling, page targeting and statistics — are managed in')).' <a class="text-primary-600 underline" href="'.\App\Filament\Resources\Popups\PopupResource::getUrl().'">'.e(__('Design › Popups & announcements')).'</a>.')),
             ]),
             Section::make('Footer')->heading(__('Footer'))->schema([
                 Textarea::make('footer.about')->label(__('About text'))->rows(3),

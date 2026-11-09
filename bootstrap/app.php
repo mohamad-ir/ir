@@ -20,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         // Written by the Light/Dark/System switcher in the browser, so it cannot be encrypted.
         $middleware->encryptCookies(except: [\App\Support\ColorMode::COOKIE]);
-        $middleware->preventRequestForgery(except: ['_a', '_e', 'newsletter/open/*', 'stripe/webhook', 'banner-click/*']);
+        $middleware->preventRequestForgery(except: ['_a', '_e', '_p', 'newsletter/open/*', 'stripe/webhook', 'banner-click/*']);
         $middleware->alias([
             'staff' => \App\Http\Middleware\EnsureStaff::class,
         ]);

@@ -192,6 +192,9 @@ Same steps. **Apply database updates** adds one column (each member’s light/da
 ### Upgrading to the next version (site identity, back-to-top, dashboard in Persian)
 Same steps. **Apply database updates** adds one column (each team member’s dashboard language). Then open **Design › Theme & branding › Site identity**: the site name and tagline now live there (moved from Settings › General), and uploading a **square site icon** creates the browser, iPhone/Android and future app icons automatically. Persian dashboard text needs no extra setup (fonts are included in the package). Add a sentence about profile photos to your privacy policy if you have not yet.
 
+### Upgrading to the version with Popups & announcements
+Same steps. **Apply database updates** creates two tables (popups and their daily statistics), gives Editors the new *popups.manage* permission and moves the old *Header & footer › Announcement bar* text, link and on/off state into **Design › Popups & announcements** (as an announcement bar at the top). Nothing else needs configuring; check *Popup settings* on that page for the site-wide limits.
+
 ### Installable app (PWA) — staging and go-live checklist
 Browsers only install apps and run the offline worker on **HTTPS** (or `localhost`). On staging:
 1. Give staging a real certificate: DirectAdmin › SSL Certificates › *Let’s Encrypt*, then set `APP_URL=https://staging.yourdomain…` in `.env` and **Clear all caches**. Self-signed certificates do not work for installation.

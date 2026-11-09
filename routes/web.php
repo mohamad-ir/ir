@@ -98,6 +98,9 @@ Route::get('/newsletter/click/{campaign}/{token}', [Controllers\NewsletterContro
 // Contact (falls back to a built-in page when no CMS page uses the slug)
 Route::get('/contact', [Controllers\PageController::class, 'contact'])->name('contact');
 
+// Popup views, clicks, closes and sign-ups
+Route::post('/_p', [Controllers\PopupController::class, 'track'])->name('popups.track')->middleware('throttle:collect');
+
 // First-party analytics beacons
 Route::post('/_a', [Controllers\AnalyticsController::class, 'collect'])->name('analytics.collect')->middleware('throttle:collect');
 Route::post('/_e', [Controllers\AnalyticsController::class, 'event'])->name('analytics.event')->middleware('throttle:collect');
@@ -179,6 +182,7 @@ Route::middleware('auth')->group(function () {
     // Staff previews of drafts and the live page-builder canvas
     Route::middleware('staff')->prefix('_preview')->name('preview.')->controller(Controllers\PreviewController::class)->group(function () {
         Route::get('/builder/{token}', 'builder')->name('builder');
+        Route::get('/popup/{popup}', 'popup')->name('popup');
         Route::get('/{type}/{id}', 'show')->name('show')->where('type', 'case|article|video|page|exam_topic|topic|question|course|webinar|gallery');
     });
 });

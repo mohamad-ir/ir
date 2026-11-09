@@ -4,6 +4,7 @@
     $headerStyle = setting('theme.header_style', 'light');
     $colorMode = \App\Support\ColorMode::current();
     $darkPaper = $theme->darkVars(\App\Support\Settings::group('theme'))['--color-paper'];
+    $popupItems = app(\App\Services\Popups\PopupService::class)->forRequest(request());
 @endphp
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth{{ $colorMode === 'dark' ? ' dark' : '' }}" data-color-mode="{{ $colorMode }}">
@@ -55,6 +56,7 @@
 
     @include('partials.footer')
     @include('partials.pwa')
+    @include('partials.popups')
     @include('partials.back-to-top')
     @include('partials.search-modal')
     @include('partials.cookie-banner')
