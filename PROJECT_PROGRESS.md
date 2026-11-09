@@ -79,8 +79,9 @@
 
 - ✅ Stage 16 (v1.4.0) — Release review and hardening
   - Independent security and correctness reviews of everything since 1.3.0, plus dependency audit; all findings fixed (see log below), CI workflow added (`.github/workflows/ci.yml`: composer/npm audit, asset build, production caches, full test suite on MariaDB)
+- ✅ Stage 17 (v1.4.1) — Installer fix: atomic `.env` creation with repair of an incomplete `.env` before installation; installer independent of the database until installed; deployment guide: `.env` security, local testing (Herd/Valet), upgrade 1.4.0 → 1.4.1, go-live checklist
 
-## Verification log (2026-11-10, installer fix after 1.4.0 — not released yet)
+## Verification log (2026-11-10, 1.4.1 — installer fix)
 - Report: fresh 1.4.0 on Laravel Herd → `/install` 500 “Database file database/database.sqlite does not exist”, `.env` containing only `APP_KEY`.
 - Root cause (present since 1.0, more likely on servers that run requests in parallel — Herd/nginx + PHP-FPM — when the browser sends several first requests): `bootstrap/prepare-env.php` copied `.env.example` non-atomically; a parallel request read the half-written `.env`, found no key and overwrote it with only `APP_KEY`. Without `SESSION_DRIVER`/`DB_CONNECTION`, Laravel's defaults (database sessions on SQLite) then failed on the installer's first request. Reproduced with the released 1.3.0 and 1.4.0 packages: 1/30 runs with 8 parallel workers, and 100 % with an `APP_KEY`-only `.env`.
 - Fix: `prepare-env.php` writes under an exclusive lock via a temporary file + rename, and before installation fills in settings missing from `.env` from `.env.example` (existing values and the key kept; an installed site's `.env` is never extended); until installation is finished, sessions/cache use files and the queue is synchronous regardless of `.env`.
