@@ -10,6 +10,8 @@ use Filament\Resources\Pages\EditRecord;
 
 abstract class ContentEditRecord extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use InteractsWithContent;
 
     protected function getHeaderActions(): array
@@ -19,7 +21,7 @@ abstract class ContentEditRecord extends EditRecord
             $this->viewLiveAction(),
             $this->revisionsAction(),
             ActionGroup::make([
-                DeleteAction::make()->label('Move to bin'),
+                DeleteAction::make()->label(__('Move to bin')),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
             ]),

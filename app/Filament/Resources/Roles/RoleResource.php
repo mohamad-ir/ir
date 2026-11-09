@@ -17,6 +17,8 @@ use Spatie\Permission\Models\Role;
 
 class RoleResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationLabel = 'Roles & permissions';
@@ -57,7 +59,7 @@ class RoleResource extends Resource
             Section::make()->schema([
                 TextInput::make('name')->required()->unique(ignoreRecord: true)->regex('/^[a-z_]+$/')
                     ->disabled(fn (?Role $record) => $record && array_key_exists($record->name, Permissions::ROLES))
-                    ->helperText('Built-in roles cannot be renamed. Super administrators always have every permission.'),
+                    ->helperText(__('Built-in roles cannot be renamed. Super administrators always have every permission.')),
             ]),
             ...$sections,
         ]);
@@ -66,9 +68,9 @@ class RoleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('name')->formatStateUsing(fn ($state) => Permissions::ROLES[$state] ?? str($state)->headline())->weight('medium'),
-            TextColumn::make('users_count')->counts('users')->label('Users'),
-            TextColumn::make('permissions_count')->counts('permissions')->label('Permissions'),
+            TextColumn::make('name')->formatStateUsing(fn ($state) => __(Permissions::ROLES[$state] ?? str($state)->headline()->toString()))->weight('medium'),
+            TextColumn::make('users_count')->counts('users')->label(__('Users')),
+            TextColumn::make('permissions_count')->counts('permissions')->label(__('Permissions')),
         ])->recordActions([
             EditAction::make(),
             DeleteAction::make()->hidden(fn (Role $record) => array_key_exists($record->name, Permissions::ROLES)),

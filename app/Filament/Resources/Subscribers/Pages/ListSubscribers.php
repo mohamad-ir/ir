@@ -16,12 +16,14 @@ use Filament\Schemas\Components\Tabs\Tab;
 
 class ListSubscribers extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = SubscriberResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('export')->label('Export CSV')->icon('heroicon-o-arrow-down-tray')->color('gray')
+            Action::make('export')->label(__('Export CSV'))->icon('heroicon-o-arrow-down-tray')->color('gray')
                 ->action(fn () => response()->streamDownload(function () {
                     $out = fopen('php://output', 'w');
                     fputcsv($out, ['email', 'name', 'status', 'interests', 'source', 'confirmed_at', 'created_at']);
@@ -32,12 +34,12 @@ class ListSubscribers extends ListRecords
                     });
                     fclose($out);
                 }, 'subscribers-'.now()->format('Y-m-d').'.csv')),
-            Action::make('import')->label('Import CSV')->icon('heroicon-o-arrow-up-tray')->color('gray')
-                ->modalDescription('CSV with an "email" column and optionally "name". Existing addresses are updated, never duplicated.')
+            Action::make('import')->label(__('Import CSV'))->icon('heroicon-o-arrow-up-tray')->color('gray')
+                ->modalDescription(__('CSV with an "email" column and optionally "name". Existing addresses are updated, never duplicated.'))
                 ->schema([
                     FileUpload::make('file')->required()->storeFiles(false)->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel']),
-                    CheckboxList::make('interests')->options(Subscriber::INTERESTS)->default(['weekly_case'])->columns(2),
-                    Toggle::make('consent')->label('I confirm these people consented to receive emails')->accepted(),
+                    CheckboxList::make('interests')->options(\App\Support\Ui::options(Subscriber::INTERESTS))->default(['weekly_case'])->columns(2),
+                    Toggle::make('consent')->label(__('I confirm these people consented to receive emails'))->accepted(),
                 ])
                 ->action(function (array $data) {
                     $handle = fopen($data['file']->getRealPath(), 'r');
@@ -70,17 +72,17 @@ class ListSubscribers extends ListRecords
                     fclose($handle);
                     Notification::make()->success()->title("Imported {$added} subscribers".($skipped ? ", skipped {$skipped}" : ''))->send();
                 }),
-            CreateAction::make()->label('Add subscriber')->icon('heroicon-m-plus'),
+            CreateAction::make()->label(__('Add subscriber'))->icon('heroicon-m-plus'),
         ];
     }
 
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('All'),
-            'subscribed' => Tab::make('Subscribed')->badge(Subscriber::active()->count())->modifyQueryUsing(fn ($query) => $query->active()),
-            'pending' => Tab::make('Awaiting confirmation')->modifyQueryUsing(fn ($query) => $query->where('status', 'pending')),
-            'unsubscribed' => Tab::make('Unsubscribed')->modifyQueryUsing(fn ($query) => $query->where('status', 'unsubscribed')),
+            'all' => Tab::make('All')->label(__('All')),
+            'subscribed' => Tab::make('Subscribed')->label(__('Subscribed'))->badge(Subscriber::active()->count())->modifyQueryUsing(fn ($query) => $query->active()),
+            'pending' => Tab::make('Awaiting confirmation')->label(__('Awaiting confirmation'))->modifyQueryUsing(fn ($query) => $query->where('status', 'pending')),
+            'unsubscribed' => Tab::make('Unsubscribed')->label(__('Unsubscribed'))->modifyQueryUsing(fn ($query) => $query->where('status', 'unsubscribed')),
         ];
     }
 }

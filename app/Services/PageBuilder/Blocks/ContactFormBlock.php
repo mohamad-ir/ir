@@ -12,7 +12,7 @@ class ContactFormBlock extends PageBlock
 {
     public static function key(): string { return 'contact_form'; }
 
-    public static function label(): string { return 'Contact form'; }
+    public static function label(): string { return __('Contact form'); }
 
     public static function icon(): string { return 'heroicon-o-chat-bubble-left-ellipsis'; }
 
@@ -21,7 +21,7 @@ class ContactFormBlock extends PageBlock
         return [
             TextInput::make('heading')->default('Get in touch')->maxLength(160),
             Textarea::make('text')->rows(3),
-            Select::make('default_type')->label('Pre-selected enquiry type')->options(EnquiryType::options())->placeholder('None'),
+            Select::make('default_type')->label(__('Pre-selected enquiry type'))->options(EnquiryType::options())->placeholder(__('None')),
         ];
     }
 }

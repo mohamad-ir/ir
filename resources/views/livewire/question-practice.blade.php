@@ -89,8 +89,8 @@
                                             'bg-emerald-600 text-white' => $state === 'correct',
                                             'bg-red-500 text-white' => $state === 'wrong'])>{{ $key }}</span>
                                         <span class="pt-0.5 text-[0.98rem]">{{ $option['text'] }}</span>
-                                        @if ($answered && $isCorrect)<x-heroicon-m-check-circle class="ml-auto size-6 shrink-0 text-emerald-600" />@endif
-                                        @if ($answered && $state === 'wrong')<x-heroicon-m-x-circle class="ml-auto size-6 shrink-0 text-red-500" />@endif
+                                        @if ($answered && $isCorrect)<x-heroicon-m-check-circle class="ml-auto size-6 shrink-0 text-emerald-600 dark:text-emerald-400" />@endif
+                                        @if ($answered && $state === 'wrong')<x-heroicon-m-x-circle class="ml-auto size-6 shrink-0 text-red-500 dark:text-red-400" />@endif
                                     </button>
                                 @endforeach
                             </fieldset>
@@ -108,7 +108,7 @@
                             @else
                                 <button type="button" wire:click="next" class="btn btn-primary">Next question <x-heroicon-m-arrow-right /></button>
                                 @if ($question->isMultipleChoice() && $selected)
-                                    <span @class(['inline-flex items-center gap-1.5 text-sm font-semibold', 'text-emerald-700' => $selected === $question->correctKey(), 'text-red-600' => $selected !== $question->correctKey()])>
+                                    <span @class(['inline-flex items-center gap-1.5 text-sm font-semibold', 'text-emerald-700' => $selected === $question->correctKey(), 'text-red-600 dark:text-red-400' => $selected !== $question->correctKey()])>
                                         {{ $selected === $question->correctKey() ? 'Correct!' : 'Not quite — the answer is '.$question->correctKey() }}
                                     </span>
                                 @endif

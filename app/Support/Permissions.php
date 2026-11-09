@@ -35,6 +35,7 @@ class Permissions
         'content.edit_others' => 'Edit and delete content created by other people',
         'menus.manage' => 'Manage navigation menus',
         'design.manage' => 'Change theme, branding, header and footer',
+        'popups.manage' => 'Create, publish and analyse popups and announcement bars',
         'seo.manage' => 'Manage SEO settings, redirects and the 404 monitor',
         'analytics.view' => 'View analytics and reports',
         'newsletter.manage' => 'Manage subscribers and send campaigns',
@@ -89,7 +90,7 @@ class Permissions
                 ...$content(self::CONTENT_ACTIONS), 'content.edit_others',
                 'media.view', 'media.create', 'media.update', 'media.delete', 'taxonomy.manage', 'profile.manage', 'reusable_blocks.manage',
                 'menus.manage', 'seo.manage', 'analytics.view', 'newsletter.manage', 'enquiries.manage', 'activity.view', 'sales.view',
-                'comments.moderate',
+                'comments.moderate', 'popups.manage',
             ],
             'author' => [
                 ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),

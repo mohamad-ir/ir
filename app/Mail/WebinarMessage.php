@@ -13,6 +13,9 @@ use Illuminate\Queue\SerializesModels;
 /** A message from the organiser to everyone registered for a webinar. */
 class WebinarMessage extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable, SerializesModels;
 
     public function __construct(public Webinar $webinar, public string $messageSubject, public string $body) {}

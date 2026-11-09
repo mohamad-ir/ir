@@ -40,8 +40,8 @@ class SeoSettings extends SettingsPage
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('sitemap')->label('View sitemap')->icon('heroicon-o-map')->color('gray')->url(route('sitemap'), true),
-            Action::make('rebuild')->label('Rebuild search index & sitemap')->icon('heroicon-o-arrow-path')->color('gray')
+            Action::make('sitemap')->label(__('View sitemap'))->icon('heroicon-o-map')->color('gray')->url(route('sitemap'), true),
+            Action::make('rebuild')->label(__('Rebuild search index & sitemap'))->icon('heroicon-o-arrow-path')->color('gray')
                 ->requiresConfirmation()
                 ->action(function () {
                     $n = app(SearchIndexer::class)->rebuild(SearchIndexer::MODELS);
@@ -54,23 +54,23 @@ class SeoSettings extends SettingsPage
     protected function components(): array
     {
         return [
-            Section::make('Titles')->columns(2)->schema([
-                TextInput::make('seo.title_template')->label('Page title template')->helperText('%title% = page title, %site% = website name.'),
-                TextInput::make('seo.home_title')->label('Homepage title')->placeholder('Defaults to “Site name — tagline”'),
+            Section::make('Titles')->heading(__('Titles'))->columns(2)->schema([
+                TextInput::make('seo.title_template')->label(__('Page title template'))->helperText(__('%title% = page title, %site% = website name.')),
+                TextInput::make('seo.home_title')->label(__('Homepage title'))->placeholder(__('Defaults to “Site name — tagline”')),
             ]),
-            Section::make('Google & Bing')->columns(2)->schema([
-                TextInput::make('seo.google_verification')->label('Google Search Console verification code')->helperText('Only the content="…" value of the HTML tag method.'),
-                TextInput::make('seo.bing_verification')->label('Bing Webmaster verification code'),
-                Placeholder::make('submit')->hiddenLabel()->columnSpanFull()->content(new HtmlString('Submit your sitemap in Search Console: <code class="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-white/10">'.e(route('sitemap')).'</code>')),
+            Section::make('Google & Bing')->heading(__('Google & Bing'))->columns(2)->schema([
+                TextInput::make('seo.google_verification')->label(__('Google Search Console verification code'))->helperText(__('Only the content="…" value of the HTML tag method.')),
+                TextInput::make('seo.bing_verification')->label(__('Bing Webmaster verification code')),
+                Placeholder::make('submit')->hiddenLabel()->columnSpanFull()->content(new HtmlString(e(__('Submit your sitemap in Search Console:')).' <code class="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-white/10">'.e(route('sitemap')).'</code>')),
             ]),
-            Section::make('Social sharing')->columns(2)->schema([
-                TextInput::make('seo.twitter_handle')->label('X / Twitter handle')->prefix('@'),
-                Toggle::make('seo.schema_person')->label('Publish “Physician” structured data for the doctor profile')->inline(false),
+            Section::make('Social sharing')->heading(__('Social sharing'))->columns(2)->schema([
+                TextInput::make('seo.twitter_handle')->label(__('X / Twitter handle'))->prefix('@'),
+                Toggle::make('seo.schema_person')->label(__('Publish “Physician” structured data for the doctor profile'))->inline(false),
             ]),
-            Section::make('Indexing')->schema([
-                Toggle::make('seo.default_noindex')->label('Hide the whole website from search engines')
-                    ->helperText('Use only while preparing the site before launch.'),
-                Textarea::make('seo.robots_extra')->label('Additional robots.txt rules')->rows(3)->placeholder("User-agent: GPTBot\nDisallow: /"),
+            Section::make('Indexing')->heading(__('Indexing'))->schema([
+                Toggle::make('seo.default_noindex')->label(__('Hide the whole website from search engines'))
+                    ->helperText(__('Use only while preparing the site before launch.')),
+                Textarea::make('seo.robots_extra')->label(__('Additional robots.txt rules'))->rows(3)->placeholder("User-agent: GPTBot\nDisallow: /"),
             ]),
         ];
     }

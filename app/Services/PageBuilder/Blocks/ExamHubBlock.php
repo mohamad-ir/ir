@@ -12,7 +12,7 @@ class ExamHubBlock extends PageBlock
 {
     public static function key(): string { return 'exam_hub'; }
 
-    public static function label(): string { return 'FRCS / FRCOphth topics'; }
+    public static function label(): string { return __('FRCS / FRCOphth topics'); }
 
     public static function icon(): string { return 'heroicon-o-clipboard-document-check'; }
 

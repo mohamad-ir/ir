@@ -1,23 +1,41 @@
 @php
     $seo = app(\App\Services\Seo\SeoManager::class);
     $theme = app(\App\Services\Theme\ThemeService::class);
-    $favicon = \App\Models\Media::find(setting('branding.favicon_id'));
     $headerStyle = setting('theme.header_style', 'light');
+    $colorMode = \App\Support\ColorMode::current();
+    $darkPaper = $theme->darkVars(\App\Support\Settings::group('theme'))['--color-paper'];
+    // Never break a page because of popups (e.g. files uploaded before "Apply database updates" was run).
+    $popupItems = rescue(fn () => app(\App\Services\Popups\PopupService::class)->forRequest(request()), collect(), false);
 @endphp
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth{{ $colorMode === 'dark' ? ' dark' : '' }}" data-color-mode="{{ $colorMode }}">
 <head>
     <meta charset="utf-8">
-    <script>document.documentElement.classList.add('js')</script>
+    {{-- Runs before the first paint so the page never flashes in the wrong colours. --}}
+    <script>(function(){var d=document.documentElement,q=window.matchMedia('(prefers-color-scheme: dark)');d.classList.add('js');function a(){var m=d.getAttribute('data-color-mode'),k=m==='dark'||(m==='system'&&q.matches);d.classList.toggle('dark',k);var t=document.querySelector('meta[name=theme-color]');if(t)t.content=k?t.dataset.dark:t.dataset.light}window.applyColorMode=a;a();q.addEventListener&&q.addEventListener('change',a);document.addEventListener('DOMContentLoaded',a)})()</script>
+    <meta name="theme-color" content="{{ setting('theme.background') }}" data-light="{{ setting('theme.background') }}" data-dark="{{ $darkPaper }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $seo->fullTitle() }}</title>
     @include('partials.seo')
-    @if ($favicon)
-        <link rel="icon" href="{{ $favicon->url() }}">
-        <link rel="apple-touch-icon" href="{{ $favicon->url() }}">
-    @else
+    @unless (is_array(setting('branding.icon_set')))
         <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @endunless
+    {{ app(\App\Services\Branding\BrandingService::class)->headTags() }}
+    @php
+        $pwa = app(\App\Services\Pwa\PwaService::class);
+        $pwaConfig = ['enabled' => $pwa->enabled(), 'suggest' => $pwa->suggestsInstall(), 'worker' => route('pwa.worker', [], false), 'auth' => auth()->check()];
+    @endphp
+    @if ($pwa->enabled())
+        <link rel="manifest" href="{{ route('pwa.manifest', [], false) }}">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        @foreach ($pwa->splashLinks() as $splash)
+            <link rel="apple-touch-startup-image" href="{{ $splash['href'] }}" media="{{ $splash['media'] }}">
+        @endforeach
     @endif
+    <script>window.__pwa = {{ \Illuminate\Support\Js::from($pwaConfig) }};</script>
     <link rel="alternate" type="application/rss+xml" title="{{ setting('site.name') }}" href="{{ route('feed') }}">
     <style>{!! $theme->css() !!}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -38,6 +56,9 @@
     @endunless
 
     @include('partials.footer')
+    @include('partials.pwa')
+    @include('partials.popups')
+    @include('partials.back-to-top')
     @include('partials.search-modal')
     @include('partials.cookie-banner')
 

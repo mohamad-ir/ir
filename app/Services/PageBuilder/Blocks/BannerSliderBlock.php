@@ -10,18 +10,18 @@ class BannerSliderBlock extends PageBlock
 {
     public static function key(): string { return 'banner_slider'; }
 
-    public static function label(): string { return 'Banner slider'; }
+    public static function label(): string { return __('Banner slider'); }
 
     public static function icon(): string { return 'heroicon-o-rectangle-group'; }
 
-    public static function description(): string { return 'Show one of your image banners / sliders (Design › Banners).'; }
+    public static function description(): string { return __('Show one of your image banners / sliders (Design › Banners).'); }
 
     public static function schema(): array
     {
         return [
-            Select::make('banner_id')->label('Banner')->required()->searchable()
+            Select::make('banner_id')->label(__('Banner'))->required()->searchable()
                 ->options(fn () => Banner::orderBy('name')->pluck('name', 'id'))
-                ->helperText('Create and edit banners under Design › Banners & sliders.'),
+                ->helperText(__('Create and edit banners under Design › Banners & sliders.')),
         ];
     }
 

@@ -7,6 +7,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateMembershipPlan extends CreateRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = MembershipPlanResource::class;
 
     protected function getRedirectUrl(): string

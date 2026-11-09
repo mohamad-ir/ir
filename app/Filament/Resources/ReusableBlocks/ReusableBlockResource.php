@@ -20,6 +20,8 @@ use Filament\Tables\Table;
 
 class ReusableBlockResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = ReusableBlock::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path-rounded-square';
@@ -39,9 +41,9 @@ class ReusableBlockResource extends Resource
             Group::make()->columnSpan(['xl' => 5])->schema([
                 Section::make()->schema([
                     TextInput::make('name')->required()->maxLength(120),
-                    Textarea::make('description')->rows(2)->helperText('Where and why this block is used.'),
+                    Textarea::make('description')->rows(2)->helperText(__('Where and why this block is used.')),
                 ]),
-                PageResource::builder('blocks', includeReusable: false)->label('Sections'),
+                PageResource::builder('blocks', includeReusable: false)->label(__('Sections')),
             ]),
             Group::make()->columnSpan(['xl' => 7])->schema([View::make('filament.page-builder.preview')]),
         ]);
@@ -52,7 +54,7 @@ class ReusableBlockResource extends Resource
         return $table->columns([
             TextColumn::make('name')->searchable()->weight('medium')->description(fn (ReusableBlock $record) => $record->description),
             TextColumn::make('sections')->getStateUsing(fn (ReusableBlock $record) => count($record->blocks ?? [])),
-            TextColumn::make('used')->label('Used on pages')->getStateUsing(fn (ReusableBlock $record) => static::usageCount($record)),
+            TextColumn::make('used')->label(__('Used on pages'))->getStateUsing(fn (ReusableBlock $record) => static::usageCount($record)),
             TextColumn::make('updated_at')->since(),
         ])->recordActions([EditAction::make(), DeleteAction::make()]);
     }

@@ -14,9 +14,9 @@ enum AccessLevel: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Public => 'Everyone',
-            self::Registered => 'Registered users (free account)',
-            self::Members => 'Paying members',
+            self::Public => __('Everyone'),
+            self::Registered => __('Registered users (free account)'),
+            self::Members => __('Paying members'),
         };
     }
 

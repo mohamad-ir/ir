@@ -40,43 +40,43 @@ class ContentTable
 
     public static function published(): TextColumn
     {
-        return TextColumn::make('published_at')->label('Published')->date('j M Y')->sortable()->toggleable()->placeholder('—');
+        return TextColumn::make('published_at')->label(__('Published'))->date('j M Y')->sortable()->toggleable()->placeholder('—');
     }
 
     public static function author(): TextColumn
     {
-        return TextColumn::make('author.name')->label('Author')->toggleable(isToggledHiddenByDefault: true);
+        return TextColumn::make('author.name')->label(__('Author'))->toggleable(isToggledHiddenByDefault: true);
     }
 
     public static function views(): TextColumn
     {
-        return TextColumn::make('views_count')->label('Views')->numeric()->sortable()->toggleable()->alignEnd();
+        return TextColumn::make('views_count')->label(__('Views'))->numeric()->sortable()->toggleable()->alignEnd();
     }
 
     public static function filters(bool $topics = true, bool $trashed = true): array
     {
         return array_values(array_filter([
             SelectFilter::make('status')->options(ContentStatus::options()),
-            $topics ? SelectFilter::make('topic')->label('Topic')
+            $topics ? SelectFilter::make('topic')->label(__('Topic'))
                 ->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))
                 ->searchable()
                 ->query(fn (Builder $query, array $data) => $data['value'] ? $query->inTopic((int) $data['value']) : $query) : null,
-            SelectFilter::make('author_id')->label('Author')->options(fn () => User::role(User::STAFF_ROLES)->pluck('name', 'id')),
-            $trashed ? TrashedFilter::make()->label('Bin') : null,
+            SelectFilter::make('author_id')->label(__('Author'))->options(fn () => User::role(User::STAFF_ROLES)->pluck('name', 'id')),
+            $trashed ? TrashedFilter::make()->label(__('Bin')) : null,
         ]));
     }
 
     public static function recordActions(string $previewType, string $permissionPrefix): array
     {
         return [
-            EditAction::make()->iconButton()->tooltip('Edit'),
+            EditAction::make()->iconButton()->tooltip(__('Edit')),
             ActionGroup::make([
-                Action::make('preview')->label('Preview')->icon('heroicon-o-eye')
+                Action::make('preview')->label(__('Preview'))->icon('heroicon-o-eye')
                     ->url(fn (Model $record) => route('preview.show', [$previewType, $record->getKey()]), shouldOpenInNewTab: true),
-                Action::make('live')->label('View on website')->icon('heroicon-o-arrow-top-right-on-square')
+                Action::make('live')->label(__('View on website'))->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(fn (Model $record) => $record->url(), shouldOpenInNewTab: true)
                     ->visible(fn (Model $record) => method_exists($record, 'isPublished') && $record->isPublished() && method_exists($record, 'url')),
-                ReplicateAction::make()->label('Duplicate as draft')
+                ReplicateAction::make()->label(__('Duplicate as draft'))
                     ->excludeAttributes(['views_count', 'reveals_count', 'guesses_count', 'correct_guesses_count', 'plays_count', 'completions_count', 'attempts_count', 'correct_count'])
                     ->mutateRecordDataUsing(function (array $data) {
                         $data['title'] = ($data['title'] ?? 'Copy').' (copy)';
@@ -98,10 +98,10 @@ class ContentTable
                         }
                     })
                     ->successRedirectUrl(fn (Model $replica) => request()->header('referer') ?? url()->previous()),
-                DeleteAction::make()->label('Move to bin'),
+                DeleteAction::make()->label(__('Move to bin')),
                 RestoreAction::make(),
-                ForceDeleteAction::make()->label('Delete permanently'),
-            ])->tooltip('More'),
+                ForceDeleteAction::make()->label(__('Delete permanently')),
+            ])->tooltip(__('More')),
         ];
     }
 
@@ -109,20 +109,20 @@ class ContentTable
     {
         return [
             BulkActionGroup::make([
-                BulkAction::make('publish')->label('Publish')->icon('heroicon-o-check-circle')->color('success')
+                BulkAction::make('publish')->label(__('Publish'))->icon('heroicon-o-check-circle')->color('success')
                     ->visible(fn () => auth()->user()?->can($permissionPrefix.'.publish'))
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
                         $records->each(fn (Model $record) => auth()->user()->can('update', $record) ? $record->update(['status' => ContentStatus::Published, 'published_at' => $record->published_at ?? now()]) : null);
-                        Notification::make()->success()->title('Published '.$records->count().' items')->send();
+                        Notification::make()->success()->title(__('Published :count items', ['count' => $records->count()]))->send();
                     })->deselectRecordsAfterCompletion(),
-                BulkAction::make('unpublish')->label('Revert to draft')->icon('heroicon-o-pencil-square')
+                BulkAction::make('unpublish')->label(__('Revert to draft'))->icon('heroicon-o-pencil-square')
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
                         $records->each(fn (Model $record) => auth()->user()->can('update', $record) ? $record->update(['status' => ContentStatus::Draft]) : null);
-                        Notification::make()->success()->title('Moved to drafts')->send();
+                        Notification::make()->success()->title(__('Moved to drafts'))->send();
                     })->deselectRecordsAfterCompletion(),
-                DeleteBulkAction::make()->label('Move to bin'),
+                DeleteBulkAction::make()->label(__('Move to bin')),
                 RestoreBulkAction::make(),
                 ForceDeleteBulkAction::make(),
             ]),

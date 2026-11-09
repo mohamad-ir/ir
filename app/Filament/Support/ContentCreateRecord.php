@@ -6,6 +6,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 abstract class ContentCreateRecord extends CreateRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use InteractsWithContent;
 
     protected function mutateFormDataBeforeCreate(array $data): array

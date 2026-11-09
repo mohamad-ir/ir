@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditReusableBlock extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use \App\Filament\Concerns\HasBuilderPreview;
 
     protected \Filament\Support\Enums\Width|string|null $maxContentWidth = \Filament\Support\Enums\Width::Full;

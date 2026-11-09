@@ -37,9 +37,9 @@ class EditorialPipeline extends Widget
             }
             $model::query()->where(fn ($q) => $q->whereIn('status', ['draft', 'pending'])->orWhere(fn ($w) => $w->where('status', 'published')->where('published_at', '>', now())))
                 ->latest('updated_at')->limit(6)->get()
-                ->each(fn ($r) => $items->push(['label' => $label, 'title' => $r->title, 'status' => $r->displayStatus(), 'color' => $r->displayStatusColor(), 'when' => $r->isScheduled() ? $r->published_at : $r->updated_at, 'url' => $resource::getUrl('edit', ['record' => $r])]));
+                ->each(fn ($r) => $items->push(['label' => $label, 'title' => $r->title, 'status' => $r->displayStatus(), 'pending' => $r->status?->value === 'pending', 'scheduled' => $r->isScheduled(), 'color' => $r->displayStatusColor(), 'when' => $r->isScheduled() ? $r->published_at : $r->updated_at, 'url' => $resource::getUrl('edit', ['record' => $r])]));
         }
 
-        return ['items' => $items->sortByDesc(fn ($i) => $i['status'] === 'In review' ? PHP_INT_MAX : $i['when']->timestamp)->take(8)->values()];
+        return ['items' => $items->sortByDesc(fn ($i) => $i['pending'] ? PHP_INT_MAX : $i['when']->timestamp)->take(8)->values()];
     }
 }

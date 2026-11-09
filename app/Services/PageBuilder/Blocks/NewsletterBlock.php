@@ -13,7 +13,7 @@ class NewsletterBlock extends PageBlock
 {
     public static function key(): string { return 'newsletter'; }
 
-    public static function label(): string { return 'Newsletter signup'; }
+    public static function label(): string { return __('Newsletter signup'); }
 
     public static function icon(): string { return 'heroicon-o-envelope'; }
 
@@ -22,10 +22,10 @@ class NewsletterBlock extends PageBlock
     public static function schema(): array
     {
         return [
-            TextInput::make('heading')->placeholder('Uses the newsletter setting: “Receive a new OCT case every week”')->maxLength(160),
+            TextInput::make('heading')->placeholder(__('Uses the newsletter setting: “Receive a new OCT case every week”'))->maxLength(160),
             Textarea::make('text')->rows(2),
-            CheckboxList::make('interests')->label('Subscribe people to')->options(Subscriber::INTERESTS)->default(['weekly_case'])->columns(2),
-            ToggleButtons::make('style')->inline()->options(['split' => 'Text beside form', 'centered' => 'Centred'])->default('split'),
+            CheckboxList::make('interests')->label(__('Subscribe people to'))->options(\App\Support\Ui::options(Subscriber::INTERESTS))->default(['weekly_case'])->columns(2),
+            ToggleButtons::make('style')->inline()->options(\App\Support\Ui::options(['split' => 'Text beside form', 'centered' => 'Centred']))->default('split'),
         ];
     }
 

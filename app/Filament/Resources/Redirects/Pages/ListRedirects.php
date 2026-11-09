@@ -8,10 +8,12 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListRedirects extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = RedirectResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New'))->icon('heroicon-m-plus')];
     }
 }

@@ -171,7 +171,7 @@ DirectAdmin’s own *Create/Restore Backups* tool is a good additional safety ne
 
 1. **System › Backups → Create backup now**, and download it.
 2. **System › Health & maintenance → Enable maintenance mode** (keep the bypass link).
-3. Upload the new package and replace the contents of `oct-academy/` **except** `.env` and `storage/`, and replace `public_html/build`, `css`, `js`, `fonts` and `index.php` (never delete `public_html/media`).
+3. Upload the new package and replace the contents of `oct-academy/` **except** `.env` and `storage/`, and replace `public_html/build`, `css`, `js`, `fonts`, `icons`, `favicon.svg` and `index.php` with the ones from the package’s `public_html` folder (never delete `public_html/media`). Copy any other new folder found in the package’s `public_html` as well.
 4. Open **System › Health & maintenance** (`/admin/system/health`). If database updates are pending, click **Apply database updates**, then **Clear all caches** and **Optimise for speed**. (With SSH you can instead run `php artisan migrate --force && php artisan optimize`.)
 5. Bring the site back online.
 
@@ -185,6 +185,32 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
+
+### Upgrading from 1.3 to 1.4 (dark mode, profile photos, site identity, Persian dashboard, installable app, popups)
+Same steps — make sure the new **`public_html/icons`** folder is copied (default browser/app icons; without it the installable app cannot start offline). **Apply database updates** runs three updates:
+- each member’s light/dark preference and each team member’s dashboard language;
+- the **Popups & announcements** tables; Editors get the new *Manage popups* permission, and the old *Header & footer › Announcement bar* (text, link, on/off) becomes an announcement bar in **Design › Popups & announcements**.
+
+Then:
+1. **Design › Theme & branding › Site identity** — the site name and tagline now live here (moved from Settings › General). Upload a **square site icon** (PNG, ≥ 512 px): browser, iPhone/Android and app icons are created from it. If your logo is an image, upload a version for dark backgrounds under *Light & dark mode*.
+2. **Installable app** — on by default, needs HTTPS (System › Health shows a warning otherwise). Follow the checklist below on staging before going live.
+3. **Popup settings** (Design › Popups & announcements) — check the site-wide limits.
+4. Privacy policy — add a sentence about profile photos (see the template in a fresh installation).
+5. **Behind a proxy or CDN other than Cloudflare?** The application now trusts forwarded visitor IP addresses only from the same server/private network and from Cloudflare (so nobody can fake their IP to get around sign-in limits). If your host puts another proxy in front of the site and every visitor shows the same IP in the dashboard, add its address to `.env`: `TRUSTED_PROXIES=203.0.113.10,PRIVATE_SUBNETS` (or `*` if every request really comes through the proxy), then **Clear all caches**.
+
+The dashboard can be shown in Persian per team member (top-right menu); the public website and all emails stay in English. Persian fonts are included in the package.
+
+### Installable app (PWA) — staging and go-live checklist
+Browsers only install apps and run the offline worker on **HTTPS** (or `localhost`). On staging:
+1. Give staging a real certificate: DirectAdmin › SSL Certificates › *Let’s Encrypt*, then set `APP_URL=https://staging.yourdomain…` in `.env` and **Clear all caches**. Self-signed certificates do not work for installation.
+2. Open **System › Health** — the *Installable app (PWA)* row must be green.
+3. Desktop Chrome/Edge: open the site, DevTools › *Application* › *Manifest* (no errors) and *Service workers* (status *activated*); the install icon appears in the address bar. Lighthouse › *PWA/Best practices* should pass.
+4. Android (Chrome): visit 3 pages → the suggestion card appears → *Install*. Open the app from the home screen: it starts full screen with the launch screen. Turn on airplane mode: pages you read appear, others show the offline page.
+5. iPhone/iPad (Safari): Share › *Add to Home Screen*; check the icon, the name, the launch screen and full-screen start.
+6. Sign in on the phone, open *My learning*, sign out, go offline: no account page must be available offline.
+7. Update test: change any theme colour and save; reopen the installed app → *“A new version is available”* → *Refresh*.
+8. To switch the app off in an emergency: Theme & branding › Site identity › untick *Let visitors install the website as an app* — browsers remove the worker and its caches on their next visit.
+The worker is served by Laravel at `/sw.js` (never cached by browsers or proxies); if a CDN/Cloudflare is used, exclude `/sw.js` and `/manifest.webmanifest` from edge caching.
 
 ## 12. Troubleshooting
 

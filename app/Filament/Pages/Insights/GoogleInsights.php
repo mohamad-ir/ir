@@ -12,6 +12,8 @@ use Throwable;
 
 class GoogleInsights extends Page
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static ?string $slug = 'insights/google';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
@@ -37,9 +39,9 @@ class GoogleInsights extends Page
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('refresh')->label('Refresh data')->icon('heroicon-o-arrow-path')->color('gray')
+            Action::make('refresh')->label(__('Refresh data'))->icon('heroicon-o-arrow-path')->color('gray')
                 ->action(fn () => GoogleClient::clearCache()),
-            Action::make('settings')->label('Connection settings')->icon('heroicon-o-cog-6-tooth')->color('gray')
+            Action::make('settings')->label(__('Connection settings'))->icon('heroicon-o-cog-6-tooth')->color('gray')
                 ->url(AnalyticsSettings::getUrl())->visible(fn () => auth()->user()->can('settings.manage')),
         ];
     }

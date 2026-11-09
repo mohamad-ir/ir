@@ -12,14 +12,14 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, HasLocalePreference, MustVerifyEmail
 {
     use HasFactory, HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, LogsActivity, Notifiable;
 
@@ -28,7 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     protected $fillable = [
         'name', 'email', 'password', 'title', 'career_stage', 'specialty', 'institution',
-        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id', 'notify_replies',
+        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id', 'notify_replies', 'color_mode', 'admin_locale',
     ];
 
     protected $hidden = ['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'];
@@ -47,10 +47,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         ];
     }
 
+    /** Emails and notifications to people are always English, whatever language the dashboard is shown in. */
+    public function preferredLocale(): string
+    {
+        return 'en';
+    }
+
     protected static function booted(): void
     {
         // Comments with replies are anonymised rather than removed, so threads stay readable.
         static::deleting(fn (User $user) => app(\App\Services\Comments\CommentService::class)->eraseUser($user));
+        // The account's photo files go with it.
+        static::deleted(fn (User $user) => app(\App\Services\Users\AvatarService::class)->deleteFiles($user->avatar_path));
     }
 
     public function comments(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -75,12 +83,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->avatarUrl();
+        return $this->avatarUrl('sm');
     }
 
-    public function avatarUrl(): ?string
+    /** Profile photo URL in one of AvatarService::SIZES (sm 96px, md 256px, lg 512px), or null to show initials. */
+    public function avatarUrl(string $size = 'md'): ?string
     {
-        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
+        return \App\Services\Users\AvatarService::url($this->avatar_path, $size);
     }
 
     public function initials(): string

@@ -36,23 +36,21 @@ class HeaderFooterSettings extends SettingsPage
 
     protected function components(): array
     {
-        $menus = new HtmlString('Navigation links are managed in <a class="text-primary-600 underline" href="'.MenuResource::getUrl().'">Design › Navigation menus</a>.');
+        $menus = new HtmlString(e(__('Navigation links are managed in')).' <a class="text-primary-600 underline" href="'.MenuResource::getUrl().'">'.e(__('Design › Navigation menus')).'</a>.');
 
         return [
-            Section::make('Header')->columns(2)->schema([
-                Toggle::make('header.show_search')->label('Show search button'),
-                Toggle::make('header.show_account')->label('Show sign-in / account link'),
+            Section::make('Header')->heading(__('Header'))->columns(2)->schema([
+                Toggle::make('header.show_search')->label(__('Show search button')),
+                Toggle::make('header.show_account')->label(__('Show sign-in / account link')),
                 Placeholder::make('menus')->hiddenLabel()->content($menus)->columnSpanFull(),
             ]),
-            Section::make('Announcement bar')->description('A slim bar above the header for news, e.g. a new course or webinar.')->columns(2)->schema([
-                Toggle::make('header.announcement_enabled')->label('Show announcement')->columnSpanFull(),
-                TextInput::make('header.announcement')->label('Message')->maxLength(160),
-                TextInput::make('header.announcement_url')->label('Link (optional)'),
+            Section::make('Announcement bar')->heading(__('Announcement bar'))->schema([
+                Placeholder::make('announcements')->hiddenLabel()->content(new HtmlString(e(__('Announcement bars, popups and slide-ins — with scheduling, page targeting and statistics — are managed in')).' <a class="text-primary-600 underline" href="'.\App\Filament\Resources\Popups\PopupResource::getUrl().'">'.e(__('Design › Popups & announcements')).'</a>.')),
             ]),
-            Section::make('Footer')->schema([
-                Textarea::make('footer.about')->label('About text')->rows(3),
-                Toggle::make('footer.show_newsletter')->label('Show newsletter signup'),
-                TextInput::make('footer.copyright')->label('Copyright line')->helperText('Use {year} and {site} as placeholders.'),
+            Section::make('Footer')->heading(__('Footer'))->schema([
+                Textarea::make('footer.about')->label(__('About text'))->rows(3),
+                Toggle::make('footer.show_newsletter')->label(__('Show newsletter signup')),
+                TextInput::make('footer.copyright')->label(__('Copyright line'))->helperText(__('Use {year} and {site} as placeholders.')),
                 Placeholder::make('menus2')->hiddenLabel()->content($menus),
             ]),
         ];

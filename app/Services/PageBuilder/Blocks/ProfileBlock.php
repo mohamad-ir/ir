@@ -17,7 +17,7 @@ class ProfileBlock extends PageBlock
 {
     public static function key(): string { return 'profile'; }
 
-    public static function label(): string { return 'Doctor profile'; }
+    public static function label(): string { return __('Doctor profile'); }
 
     public static function icon(): string { return 'heroicon-o-user-circle'; }
 
@@ -26,14 +26,14 @@ class ProfileBlock extends PageBlock
         return [
             Grid::make(2)->schema([
                 TextInput::make('eyebrow')->default('About')->maxLength(80),
-                TextInput::make('heading')->placeholder('Defaults to the doctor’s name')->maxLength(160),
-                TextInput::make('credentials')->placeholder('Defaults to profile credentials'),
-                TextInput::make('role')->placeholder('Defaults to profile role'),
+                TextInput::make('heading')->placeholder(__('Defaults to the doctor’s name'))->maxLength(160),
+                TextInput::make('credentials')->placeholder(__('Defaults to profile credentials')),
+                TextInput::make('role')->placeholder(__('Defaults to profile role')),
             ]),
-            MediaPicker::make('photo_id')->label('Photo')->helperText('Defaults to the profile photo in Settings.'),
-            RichEditor::make('bio')->label('Biography')->toolbarButtons([['bold', 'italic', 'link'], ['bulletList'], ['h3', 'blockquote']]),
+            MediaPicker::make('photo_id')->label(__('Photo'))->helperText(__('Defaults to the profile photo in Settings.')),
+            RichEditor::make('bio')->label(__('Biography'))->toolbarButtons([['bold', 'italic', 'link'], ['bulletList'], ['h3', 'blockquote']]),
             static::buttonsRepeater(),
-            Toggle::make('show_social')->label('Show professional profile links (LinkedIn, ORCID…)')->default(true),
+            Toggle::make('show_social')->label(__('Show professional profile links (LinkedIn, ORCID…)'))->default(true),
         ];
     }
 

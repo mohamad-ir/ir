@@ -16,7 +16,7 @@ class HeroBlock extends PageBlock
 {
     public static function key(): string { return 'hero'; }
 
-    public static function label(): string { return 'Hero'; }
+    public static function label(): string { return __('Hero'); }
 
     public static function icon(): string { return 'heroicon-o-sparkles'; }
 
@@ -24,15 +24,15 @@ class HeroBlock extends PageBlock
     {
         return [
             Grid::make(2)->schema([
-                TextInput::make('eyebrow')->maxLength(80)->placeholder('Ophthalmology education'),
-                Select::make('layout')->options(['split' => 'Text + image side by side', 'centered' => 'Centred text', 'background' => 'Full background image'])->default('split')->selectablePlaceholder(false),
+                TextInput::make('eyebrow')->maxLength(80)->placeholder(__('Ophthalmology education')),
+                Select::make('layout')->options(\App\Support\Ui::options(['split' => 'Text + image side by side', 'centered' => 'Centred text', 'background' => 'Full background image']))->default('split')->selectablePlaceholder(false),
             ]),
-            Textarea::make('heading')->required()->rows(2)->maxLength(160)->helperText('Wrap words in *asterisks* to highlight them in the accent colour.'),
+            Textarea::make('heading')->required()->rows(2)->maxLength(160)->helperText(__('Wrap words in *asterisks* to highlight them in the accent colour.')),
             Textarea::make('subheading')->rows(3)->maxLength(400),
-            MediaPicker::make('image_id')->label('Image'),
-            TagsInput::make('highlights')->label('Credential chips')->placeholder('e.g. FRCOphth')->helperText('Short badges shown under the text.'),
+            MediaPicker::make('image_id')->label(__('Image')),
+            TagsInput::make('highlights')->label(__('Credential chips'))->placeholder(__('e.g. FRCOphth'))->helperText(__('Short badges shown under the text.')),
             static::buttonsRepeater(),
-            Toggle::make('show_search')->label('Show search box')->helperText('Lets visitors search cases, articles and videos straight from the hero.'),
+            Toggle::make('show_search')->label(__('Show search box'))->helperText(__('Lets visitors search cases, articles and videos straight from the hero.')),
         ];
     }
 

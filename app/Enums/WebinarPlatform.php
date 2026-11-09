@@ -15,11 +15,11 @@ enum WebinarPlatform: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Zoom => 'Zoom',
-            self::YoutubeLive => 'YouTube Live',
-            self::Teams => 'Microsoft Teams',
-            self::GoogleMeet => 'Google Meet',
-            self::Other => 'Other platform',
+            self::Zoom => __('Zoom'),
+            self::YoutubeLive => __('YouTube Live'),
+            self::Teams => __('Microsoft Teams'),
+            self::GoogleMeet => __('Google Meet'),
+            self::Other => __('Other platform'),
         };
     }
 

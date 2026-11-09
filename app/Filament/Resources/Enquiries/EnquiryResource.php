@@ -25,6 +25,8 @@ use Illuminate\Support\HtmlString;
 
 class EnquiryResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Enquiry::class;
 
     protected static ?string $navigationLabel = 'Enquiries';
@@ -61,12 +63,12 @@ class EnquiryResource extends Resource
                 ]),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Section::make('From')->schema([
+                Section::make('From')->heading(__('From'))->schema([
                     Placeholder::make('from')->hiddenLabel()->content(fn (?Enquiry $record) => new HtmlString('<div class="space-y-1 text-sm"><div class="font-semibold">'.e($record?->name).'</div><div><a class="text-primary-600" href="mailto:'.e($record?->email).'">'.e($record?->email).'</a></div><div class="text-gray-500">'.e($record?->organisation).'</div><div class="pt-2 text-xs text-gray-500">Received '.e($record?->created_at?->format('j M Y H:i')).'</div>'.($record?->replied_at ? '<div class="text-xs text-success-600">Replied '.e($record->replied_at->format('j M Y H:i')).'</div>' : '').'</div>')),
                 ]),
-                Section::make('Follow-up')->schema([
+                Section::make('Follow-up')->heading(__('Follow-up'))->schema([
                     Select::make('status')->options(EnquiryStatus::options())->required(),
-                    Textarea::make('admin_notes')->label('Private notes')->rows(4),
+                    Textarea::make('admin_notes')->label(__('Private notes'))->rows(4),
                 ]),
             ]),
         ]);
@@ -81,12 +83,12 @@ class EnquiryResource extends Resource
                 TextColumn::make('subject')->searchable(['subject', 'name', 'email', 'message'])->wrap()->description(fn (Enquiry $record) => $record->name.' · '.$record->email),
                 TextColumn::make('type')->badge(),
                 TextColumn::make('status')->badge(),
-                TextColumn::make('created_at')->label('Received')->since()->sortable(),
+                TextColumn::make('created_at')->label(__('Received'))->since()->sortable(),
             ])
             ->filters([SelectFilter::make('type')->options(EnquiryType::options()), SelectFilter::make('status')->options(EnquiryStatus::options())])
-            ->recordActions([EditAction::make()->label('Open')->icon('heroicon-o-envelope-open')])
+            ->recordActions([EditAction::make()->label(__('Open'))->icon('heroicon-o-envelope-open')])
             ->toolbarActions([BulkActionGroup::make([
-                BulkAction::make('archive')->label('Archive')->icon('heroicon-o-archive-box')->action(fn (Collection $records) => $records->each->update(['status' => EnquiryStatus::Archived])),
+                BulkAction::make('archive')->label(__('Archive'))->icon('heroicon-o-archive-box')->action(fn (Collection $records) => $records->each->update(['status' => EnquiryStatus::Archived])),
                 DeleteBulkAction::make(),
             ])]);
     }

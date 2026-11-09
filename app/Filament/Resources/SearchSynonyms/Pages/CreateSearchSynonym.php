@@ -7,6 +7,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateSearchSynonym extends CreateRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = SearchSynonymResource::class;
 
     protected function getRedirectUrl(): string

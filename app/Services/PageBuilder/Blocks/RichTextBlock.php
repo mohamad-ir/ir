@@ -13,7 +13,7 @@ class RichTextBlock extends PageBlock
 {
     public static function key(): string { return 'rich_text'; }
 
-    public static function label(): string { return 'Text'; }
+    public static function label(): string { return __('Text'); }
 
     public static function icon(): string { return 'heroicon-o-document-text'; }
 
@@ -24,7 +24,7 @@ class RichTextBlock extends PageBlock
             RichEditor::make('content')->required()
                 ->customBlocks(RichText::customBlocks())
                 ->fileAttachmentsDisk('public')->fileAttachmentsDirectory('editor')->fileAttachmentsVisibility('public'),
-            ToggleButtons::make('align')->inline()->options(['left' => 'Left', 'center' => 'Centred'])->default('left'),
+            ToggleButtons::make('align')->inline()->options(\App\Support\Ui::options(['left' => 'Left', 'center' => 'Centred']))->default('left'),
         ];
     }
 

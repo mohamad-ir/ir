@@ -10,7 +10,7 @@ class CtaBlock extends PageBlock
 {
     public static function key(): string { return 'cta'; }
 
-    public static function label(): string { return 'Call to action'; }
+    public static function label(): string { return __('Call to action'); }
 
     public static function icon(): string { return 'heroicon-o-megaphone'; }
 

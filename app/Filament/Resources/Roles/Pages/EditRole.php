@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditRole extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = RoleResource::class;
 
     protected function afterSave(): void
@@ -26,7 +28,7 @@ class EditRole extends EditRecord
 
     public function getTitle(): string
     {
-        return 'Role: '.(\App\Support\Permissions::ROLES[$this->record->name] ?? $this->record->name);
+        return __('Role').': '.__(\App\Support\Permissions::ROLES[$this->record->name] ?? $this->record->name);
     }
 
     protected function getRedirectUrl(): ?string

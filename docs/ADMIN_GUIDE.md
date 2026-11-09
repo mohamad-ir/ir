@@ -67,11 +67,59 @@ Image banners — a single banner or a slider with several slides — for the **
 
 One banner per location is shown (the first active one). You can also place a banner anywhere with the **Banner slider** section of the page builder.
 
+### Popups & announcements (Design › Popups & announcements)
+Three kinds of message, all managed in one list:
+- **Popup** — a window in the middle of the screen (optionally darkening the page), or a *bottom sheet* on phones.
+- **Slide-in** — a small box in the bottom-right or bottom-left corner that does not block reading.
+- **Announcement bar** — one line at the top of every page (above the header) or fixed to the bottom of the screen. This replaces the former *Header & footer › Announcement bar*; an existing announcement was moved here automatically.
+
+**Creating one**: *New popup* → optionally **Start from a template** (newsletter signup, course launch, webinar reminder, membership offer, announcement bar, important notice, welcome for new visitors) → adjust the tabs. The **live preview** on the right shows the unsaved popup on a real page of the site (computer / tablet / phone, light / dark, choice of page; *Replay* shows it again). The preview is never counted in the statistics.
+- **Content**: title, small label, text (bold, italic, links, lists), optional image, main button (text + link: `/page`, `#anchor` or `https://…`, optionally in a new tab), optional *No thanks* button, and optionally the **newsletter signup form** (subscribers go to Audience › Subscribers with the usual confirmation email).
+- **Design**: position, size, colours (page colours, brand, accent, highlight — these follow light/dark mode — or custom colours with automatic text contrast), image above / beside / behind the text, animation (fade, slide, zoom, none; never shown to visitors who ask for reduced motion), darkened background, close by clicking outside, close (×) button, automatic closing for slide-ins and bars.
+- **Display rules** — *when*: immediately, after N seconds, after scrolling N % of the page, when the visitor is about to leave (pointer towards the browser tabs; on phones a quick scroll back up), after N seconds of inactivity, from the Nth page of a visit, or **only when a link opens it** (link to `#popup-ID` from any page or menu). *Where*: only on / never on certain pages (`/courses/*` = every course page, `/` = homepage). *Who*: everyone, visitors not signed in, signed-in users, members with an active membership, signed-in users without a membership; computers / tablets / phones; first visit or returning visitors; visitors coming from a site or campaign (matches the referrer or the `utm_source` / `utm_medium` / `utm_campaign` of the visit).
+- **Schedule & limits**: Draft / Published / Paused, **priority** (when several popups could appear in the same place, only the highest priority is shown), start and end date, days of the week, daily hours (site time zone; overnight windows such as 22:00–06:00 work), frequency per visitor (every page view, once per visit, once every N days, only once), hide for N days after closing, maximum views per visitor, stop after the visitor clicks or signs up, and a **campaign limit** (stop after N views in total).
+
+**Site-wide settings** (*Popup settings* on the list): switch all popups on/off at once, maximum automatic popups per visit (default 2), minutes between two automatic popups (default 10) and pages where popups never appear. Popups never appear in the dashboard, on sign-in, registration, password or checkout pages, to search engines, or while the cookie notice or the app-install suggestion is open. Only one centre popup is open at a time; a bottom bar pushes slide-ins up instead of covering them.
+
+**Statistics**: the list shows views, clicks and click-through rate, sign-ups and the status (*Live*, *Scheduled*, *Ended*, *Paused*, *Limit reached*, *Outside its days/hours*). Each popup's page shows totals with 14-day trends and a daily chart (7/30/90 days) with a breakdown per device. Row menu: Publish / Pause, *Preview on the website*, *Duplicate as draft*, **Show again to everyone** (visitors who already saw or closed it see it again; statistics are kept) and *Reset statistics*. Staff visits are not counted when *Exclude staff* is on in analytics. The visitor's “already seen / closed” state is stored only in their own browser (no cookies, no personal data).
+
+Permission: **popups.manage** (Administrators and Editors by default).
+
 ### Navigation menus
 Header, header buttons, three footer columns and legal links. Drag to reorder; header items can have dropdowns. Pick a destination from the list or type any URL.
 
 ### Theme & branding / Header & footer
 Colours (with an accessibility contrast check and ready-made presets), heading and body fonts, text size, corner rounding, button shape, spacing, header and footer styles, logo, favicon and default social image — all with a live preview before saving.
+
+**Site identity** (Theme & branding › *Site identity*) — everything that identifies the website, in one place:
+- **Site name** (page titles, Google, emails, certificates), **short name** (under the icon on phone home screens, ≤ 12 characters), **tagline**, **display title** (shown next to the built-in symbol when no logo image is used) and the **logo text alternative** read by screen readers and search engines.
+- **Logo for light backgrounds** (horizontal, PNG or WebP with a transparent background, at least 120 px tall) and **logo for dark backgrounds** (light-coloured version). The right one is used automatically in the header, footer, sign-in page, dashboard and emails, and in dark mode. Without a dark version, the main logo is shown as a white silhouette on dark backgrounds. Choose the **logo size** in the header (small / medium / large); on phones it is capped so it never pushes the menu off screen.
+- **Square site icon** (PNG, at least 512 × 512 px, ideally transparent) and its **background colour**: the browser icons (favicon), the iPhone/iPad home-screen icon, Android icons and the “maskable” icon for the future installable app are created from it automatically, optimised and replaced when you change it. Images that are not square or too small are refused with an explanation.
+- A **live preview** shows the logos on light and dark headers, the browser tab and the home-screen icons before you save.
+- SVG files are not accepted for logos and icons because an SVG can contain scripts; use PNG or WebP.
+
+**Installable app (PWA)** (Theme & branding › *Site identity* › *Installable app*)
+- Visitors can install the website as an app: **Android** (Chrome, Edge, Samsung Internet) and **desktop** Chrome/Edge show an *Install* button; on **iPhone/iPad** there is no install button, so the site shows short *Add to Home Screen* instructions instead. Firefox on desktop does not support installing websites.
+- The app uses your site name, short name, square site icon (home-screen and launch screens are generated from it) and page colour. It opens full screen with its own window.
+- **Suggestion on phones**: after a visitor’s third page view a small card offers the app (Install or *How to install* on iPhone). “Not now” hides it for 30 days; it never appears inside the installed app or while the cookie banner is open. An *Install the app* button is also in the mobile menu and the footer whenever the browser supports it.
+- **Offline**: public pages a visitor has read *without being signed in* (up to 40) stay readable offline, together with images; other pages show a friendly offline page with the list of saved pages. Dashboard, account, sign-in, checkout, lessons, webinar join links and anything seen while signed in are **never stored** on the device.
+- **Updates** are automatic: every release or design change creates a new app version; open apps show *“A new version is available — Refresh”*, and old cached files are removed.
+- Switching *Let visitors install the website as an app* off removes the app support (and its stored files) from visitors’ browsers on their next visit.
+- Requires **HTTPS** (System › Health shows a warning when the site is not on https://).
+
+**Light & dark mode** (Theme & branding › *Light & dark mode*)
+- **Default for visitors**: *System* (follows each visitor’s phone or computer — recommended), *Light* or *Dark*.
+- **Let visitors choose**: shows a sun/moon button in the header (and *Display* in the mobile menu and in *My account › Settings*). The choice is remembered on the device and, for signed-in members, on their account so it follows them to other devices. Switch it off to force the default for everyone.
+- Dark colours are **generated from your brand colours** with readable contrast; you can override the dark background, card and text colours. Use the **Light / Dark** buttons above the preview to check both before saving.
+- If you use an image logo, upload a **Logo (dark backgrounds)** under *Logo & icons*; it is shown automatically in dark mode.
+- The dashboard has its own light/dark/system setting in your user menu (top right).
+
+### Dashboard language (English / فارسی)
+Each team member can use the dashboard in **English** or **Persian (فارسی)**: user menu (top right) › **فارسی / English**, or **Profile › Dashboard language**. The choice is personal and remembered on the account (and on the device for the sign-in page). Menus, page titles, tables, columns, buttons, forms, validation messages, notifications and filters are translated.
+
+- Only the dashboard changes. The **website, member pages and every email stay in English**, and your content — case and article titles, names, comments, settings values — is never translated or altered.
+- Layout direction for Persian: **Settings › General › Dashboard** — *left to right* (same layout as English, default) or *right to left*.
+- Translations live in `lang/fa.json` (dashboard wording) and `lang/fa/validation.php` (form errors); Filament’s own Persian translations cover its built-in texts. When new dashboard text is added in code, run the site with `TRANSLATION_AUDIT=true` and open the new pages in Persian: missing Persian strings are listed in `storage/logs/missing-fa.log`.
 
 ## Library
 - **Media library** — upload many files at once (metadata such as GPS/EXIF is removed automatically; responsive WebP versions are created). Add alt text for accessibility and Google Images. **Replace file** swaps an image everywhere it is used. The details page shows where each file is used.
@@ -80,6 +128,7 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 ## Audience
 - **Users & members** — invite team members and give them a role. *Roles & permissions* (System) lets you fine-tune what each role may do.
   - *Super administrator* — everything. *Administrator* — everything except roles. *Editor* — all content including courses and webinars, menus, SEO, newsletter, enquiries, and read-only sales. *Author* — own cases/articles/videos/questions, can publish. *Contributor* — drafts for review. *Member* — public account only.
+- **Profile photos** — members add, crop, change or remove their photo in *My account › Settings*. Photos appear in the header, the account page, next to comments and on author/teacher boxes; without a photo a coloured initials circle is shown. Every upload is checked and re-saved by the server (JPG, PNG or WebP, at least 128 × 128 px, up to 5 MB; location and camera data are removed) and the previous photo’s files are deleted. To remove an unsuitable photo: *Users & members* › row menu › **Remove profile photo**. Team members use the same account page for the photo shown on articles, courses and webinars.
 - **Newsletter subscribers** — import/export CSV; people who unsubscribed are never re-added.
 - **Email campaigns** — write, **Send test**, then **Send now** or **Schedule**. Sending is throttled (Settings › Email) to respect your host’s limits; the report shows opens and clicks.
 - **Enquiries** — messages from the contact form. **Reply** sends an email and records it in the notes.

@@ -17,7 +17,7 @@ class StatsBlock extends PageBlock
 
     public static function key(): string { return 'stats'; }
 
-    public static function label(): string { return 'Key figures'; }
+    public static function label(): string { return __('Key figures'); }
 
     public static function icon(): string { return 'heroicon-o-chart-bar'; }
 
@@ -26,10 +26,10 @@ class StatsBlock extends PageBlock
         return [
             TextInput::make('heading')->maxLength(160),
             Repeater::make('items')->schema([
-                Select::make('live')->label('Value source')->options(self::LIVE)->default(''),
+                Select::make('live')->label(__('Value source'))->options(self::LIVE)->default(''),
                 TextInput::make('value')->placeholder('e.g. 15+')->maxLength(20),
                 TextInput::make('label')->required()->maxLength(80),
-            ])->columns(3)->maxItems(6)->defaultItems(3)->reorderable()->addActionLabel('Add figure'),
+            ])->columns(3)->maxItems(6)->defaultItems(3)->reorderable()->addActionLabel(__('Add figure')),
         ];
     }
 

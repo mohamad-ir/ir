@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class GalleryResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Gallery::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-photo';
@@ -41,20 +43,20 @@ class GalleryResource extends Resource
                 Section::make()->schema([
                     Fields::title('/galleries'),
                     Fields::slug('/galleries', 'galleries'),
-                    Textarea::make('summary')->rows(2)->maxLength(400)->helperText('Shown on the gallery card and in search results.'),
+                    Textarea::make('summary')->rows(2)->maxLength(400)->helperText(__('Shown on the gallery card and in search results.')),
                     Fields::richEditor('description', 'Introduction (optional)'),
                 ]),
-                Section::make('Display')->icon('heroicon-o-squares-2x2')->columns(2)->schema([
-                    ToggleButtons::make('layout')->options(Gallery::LAYOUTS)->default('justified')->columnSpanFull(),
-                    Toggle::make('dark_viewer')->label('Dark background')->helperText('Best for OCT and angiography images.'),
-                    TextInput::make('sort_order')->label('Order on the galleries page')->numeric()->default(0),
+                Section::make('Display')->heading(__('Display'))->icon('heroicon-o-squares-2x2')->columns(2)->schema([
+                    ToggleButtons::make('layout')->options(\App\Support\Ui::options(Gallery::LAYOUTS))->default('justified')->columnSpanFull(),
+                    Toggle::make('dark_viewer')->label(__('Dark background'))->helperText(__('Best for OCT and angiography images.')),
+                    TextInput::make('sort_order')->label(__('Order on the galleries page'))->numeric()->default(0),
                 ]),
                 Fields::seo('title', 'summary'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
                 Fields::publishing('galleries'),
-                Section::make('Details')->icon('heroicon-o-tag')->schema([
-                    MediaPicker::make('cover_media_id')->label('Cover image')->helperText('Leave empty to use the first image.'),
+                Section::make('Details')->heading(__('Details'))->icon('heroicon-o-tag')->schema([
+                    MediaPicker::make('cover_media_id')->label(__('Cover image'))->helperText(__('Leave empty to use the first image.')),
                     Fields::topics(),
                     Fields::tags(),
                 ]),
@@ -69,9 +71,9 @@ class GalleryResource extends Resource
             ->defaultSort('updated_at', 'desc')
             ->columns([
                 ImageColumn::make('cover')->label('')->getStateUsing(fn (Gallery $record) => $record->cover()?->thumbUrl())->imageWidth(72)->imageHeight(54)->extraImgAttributes(['class' => 'rounded-md object-cover']),
-                TextColumn::make('title')->searchable()->sortable()->weight('medium')->wrap()->description(fn (Gallery $record) => $record->items_count.' images'),
+                TextColumn::make('title')->searchable()->sortable()->weight('medium')->wrap()->description(fn (Gallery $record) => __(':count images', ['count' => $record->items_count])),
                 ContentTable::status(),
-                TextColumn::make('access_level')->label('Visible to')->badge()->toggleable(),
+                TextColumn::make('access_level')->label(__('Visible to'))->badge()->toggleable(),
                 ContentTable::published(),
                 ContentTable::views(),
             ])

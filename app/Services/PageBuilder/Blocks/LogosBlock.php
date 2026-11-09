@@ -13,20 +13,20 @@ class LogosBlock extends PageBlock
 {
     public static function key(): string { return 'logos'; }
 
-    public static function label(): string { return 'Logos & affiliations'; }
+    public static function label(): string { return __('Logos & affiliations'); }
 
     public static function icon(): string { return 'heroicon-o-building-library'; }
 
     public static function schema(): array
     {
         return [
-            TextInput::make('heading')->placeholder('Affiliations & memberships')->maxLength(160),
+            TextInput::make('heading')->placeholder(__('Affiliations & memberships'))->maxLength(160),
             Repeater::make('items')->schema([
-                MediaPicker::make('media_id')->label('Logo'),
-                TextInput::make('name')->required()->helperText('Shown as text when no logo is uploaded.'),
-                TextInput::make('url')->label('Link'),
-            ])->columns(3)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['name'] ?? null)->addActionLabel('Add logo'),
-            Toggle::make('grayscale')->label('Show logos in greyscale')->default(true),
+                MediaPicker::make('media_id')->label(__('Logo')),
+                TextInput::make('name')->required()->helperText(__('Shown as text when no logo is uploaded.')),
+                TextInput::make('url')->label(__('Link')),
+            ])->columns(3)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['name'] ?? null)->addActionLabel(__('Add logo')),
+            Toggle::make('grayscale')->label(__('Show logos in greyscale'))->default(true),
         ];
     }
 

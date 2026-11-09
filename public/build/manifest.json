@@ -87,8 +87,20 @@
     "file": "assets/source-serif-4-latin-wght-normal-DMe4EKeb.woff2",
     "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2"
   },
+  "node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-arabic-wght-normal.woff2": {
+    "file": "assets/vazirmatn-arabic-wght-normal-Cafbb7Zc.woff2",
+    "src": "node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-arabic-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-latin-ext-wght-normal.woff2": {
+    "file": "assets/vazirmatn-latin-ext-wght-normal-tDTa1Fj6.woff2",
+    "src": "node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-latin-wght-normal.woff2": {
+    "file": "assets/vazirmatn-latin-wght-normal-BFexNX-K.woff2",
+    "src": "node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-latin-wght-normal.woff2"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-CdXmrl8U.css",
+    "file": "assets/app-BSTXBBi7.css",
     "name": "app",
     "names": [
       "app.css"
@@ -121,7 +133,7 @@
     ]
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-B72LXoaO.css",
+    "file": "assets/theme-C87r5G2A.css",
     "name": "theme",
     "names": [
       "theme.css"
@@ -150,11 +162,14 @@
       "assets/literata-latin-ext-wght-normal-BnEbWgdZ.woff2",
       "assets/literata-latin-wght-normal-DLxlUchJ.woff2",
       "assets/literata-latin-ext-wght-italic-CC1SwlwQ.woff2",
-      "assets/literata-latin-wght-italic-Bm_GJfSc.woff2"
+      "assets/literata-latin-wght-italic-Bm_GJfSc.woff2",
+      "assets/vazirmatn-arabic-wght-normal-Cafbb7Zc.woff2",
+      "assets/vazirmatn-latin-ext-wght-normal-tDTa1Fj6.woff2",
+      "assets/vazirmatn-latin-wght-normal-BFexNX-K.woff2"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DBbB9O6M.js",
+    "file": "assets/app-rfRNEHmO.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

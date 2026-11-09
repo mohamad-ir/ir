@@ -100,13 +100,72 @@ class ThemeService
             '--font-size-root' => ($base / 16 * 100).'%',
         ];
 
-        $css = ':root{'.collect($vars)->map(fn ($v, $k) => "{$k}:{$v}")->implode(';').'}';
+        $vars['--color-highlight-ink'] = $this->ensureContrast($highlight, $bg);
+        $vars['--color-logo-tile'] = $primary;
+
+        // The light palette stays available inside dark pages for elements that sit on a white chip (e.g. play buttons).
+        $light = ['--light-ink' => $primary, '--light-fg' => $text, '--light-paper' => $bg, '--light-surface' => $surface];
+
+        $css = ':root{'.collect($vars + $light)->map(fn ($v, $k) => "{$k}:{$v}")->implode(';').'}';
+        $css .= ':root.dark{'.collect($this->darkVars($t))->map(fn ($v, $k) => "{$k}:{$v}")->implode(';').'}';
 
         if (filled($t['custom_css'] ?? null)) {
             $css .= "\n".str_ireplace(['</style', '<script', 'javascript:', 'expression('], '', $t['custom_css']);
         }
 
         return $css;
+    }
+
+    /**
+     * Dark palette derived from the brand colours, so a dark page still looks like this website.
+     * The owner can override the three main surfaces in Theme & branding › Dark mode.
+     *
+     * @return array<string, string>
+     */
+    public function darkVars(array $t): array
+    {
+        $color = fn (string $key, string $default) => $this->sanitizeColor($t[$key] ?? null, Settings::get("theme.$key") ?? $default);
+        $optional = fn (string $key) => filled($t[$key] ?? null) && preg_match('/^#[0-9a-f]{6}$/i', (string) $t[$key]) ? strtolower($t[$key]) : null;
+
+        $primary = $color('primary', '#12324f');
+        $accent = $color('accent', '#0f8b8d');
+        $highlight = $color('highlight', '#d9822b');
+
+        $paper = $optional('dark_background') ?? $this->mix('#0b1015', $primary, 0.16);
+        $surface = $optional('dark_surface') ?? $this->mix($paper, '#ffffff', 0.045);
+        $text = $optional('dark_text') ?? $this->mix('#dce3ea', $primary, 0.04);
+        $heading = $this->mix($text, '#ffffff', 0.55);
+
+        // Brand panels (dark header/footer, hero bands): the primary colour when it reads as a panel, otherwise lifted from the background.
+        $panel = $this->luminance($primary) < 0.012 || $this->contrastRatio($primary, $paper) < 1.25
+            ? $this->mix($paper, '#ffffff', 0.08)
+            : $this->mix($primary, $paper, 0.25);
+
+        return [
+            'color-scheme' => 'dark',
+            '--color-ink' => $heading,
+            '--color-ink-contrast' => $paper,
+            '--color-panel' => $panel,
+            '--color-panel-contrast' => $this->contrastText($panel),
+            '--color-accent-ink' => $this->ensureContrast($accent, $paper),
+            '--color-highlight-ink' => $this->ensureContrast($highlight, $paper),
+            '--color-paper' => $paper,
+            '--color-surface' => $surface,
+            '--color-fg' => $text,
+            '--color-logo-tile' => $panel,
+            '--shadow-card' => '0 1px 2px rgb(0 0 0 / .3), 0 1px 3px rgb(0 0 0 / .25)',
+            '--shadow-lift' => '0 2px 4px rgb(0 0 0 / .3), 0 12px 28px -6px rgb(0 0 0 / .55)',
+            '--shadow-pop' => '0 24px 60px -12px rgb(0 0 0 / .7)',
+        ];
+    }
+
+    /** Mixes $b into $a by $amount (0–1) in sRGB. */
+    public function mix(string $a, string $b, float $amount): string
+    {
+        $ca = array_map('hexdec', str_split(ltrim($a, '#'), 2));
+        $cb = array_map('hexdec', str_split(ltrim($b, '#'), 2));
+
+        return sprintf('#%02x%02x%02x', ...array_map(fn ($x, $y) => (int) round($x + ($y - $x) * $amount), $ca, $cb));
     }
 
     public function sanitizeColor(?string $value, string $fallback): string
@@ -142,13 +201,16 @@ class ThemeService
         return $this->contrastRatio($hex, '#ffffff') >= $this->contrastRatio($hex, '#111111') ? '#ffffff' : '#111111';
     }
 
-    /** Darkens a colour until it reaches WCAG AA (4.5:1) against the background, for accent-coloured text. */
+    /** Darkens (or, on a dark background, lightens) a colour until it reaches WCAG AA (4.5:1), for accent-coloured text. */
     public function ensureContrast(string $hex, string $bg): string
     {
         $rgb = array_map('hexdec', str_split(ltrim($hex, '#'), 2));
+        $lighten = $this->luminance($bg) < 0.18;
         $i = 0;
-        while ($this->contrastRatio($hex, $bg) < 4.5 && $i++ < 20) {
-            $rgb = array_map(fn ($c) => max(0, (int) round($c * 0.9)), $rgb);
+        while ($this->contrastRatio($hex, $bg) < 4.5 && $i++ < 30) {
+            $rgb = $lighten
+                ? array_map(fn ($c) => min(255, (int) round($c + (255 - $c) * 0.12)), $rgb)
+                : array_map(fn ($c) => max(0, (int) round($c * 0.9)), $rgb);
             $hex = sprintf('#%02x%02x%02x', ...$rgb);
         }
 
@@ -168,6 +230,11 @@ class ThemeService
         }
         if (($r = $this->contrastRatio($primary, $bg)) < 3) {
             $warnings[] = "The primary colour has only {$r}:1 contrast with the background, so headings and buttons may be hard to see.";
+        }
+
+        $dark = $this->darkVars($t);
+        if (($r = $this->contrastRatio($dark['--color-fg'], $dark['--color-paper'])) < 4.5) {
+            $warnings[] = "Dark mode: body text contrast is {$r}:1 — below 4.5:1. Choose a lighter dark-mode text colour or a darker dark-mode background.";
         }
 
         return $warnings;

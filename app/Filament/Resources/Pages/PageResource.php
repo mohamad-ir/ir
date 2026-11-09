@@ -28,6 +28,8 @@ use Filament\Tables\Table;
 
 class PageResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Page::class;
 
     protected static ?string $navigationLabel = 'Pages & page builder';
@@ -43,7 +45,7 @@ class PageResource extends Resource
     public static function builder(string $name = 'blocks', bool $includeReusable = true): Builder
     {
         return Builder::make($name)
-            ->label('Page sections')
+            ->label(__('Page sections'))
             ->blocks(app(BlockRegistry::class)->filamentBlocks($includeReusable))
             ->blockPickerColumns(['default' => 2, 'lg' => 3])
             ->blockPickerWidth('4xl')
@@ -53,7 +55,7 @@ class PageResource extends Resource
             ->reorderableWithDragAndDrop()
             ->reorderableWithButtons()
             ->blockNumbers(false)
-            ->addActionLabel('Add section')
+            ->addActionLabel(__('Add section'))
             ->addBetweenActionLabel('Insert section here')
             ->truncateBlockLabel(false)
             ->default([]);
@@ -65,15 +67,15 @@ class PageResource extends Resource
             Group::make()->columnSpan(['xl' => 5])->schema([
                 Section::make()->schema([
                     Fields::title('/'),
-                    Fields::slug('/', 'pages')->helperText('The homepage always lives at the site root regardless of its URL.'),
+                    Fields::slug('/', 'pages')->helperText(__('The homepage always lives at the site root regardless of its URL.')),
                     Grid::make(2)->schema([
-                        ToggleButtons::make('status')->options([
+                        ToggleButtons::make('status')->options(\App\Support\Ui::options([
                             'draft' => 'Draft', 'published' => 'Published', 'archived' => 'Archived',
-                        ])->colors(['draft' => 'gray', 'published' => 'success', 'archived' => 'danger'])->default('draft')->inline()->required(),
-                        DateTimePicker::make('published_at')->label('Publish date')->native(false)->seconds(false)->displayFormat('j M Y H:i'),
+                        ]))->colors(['draft' => 'gray', 'published' => 'success', 'archived' => 'danger'])->default('draft')->inline()->required(),
+                        DateTimePicker::make('published_at')->label(__('Publish date'))->native(false)->seconds(false)->displayFormat('j M Y H:i'),
                     ]),
-                    Toggle::make('show_title')->label('Show a page header with the title')->default(true)->live(),
-                    Textarea::make('summary')->rows(2)->helperText('Shown under the title and used as the default meta description.'),
+                    Toggle::make('show_title')->label(__('Show a page header with the title'))->default(true)->live(),
+                    Textarea::make('summary')->rows(2)->helperText(__('Shown under the title and used as the default meta description.')),
                 ]),
                 static::builder(),
                 Fields::seo('title', 'summary'),
@@ -93,21 +95,21 @@ class PageResource extends Resource
             ->columns([
                 TextColumn::make('title')->searchable()->sortable()->weight('medium')
                     ->description(fn (Page $record) => $record->urlPath()),
-                IconColumn::make('home')->label('Homepage')->getStateUsing(fn (Page $record) => $record->id === $homeId)->boolean()->trueIcon('heroicon-s-home')->falseIcon('')->trueColor('primary'),
-                TextColumn::make('blocks')->label('Sections')->getStateUsing(fn (Page $record) => count($record->blocks ?? [])),
+                IconColumn::make('home')->label(__('Homepage'))->getStateUsing(fn (Page $record) => $record->id === $homeId)->boolean()->trueIcon('heroicon-s-home')->falseIcon('')->trueColor('primary'),
+                TextColumn::make('blocks')->label(__('Sections'))->getStateUsing(fn (Page $record) => count($record->blocks ?? [])),
                 ContentTable::status(),
                 ContentTable::views(),
-                TextColumn::make('updated_at')->label('Updated')->since()->sortable(),
+                TextColumn::make('updated_at')->label(__('Updated'))->since()->sortable(),
             ])
             ->recordActions([
                 ...ContentTable::recordActions('page', 'pages'),
-                Action::make('homepage')->label('Set as homepage')->icon('heroicon-o-home')->iconButton()->tooltip('Set as homepage')
+                Action::make('homepage')->label(__('Set as homepage'))->icon('heroicon-o-home')->iconButton()->tooltip(__('Set as homepage'))
                     ->visible(fn (Page $record) => $record->id !== $homeId && auth()->user()->can('design.manage'))
                     ->requiresConfirmation()
                     ->action(function (Page $record) {
                         $record->update(['status' => ContentStatus::Published, 'published_at' => $record->published_at ?? now()]);
                         Settings::set('site.homepage_id', $record->id);
-                        Notification::make()->success()->title('“'.$record->title.'” is now the homepage')->send();
+                        Notification::make()->success()->title(__('“:title” is now the homepage', ['title' => $record->title]))->send();
                     }),
             ])
             ->toolbarActions(ContentTable::bulkActions('pages'));

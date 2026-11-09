@@ -16,11 +16,11 @@ class VideoBlock extends PageBlock
 {
     public static function key(): string { return 'video'; }
 
-    public static function label(): string { return 'Featured video'; }
+    public static function label(): string { return __('Featured video'); }
 
     public static function icon(): string { return 'heroicon-o-play-circle'; }
 
-    public static function description(): string { return 'A video from the library, a YouTube/Vimeo link or an uploaded file.'; }
+    public static function description(): string { return __('A video from the library, a YouTube/Vimeo link or an uploaded file.'); }
 
     public static function schema(): array
     {
@@ -28,19 +28,19 @@ class VideoBlock extends PageBlock
 
         return [
             TextInput::make('eyebrow')->maxLength(80),
-            TextInput::make('heading')->placeholder('Uses the video title')->maxLength(160),
+            TextInput::make('heading')->placeholder(__('Uses the video title'))->maxLength(160),
             Textarea::make('text')->rows(2),
-            ToggleButtons::make('source')->label('Video from')->options(VideoEmbed::SOURCES)->inline()->live()
+            ToggleButtons::make('source')->label(__('Video from'))->options(\App\Support\Ui::options(VideoEmbed::SOURCES))->inline()->live()
                 ->default('library')->afterStateHydrated(fn ($component, $state, $get) => $component->state($state ?? ($get('video_id') ? 'library' : 'url'))),
-            Select::make('video_id')->label('Video')->searchable()
+            Select::make('video_id')->label(__('Video'))->searchable()
                 ->options(fn () => Video::latest()->limit(50)->pluck('title', 'id'))
                 ->getSearchResultsUsing(fn (string $s) => Video::where('title', 'like', "%{$s}%")->limit(30)->pluck('title', 'id'))
                 ->visible(fn ($get) => $source($get) === 'library')->required(fn ($get) => $source($get) === 'library'),
-            TextInput::make('url')->label('YouTube or Vimeo link')->url()
+            TextInput::make('url')->label(__('YouTube or Vimeo link'))->url()
                 ->visible(fn ($get) => $source($get) === 'url')->required(fn ($get) => $source($get) === 'url'),
-            MediaPicker::make('media_id')->label('Video file')->videosOnly()
+            MediaPicker::make('media_id')->label(__('Video file'))->videosOnly()
                 ->visible(fn ($get) => $source($get) === 'upload')->required(fn ($get) => $source($get) === 'upload'),
-            MediaPicker::make('poster_id')->label('Cover image (optional)')->visible(fn ($get) => $source($get) !== 'library'),
+            MediaPicker::make('poster_id')->label(__('Cover image (optional)'))->visible(fn ($get) => $source($get) !== 'library'),
         ];
     }
 

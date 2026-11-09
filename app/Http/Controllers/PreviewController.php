@@ -35,6 +35,19 @@ class PreviewController extends Controller
         };
     }
 
+    /** Opens a saved popup on a page it targets, shown at once and without counting views. */
+    public function popup(\App\Models\Popup $popup)
+    {
+        abort_unless(auth()->user()?->can('popups.manage'), 403);
+
+        $token = \App\Services\Popups\PopupService::newPreviewToken();
+        \App\Services\Popups\PopupService::storePreview($token, $popup->attributesToArray());
+
+        $path = collect((array) $popup->include_paths)->first(fn ($p) => is_string($p) && str_starts_with($p, '/') && ! str_contains($p, '*')) ?? '/';
+
+        return redirect($path.'?'.\App\Services\Popups\PopupService::PREVIEW_QUERY.'='.$token);
+    }
+
     protected function page(Page $page, SeoManager $seo)
     {
         $seo->title($page->title)->noindex();

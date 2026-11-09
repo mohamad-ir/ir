@@ -59,15 +59,15 @@ abstract class PageBlock
         return Block::make(static::key())
             ->label(function (?array $state) {
                 $heading = $state['heading'] ?? $state['name'] ?? null;
-                $hidden = ! empty($state['_hidden']) ? ' · hidden' : '';
+                $hidden = ! empty($state['_hidden']) ? ' · '.__('hidden') : '';
 
-                return static::label().($heading ? ' — '.str(strip_tags((string) $heading))->limit(48) : '').$hidden;
+                return __(static::label()).($heading ? ' — '.str(strip_tags((string) $heading))->limit(48) : '').$hidden;
             })
             ->icon(static::icon())
             ->schema([
                 Tabs::make()->contained(false)->tabs([
-                    Tab::make('Content')->icon('heroicon-m-pencil')->schema(static::schema()),
-                    Tab::make('Appearance')->icon('heroicon-m-swatch')->schema(static::appearanceSchema())->columns(2),
+                    Tab::make('Content')->label(__('Content'))->icon('heroicon-m-pencil')->schema(static::schema()),
+                    Tab::make('Appearance')->label(__('Appearance'))->icon('heroicon-m-swatch')->schema(static::appearanceSchema())->columns(2),
                 ]),
             ]);
     }
@@ -75,31 +75,31 @@ abstract class PageBlock
     public static function appearanceSchema(): array
     {
         return [
-            ToggleButtons::make('_tone')->label('Background')->inline()->default(static::defaultTone())->options([
+            ToggleButtons::make('_tone')->label(__('Background'))->inline()->default(static::defaultTone())->options(\App\Support\Ui::options([
                 'default' => 'Page', 'surface' => 'White', 'muted' => 'Soft grey', 'accent' => 'Accent tint', 'ink' => 'Dark',
-            ])->columnSpanFull(),
-            ToggleButtons::make('_spacing')->label('Vertical spacing')->inline()->default('normal')->options([
+            ]))->columnSpanFull(),
+            ToggleButtons::make('_spacing')->label(__('Vertical spacing'))->inline()->default('normal')->options(\App\Support\Ui::options([
                 'none' => 'None', 'tight' => 'Tight', 'normal' => 'Normal', 'loose' => 'Generous',
-            ]),
-            ToggleButtons::make('_width')->label('Content width')->inline()->default('standard')->options([
+            ])),
+            ToggleButtons::make('_width')->label(__('Content width'))->inline()->default('standard')->options(\App\Support\Ui::options([
                 'narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide',
-            ]),
-            Select::make('_visibility')->label('Show on')->default('all')->options([
+            ])),
+            Select::make('_visibility')->label(__('Show on'))->default('all')->options(\App\Support\Ui::options([
                 'all' => 'All devices', 'desktop' => 'Desktop only', 'mobile' => 'Mobile & tablet only',
-            ]),
-            TextInput::make('_anchor')->label('Anchor ID')->prefix('#')->alphaDash()->helperText('Link to this section with /page#anchor'),
-            Toggle::make('_hidden')->label('Hide this section')->helperText('Keeps the section but removes it from the live page.')->columnSpanFull(),
+            ])),
+            TextInput::make('_anchor')->label(__('Anchor ID'))->prefix('#')->alphaDash()->helperText(__('Link to this section with /page#anchor')),
+            Toggle::make('_hidden')->label(__('Hide this section'))->helperText(__('Keeps the section but removes it from the live page.'))->columnSpanFull(),
         ];
     }
 
     public static function buttonsRepeater(string $name = 'buttons', int $max = 3)
     {
         return \Filament\Forms\Components\Repeater::make($name)
-            ->label('Buttons')
+            ->label(__('Buttons'))
             ->schema([
                 TextInput::make('label')->required()->maxLength(60),
-                TextInput::make('url')->label('Link')->required()->placeholder('/cases or https://…')->maxLength(500),
-                Select::make('style')->options(['primary' => 'Primary', 'accent' => 'Accent', 'secondary' => 'Outline', 'ghost' => 'Text link'])->default('primary')->selectablePlaceholder(false),
+                TextInput::make('url')->label(__('Link'))->required()->placeholder(__('/cases or https://…'))->maxLength(500),
+                Select::make('style')->options(\App\Support\Ui::options(['primary' => 'Primary', 'accent' => 'Accent', 'secondary' => 'Outline', 'ghost' => 'Text link']))->default('primary')->selectablePlaceholder(false),
             ])
             ->columns(3)
             ->maxItems($max)
@@ -107,6 +107,6 @@ abstract class PageBlock
             ->reorderable()
             ->collapsible()
             ->itemLabel(fn (array $state) => $state['label'] ?? null)
-            ->addActionLabel('Add button');
+            ->addActionLabel(__('Add button'));
     }
 }

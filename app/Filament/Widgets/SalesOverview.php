@@ -21,7 +21,10 @@ class SalesOverview extends StatsOverviewWidget
 
     protected ?string $pollingInterval = null;
 
-    protected ?string $heading = 'Sales & learning';
+    public function getHeading(): ?string
+    {
+        return __('Sales & learning');
+    }
 
     public static function canView(): bool
     {
@@ -51,16 +54,16 @@ class SalesOverview extends StatsOverviewWidget
         $next = Webinar::published()->where('starts_at', '>', now())->orderBy('starts_at')->first();
 
         return [
-            Stat::make('Revenue · 30 days', Money::format($current, $currency))
-                ->description(trim(($others ? $others.' · ' : '').($change === null ? (StripeClient::configured() ? 'Net of refunds' : 'Payments are not switched on yet') : ($change >= 0 ? '+' : '').$change.'% vs previous 30 days')))
+            Stat::make(__('Revenue · 30 days'), Money::format($current, $currency))
+                ->description(trim(($others ? $others.' · ' : '').($change === null ? (StripeClient::configured() ? __('Net of refunds') : __('Payments are not switched on yet')) : __(':change% vs previous 30 days', ['change' => ($change >= 0 ? '+' : '').$change]))))
                 ->descriptionIcon($change !== null && $change < 0 ? 'heroicon-m-arrow-trending-down' : 'heroicon-m-banknotes')
                 ->color($change !== null && $change < 0 ? 'danger' : 'success')->chart($daily),
-            Stat::make('Active members', number_format($active->count()))
-                ->description('≈ '.Money::format((int) round($mrr), $currency).' monthly recurring revenue')->descriptionIcon('heroicon-m-identification')->color('primary'),
-            Stat::make('Course enrolments · 30 days', number_format(Enrollment::where('created_at', '>=', now()->subDays(30))->count()))
-                ->description(number_format(Enrollment::whereNotNull('completed_at')->count()).' courses completed in total')->descriptionIcon('heroicon-m-academic-cap')->color('gray'),
-            Stat::make('Next webinar', $next ? $next->displayStart('j M, H:i') : '—')
-                ->description($next ? $next->activeRegistrations()->count().' registered · '.str($next->title)->limit(40) : 'No webinar scheduled')
+            Stat::make(__('Active members'), number_format($active->count()))
+                ->description(__('≈ :amount monthly recurring revenue', ['amount' => Money::format((int) round($mrr), $currency)]))->descriptionIcon('heroicon-m-identification')->color('primary'),
+            Stat::make(__('Course enrolments · 30 days'), number_format(Enrollment::where('created_at', '>=', now()->subDays(30))->count()))
+                ->description(__(':count courses completed in total', ['count' => number_format(Enrollment::whereNotNull('completed_at')->count())]))->descriptionIcon('heroicon-m-academic-cap')->color('gray'),
+            Stat::make(__('Next webinar'), $next ? $next->displayStart('j M, H:i') : '—')
+                ->description($next ? __(':count registered', ['count' => $next->activeRegistrations()->count()]).' · '.str($next->title)->limit(40) : __('No webinar scheduled'))
                 ->descriptionIcon('heroicon-m-video-camera')->color('warning')
                 ->url($next ? \App\Filament\Resources\Webinars\WebinarResource::getUrl('edit', ['record' => $next]) : null),
         ];

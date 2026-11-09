@@ -20,6 +20,8 @@ use Illuminate\Support\Str;
 
 class SystemTools extends Page
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static ?string $slug = 'system/health';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
@@ -134,15 +136,15 @@ class SystemTools extends Page
                         $secret = Str::random(24);
                         Artisan::call('down', ['--secret' => $secret, '--render' => 'errors::503', '--retry' => 60]);
                         ActivityLog::record('system', 'Maintenance mode enabled');
-                        Notification::make()->warning()->title('Maintenance mode enabled')->body('Bypass link: '.url($secret).' — open it once to keep access in this browser. The dashboard remains available through it.')->persistent()->send();
+                        Notification::make()->warning()->title(__('Maintenance mode enabled'))->body(__('Bypass link: :url — open it once to keep access in this browser. The dashboard remains available through it.', ['url' => url($secret)]))->persistent()->send();
                     }
                 }),
-            Action::make('removeDemo')->label('Remove sample content')->icon('heroicon-o-trash')->color('danger')
+            Action::make('removeDemo')->label(__('Remove sample content'))->icon('heroicon-o-trash')->color('danger')
                 ->visible(fn () => DemoContent::present() && auth()->user()->isSuperAdmin())
                 ->requiresConfirmation()
-                ->modalHeading('Remove all sample content?')
-                ->modalDescription('Deletes the sample cases, articles, videos, questions, CV entries and synthetic images created during installation. Pages, menus, topics and settings are kept. Content you created yourself is never touched.')
-                ->schema([TextInput::make('confirm')->label('Type DELETE to confirm')->required()->in(['DELETE'])])
+                ->modalHeading(__('Remove all sample content?'))
+                ->modalDescription(__('Deletes the sample cases, articles, videos, questions, CV entries and synthetic images created during installation. Pages, menus, topics and settings are kept. Content you created yourself is never touched.'))
+                ->schema([TextInput::make('confirm')->label(__('Type DELETE to confirm'))->required()->in(['DELETE'])])
                 ->action(function () {
                     $n = DemoContent::remove();
                     $this->done("Sample content removed ({$n} items)");

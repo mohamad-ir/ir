@@ -3,6 +3,26 @@ import { track } from './analytics';
 document.addEventListener('alpine:init', () => {
     const Alpine = window.Alpine;
 
+    // Light / Dark / System. The inline script in layouts/app applies the class before paint;
+    // this store lets switchers change it, remembers it in a cookie and, when signed in, on the account.
+    Alpine.store('colorMode', {
+        mode: document.documentElement.dataset.colorMode || 'system',
+        set(mode) {
+            if (!['light', 'dark', 'system'].includes(mode) || mode === this.mode) return;
+            this.mode = mode;
+            const root = document.documentElement;
+            root.classList.add('color-mode-switching');
+            root.dataset.colorMode = mode;
+            window.applyColorMode?.();
+            requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('color-mode-switching')));
+            document.cookie = `color_mode=${mode}; path=/; max-age=31536000; samesite=lax`;
+            const token = document.querySelector('meta[name=csrf-token]')?.content;
+            if (token) {
+                fetch('/color-mode', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, Accept: 'application/json' }, body: JSON.stringify({ mode }), keepalive: true }).catch(() => {});
+            }
+        },
+    });
+
     /* ---------------- Search palette ---------------- */
     Alpine.data('searchPalette', (suggestUrl, searchUrl) => ({
         open: false, query: '', results: [], active: -1, loading: false, searched: false, controller: null,
@@ -193,6 +213,151 @@ document.addEventListener('alpine:init', () => {
     }));
 
     /* ---------------- Share ---------------- */
+    // Profile photo: choose → position/zoom/rotate inside a circle → upload a 512 px square.
+    // The server decodes, validates and re-encodes it (AvatarService), so this is only for comfort.
+    Alpine.data('avatarEditor', (cfg) => ({
+        cropping: false, busy: false, error: null, status: null, hasPhoto: cfg.hasPhoto,
+        img: null, rot: 0, zoom: 1, minZoom: 1, x: 0, y: 0, view: 288, drag: null,
+        pick(event) {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            this.error = null;
+            if (!file) return;
+            if (!/^image\//.test(file.type)) { this.error = 'Please choose an image (JPG, PNG or WebP).'; return; }
+            if (file.size > 25 * 1024 * 1024) { this.error = 'This file is very large — please choose a photo under 25 MB.'; return; }
+            const url = URL.createObjectURL(file);
+            const image = new Image();
+            image.onload = () => {
+                if (Math.min(image.naturalWidth, image.naturalHeight) < cfg.minPx) { this.error = `Please use a photo at least ${cfg.minPx} × ${cfg.minPx} pixels.`; return; }
+                this.img = image; this.rot = 0; this.cropping = true;
+                this.$nextTick(() => { this.reset(); this.$refs.stage?.focus(); });
+            };
+            image.onerror = () => { this.error = 'This file could not be opened as an image. Please choose a JPG, PNG or WebP photo.'; URL.revokeObjectURL(url); };
+            image.src = url;
+        },
+        dims() {
+            const turned = this.rot % 180 !== 0;
+            return { w: turned ? this.img.naturalHeight : this.img.naturalWidth, h: turned ? this.img.naturalWidth : this.img.naturalHeight };
+        },
+        reset() {
+            const { w, h } = this.dims();
+            this.minZoom = this.view / Math.min(w, h);
+            this.zoom = this.minZoom; this.x = 0; this.y = 0;
+            this.draw();
+        },
+        get factor() { return this.zoom / this.minZoom; },
+        setFactor(f) { this.zoom = this.minZoom * Math.min(6, Math.max(1, Number(f))); this.clamp(); this.draw(); },
+        clamp() {
+            const { w, h } = this.dims();
+            const mx = Math.max(0, (w * this.zoom - this.view) / 2), my = Math.max(0, (h * this.zoom - this.view) / 2);
+            this.x = Math.min(mx, Math.max(-mx, this.x)); this.y = Math.min(my, Math.max(-my, this.y));
+        },
+        paint(canvas, size) {
+            const ctx = canvas.getContext('2d'), k = size / this.view;
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size); // transparent PNGs get a white background
+            ctx.translate(size / 2 + this.x * k, size / 2 + this.y * k);
+            ctx.rotate(this.rot * Math.PI / 180);
+            ctx.scale(this.zoom * k, this.zoom * k);
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(this.img, -this.img.naturalWidth / 2, -this.img.naturalHeight / 2);
+        },
+        draw() {
+            const canvas = this.$refs.canvas; if (!canvas || !this.img) return;
+            const dpr = Math.min(2, window.devicePixelRatio || 1), size = Math.round(this.view * dpr);
+            if (canvas.width !== size) { canvas.width = size; canvas.height = size; }
+            this.paint(canvas, size);
+        },
+        down(e) { this.drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; e.currentTarget.setPointerCapture(e.pointerId); },
+        move(e) {
+            if (!this.drag || this.drag.id !== e.pointerId) return;
+            const scale = this.view / e.currentTarget.getBoundingClientRect().width;
+            this.x += (e.clientX - this.drag.x) * scale; this.y += (e.clientY - this.drag.y) * scale;
+            this.drag.x = e.clientX; this.drag.y = e.clientY;
+            this.clamp(); this.draw();
+        },
+        up() { this.drag = null; },
+        wheel(e) { this.setFactor(this.factor * (1 - Math.sign(e.deltaY) * 0.08)); },
+        key(e) {
+            const step = e.shiftKey ? 30 : 8, moves = { ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] };
+            if (moves[e.key]) { e.preventDefault(); this.x += moves[e.key][0]; this.y += moves[e.key][1]; this.clamp(); this.draw(); }
+            if (e.key === '+' || e.key === '=') this.setFactor(this.factor * 1.1);
+            if (e.key === '-') this.setFactor(this.factor / 1.1);
+        },
+        rotate() { const f = this.factor; this.rot = (this.rot + 90) % 360; this.reset(); this.setFactor(f); },
+        cancel() { this.cropping = false; if (this.img) URL.revokeObjectURL(this.img.src); this.img = null; },
+        async save() {
+            this.busy = true; this.error = null; this.status = null;
+            const out = document.createElement('canvas'); out.width = 512; out.height = 512;
+            this.paint(out, 512);
+            const type = out.toDataURL('image/webp').startsWith('data:image/webp') ? 'image/webp' : 'image/jpeg';
+            const blob = await new Promise((resolve) => out.toBlob(resolve, type, 0.9));
+            const data = new FormData();
+            data.append('avatar', blob, type === 'image/webp' ? 'avatar.webp' : 'avatar.jpg');
+            await this.send(cfg.uploadUrl, data, 'Your new photo has been saved.');
+            if (!this.error) this.cancel();
+        },
+        async remove() {
+            if (!confirm('Remove your profile photo?')) return;
+            const data = new FormData(); data.append('_method', 'DELETE');
+            await this.send(cfg.uploadUrl, data, 'Your photo has been removed.');
+        },
+        async send(url, data, message) {
+            this.busy = true;
+            try {
+                const res = await fetch(url, { method: 'POST', body: data, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content } });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok) { this.error = json.errors?.avatar?.[0] ?? (res.status === 429 ? 'Too many changes — please wait a minute and try again.' : 'Something went wrong. Please try again.'); return; }
+                this.apply(json.urls);
+                this.hasPhoto = !!json.urls;
+                this.status = message;
+            } catch (e) {
+                this.error = 'The connection failed. Please check your internet connection and try again.';
+            } finally { this.busy = false; }
+        },
+        // Swap the photo in every avatar of this member on the page (header, account banner…).
+        apply(urls) {
+            document.querySelectorAll(`[data-avatar-user="${cfg.userId}"]`).forEach((el) => {
+                let img = el.querySelector('img');
+                if (!urls) { img?.remove(); return; }
+                if (!img) { img = document.createElement('img'); img.alt = ''; img.className = 'absolute inset-0 size-full object-cover'; el.appendChild(img); }
+                img.src = urls[el.dataset.avatarFile] ?? urls.md;
+            });
+        },
+    }));
+
+    // Back to top: appears after about one screen of scrolling and rises above other bottom
+    // floaters (cookie banner, messages) marked with data-floating-bottom so nothing overlaps.
+    Alpine.data('backToTop', () => ({
+        visible: false, lift: 0, frame: null,
+        init() {
+            const update = () => { this.frame = null; this.check(); };
+            const schedule = () => { this.frame ??= requestAnimationFrame(update); };
+            window.addEventListener('scroll', schedule, { passive: true });
+            window.addEventListener('resize', schedule, { passive: true });
+            new MutationObserver(schedule).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class'], childList: true });
+            this.check();
+        },
+        check() {
+            this.visible = window.scrollY > Math.max(480, window.innerHeight * 1.2);
+            let lift = 0;
+            document.querySelectorAll('[data-floating-bottom]').forEach((el) => {
+                const r = el.getBoundingClientRect();
+                // Only floaters that are showing and reach into the right-hand corner where this button lives.
+                if (r.height > 0 && r.width > 0 && r.right > window.innerWidth - 96 && r.bottom > window.innerHeight - 120) {
+                    lift = Math.max(lift, window.innerHeight - r.top);
+                }
+            });
+            this.lift = lift;
+        },
+        top(event) {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+            // Keyboard users continue from the top of the page (event.detail is 0 for Enter/Space).
+            if (event.detail === 0) document.querySelector('.skip-link')?.focus({ preventScroll: true });
+        },
+    }));
+
     Alpine.data('share', (url, title) => ({
         copied: false,
         async copy() {

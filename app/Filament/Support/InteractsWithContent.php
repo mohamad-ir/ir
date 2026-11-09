@@ -27,7 +27,7 @@ trait InteractsWithContent
 
         if (($data['status'] ?? null) === ContentStatus::Published->value && ! $wasPublished && ! auth()->user()->can(static::permissionPrefix().'.publish')) {
             $data['status'] = ContentStatus::Pending->value;
-            Notification::make()->warning()->title('Submitted for review')->body('You do not have permission to publish, so this item is waiting for an editor.')->send();
+            Notification::make()->warning()->title(__('Submitted for review'))->body(__('You do not have permission to publish, so this item is waiting for an editor.'))->send();
         }
 
         if (! auth()->user()->can('content.edit_others') && array_key_exists('author_id', $data)) {
@@ -47,7 +47,7 @@ trait InteractsWithContent
     protected function previewAction(): Action
     {
         return Action::make('preview')
-            ->label('Preview')
+            ->label(__('Preview'))
             ->icon('heroicon-o-eye')
             ->color('gray')
             ->url(fn () => route('preview.show', [static::previewType(), $this->record->getKey()]), shouldOpenInNewTab: true);
@@ -56,7 +56,7 @@ trait InteractsWithContent
     protected function viewLiveAction(): Action
     {
         return Action::make('viewLive')
-            ->label('View live')
+            ->label(__('View live'))
             ->icon('heroicon-o-arrow-top-right-on-square')
             ->color('gray')
             ->visible(fn () => method_exists($this->record, 'isPublished') && $this->record->isPublished())
@@ -71,10 +71,10 @@ trait InteractsWithContent
             ->color('gray')
             ->slideOver()
             ->modalWidth('2xl')
-            ->modalHeading('Revision history')
-            ->modalDescription('Every save is stored. Compare versions and restore any of them — restoring creates a new revision, so nothing is lost.')
+            ->modalHeading(__('Revision history'))
+            ->modalDescription(__('Every save is stored. Compare versions and restore any of them — restoring creates a new revision, so nothing is lost.'))
             ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Close')
+            ->modalCancelActionLabel(__('Close'))
             ->modalContent(fn () => view('filament.revisions', [
                 'revisions' => $this->record->revisions()->with('user')->limit(50)->get(),
                 'current' => $this->record->revisionSnapshot(),
@@ -92,6 +92,6 @@ trait InteractsWithContent
         $this->fillForm();
         $this->unmountAction();
 
-        Notification::make()->success()->title('Revision restored')->body('The version from '.$revision->created_at->format('j M Y H:i').' is now current.')->send();
+        Notification::make()->success()->title(__('Revision restored'))->body(__('The version from :date is now current.', ['date' => $revision->created_at->format('j M Y H:i')]))->send();
     }
 }

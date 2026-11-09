@@ -7,6 +7,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListNotFoundLogs extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = NotFoundLogResource::class;
 
     public function getSubheading(): ?string

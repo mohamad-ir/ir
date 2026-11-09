@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 class SubscriberResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Subscriber::class;
 
     protected static ?string $navigationLabel = 'Newsletter subscribers';
@@ -47,9 +49,9 @@ class SubscriberResource extends Resource
             TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
             TextInput::make('name'),
             Select::make('status')->options(SubscriberStatus::options())->default('subscribed')->required()
-                ->helperText('Only add people as “Subscribed” if they have given consent.'),
-            TextInput::make('source')->placeholder('e.g. conference sign-up sheet'),
-            CheckboxList::make('interests')->options(Subscriber::INTERESTS)->columns(2)->columnSpanFull(),
+                ->helperText(__('Only add people as “Subscribed” if they have given consent.')),
+            TextInput::make('source')->placeholder(__('e.g. conference sign-up sheet')),
+            CheckboxList::make('interests')->options(\App\Support\Ui::options(Subscriber::INTERESTS))->columns(2)->columnSpanFull(),
         ])]);
     }
 
@@ -60,19 +62,19 @@ class SubscriberResource extends Resource
             ->columns([
                 TextColumn::make('email')->searchable(['email', 'name'])->weight('medium')->description(fn (Subscriber $record) => $record->name)->copyable(),
                 TextColumn::make('status')->badge(),
-                TextColumn::make('interests')->badge()->color('gray')->formatStateUsing(fn ($state) => Subscriber::INTERESTS[$state] ?? $state)->limitList(2),
+                TextColumn::make('interests')->badge()->color('gray')->formatStateUsing(fn ($state) => __(Subscriber::INTERESTS[$state] ?? $state))->limitList(2),
                 TextColumn::make('source')->toggleable(),
-                TextColumn::make('confirmed_at')->label('Confirmed')->date('j M Y')->sortable()->placeholder('—'),
-                TextColumn::make('created_at')->label('Signed up')->since()->sortable(),
+                TextColumn::make('confirmed_at')->label(__('Confirmed'))->date('j M Y')->sortable()->placeholder('—'),
+                TextColumn::make('created_at')->label(__('Signed up'))->since()->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')->options(SubscriberStatus::options()),
-                SelectFilter::make('interest')->options(Subscriber::INTERESTS)->query(fn (Builder $query, array $data) => $data['value'] ? $query->whereJsonContains('interests', $data['value']) : $query),
+                SelectFilter::make('interest')->options(\App\Support\Ui::options(Subscriber::INTERESTS))->query(fn (Builder $query, array $data) => $data['value'] ? $query->whereJsonContains('interests', $data['value']) : $query),
                 SelectFilter::make('source')->options(fn () => Subscriber::query()->whereNotNull('source')->distinct()->pluck('source', 'source')),
             ])
             ->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()])
             ->toolbarActions([BulkActionGroup::make([
-                BulkAction::make('unsubscribe')->label('Mark unsubscribed')->icon('heroicon-o-no-symbol')->requiresConfirmation()
+                BulkAction::make('unsubscribe')->label(__('Mark unsubscribed'))->icon('heroicon-o-no-symbol')->requiresConfirmation()
                     ->action(fn (Collection $records) => $records->each->update(['status' => SubscriberStatus::Unsubscribed, 'unsubscribed_at' => now()])),
                 DeleteBulkAction::make(),
             ])]);

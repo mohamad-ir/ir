@@ -14,7 +14,7 @@ class GalleryBlock extends PageBlock
 {
     public static function key(): string { return 'gallery'; }
 
-    public static function label(): string { return 'Image gallery'; }
+    public static function label(): string { return __('Image gallery'); }
 
     public static function icon(): string { return 'heroicon-o-rectangle-stack'; }
 
@@ -22,20 +22,20 @@ class GalleryBlock extends PageBlock
     {
         return [
             TextInput::make('heading')->maxLength(160),
-            ToggleButtons::make('source')->label('Images')->inline()->default('images')->live()
-                ->options(['images' => 'Choose images here', 'album' => 'Show a photo gallery']),
-            Select::make('gallery_id')->label('Photo gallery')->searchable()
+            ToggleButtons::make('source')->label(__('Images'))->inline()->default('images')->live()
+                ->options(\App\Support\Ui::options(['images' => 'Choose images here', 'album' => 'Show a photo gallery'])),
+            Select::make('gallery_id')->label(__('Photo gallery'))->searchable()
                 ->options(fn () => \App\Models\Gallery::published()->orderBy('title')->pluck('title', 'id'))
                 ->visible(fn ($get) => $get('source') === 'album')->required(fn ($get) => $get('source') === 'album'),
-            TextInput::make('limit')->label('Show at most')->numeric()->default(12)->minValue(1)->maxValue(60)
+            TextInput::make('limit')->label(__('Show at most'))->numeric()->default(12)->minValue(1)->maxValue(60)
                 ->visible(fn ($get) => $get('source') === 'album'),
             Repeater::make('images')->visible(fn ($get) => $get('source') !== 'album')->schema([
-                MediaPicker::make('media_id')->label('Image')->required(),
+                MediaPicker::make('media_id')->label(__('Image'))->required(),
                 TextInput::make('caption'),
-            ])->columns(2)->reorderable()->collapsible()->addActionLabel('Add image'),
-            Select::make('layout')->label('Layout')->options(\App\Models\Gallery::LAYOUTS)->default('grid')->selectablePlaceholder(false)
+            ])->columns(2)->reorderable()->collapsible()->addActionLabel(__('Add image')),
+            Select::make('layout')->label(__('Layout'))->options(\App\Models\Gallery::LAYOUTS)->default('grid')->selectablePlaceholder(false)
                 ->visible(fn ($get) => $get('source') !== 'album'),
-            ToggleButtons::make('style')->inline()->options(['light' => 'Light', 'dark' => 'Dark viewer (best for OCT)'])->default('light'),
+            ToggleButtons::make('style')->inline()->options(\App\Support\Ui::options(['light' => 'Light', 'dark' => 'Dark viewer (best for OCT)']))->default('light'),
         ];
     }
 

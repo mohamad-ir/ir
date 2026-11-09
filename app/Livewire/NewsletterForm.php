@@ -60,6 +60,7 @@ class NewsletterForm extends Component
         ]);
 
         $this->reset('email', 'name');
+        $this->dispatch('newsletter-subscribed', source: $this->source, result: $this->result);
     }
 
     public function render()

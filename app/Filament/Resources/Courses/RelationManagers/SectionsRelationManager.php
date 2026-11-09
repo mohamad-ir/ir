@@ -14,7 +14,13 @@ use Filament\Tables\Table;
 
 class SectionsRelationManager extends RelationManager
 {
+    use \App\Filament\Concerns\TranslatesRelationManagerLabels;
+
     protected static string $relationship = 'sections';
+
+    protected static ?string $modelLabel = 'section';
+
+    protected static ?string $pluralModelLabel = 'sections';
 
     protected static ?string $title = 'Sections';
 
@@ -37,14 +43,14 @@ class SectionsRelationManager extends RelationManager
             ->defaultSort('sort_order')
             ->columns([
                 TextColumn::make('title')->weight('medium'),
-                TextColumn::make('lessons_count')->label('Lessons')->alignEnd(),
+                TextColumn::make('lessons_count')->label(__('Lessons'))->alignEnd(),
             ])
             ->headerActions([
-                CreateAction::make()->label('Add section')->icon('heroicon-m-plus')
+                CreateAction::make()->label(__('Add section'))->icon('heroicon-m-plus')
                     ->mutateDataUsing(fn (array $data) => [...$data, 'sort_order' => (int) $this->getOwnerRecord()->sections()->max('sort_order') + 1]),
             ])
-            ->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()->modalDescription('Lessons in this section are kept and moved to “no section”.')])
-            ->emptyStateHeading('No sections')
-            ->emptyStateDescription('Sections group lessons into modules, e.g. “Foundations”, “Fluid”, “Putting it together”.');
+            ->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()->modalDescription(__('Lessons in this section are kept and moved to “no section”.'))])
+            ->emptyStateHeading(__('No sections'))
+            ->emptyStateDescription(__('Sections group lessons into modules, e.g. “Foundations”, “Fluid”, “Putting it together”.'));
     }
 }

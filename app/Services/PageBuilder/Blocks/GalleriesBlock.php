@@ -11,11 +11,11 @@ class GalleriesBlock extends PageBlock
 {
     public static function key(): string { return 'galleries'; }
 
-    public static function label(): string { return 'Photo galleries'; }
+    public static function label(): string { return __('Photo galleries'); }
 
     public static function icon(): string { return 'heroicon-o-photo'; }
 
-    public static function description(): string { return 'Cards linking to your photo galleries (featured first).'; }
+    public static function description(): string { return __('Cards linking to your photo galleries (featured first).'); }
 
     public static function schema(): array
     {

@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TopicResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Topic::class;
 
     protected static ?string $navigationLabel = 'Topics & diseases';
@@ -46,20 +48,20 @@ class TopicResource extends Resource
                 Section::make()->columns(2)->schema([
                     TextInput::make('name')->required()->maxLength(120)->live(onBlur: true)
                         ->afterStateUpdated(fn ($state, $set, $get, $record) => ! $record ? $set('slug', str($state)->slug()->toString()) : null),
-                    TextInput::make('abbreviation')->maxLength(40)->placeholder('e.g. CSR'),
-                    TextInput::make('slug')->label('URL')->prefix(url('/topics').'/')->required()->unique(ignoreRecord: true)->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')->columnSpanFull(),
-                    Select::make('parent_id')->label('Parent topic')->relationship('parent', 'name', fn (Builder $query, ?Topic $record) => $query->whereNull('parent_id')->when($record, fn ($q) => $q->whereKeyNot($record->id)))->placeholder('Top-level topic'),
+                    TextInput::make('abbreviation')->maxLength(40)->placeholder(__('e.g. CSR')),
+                    TextInput::make('slug')->label(__('URL'))->prefix(url('/topics').'/')->required()->unique(ignoreRecord: true)->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')->columnSpanFull(),
+                    Select::make('parent_id')->label(__('Parent topic'))->relationship('parent', 'name', fn (Builder $query, ?Topic $record) => $query->whereNull('parent_id')->when($record, fn ($q) => $q->whereKeyNot($record->id)))->placeholder(__('Top-level topic')),
                     TextInput::make('sort_order')->numeric()->default(0),
-                    Textarea::make('description')->rows(2)->columnSpanFull()->helperText('Shown on the topic page and in Google results.'),
+                    Textarea::make('description')->rows(2)->columnSpanFull()->helperText(__('Shown on the topic page and in Google results.')),
                 ]),
-                Section::make('Topic page introduction')->collapsible()->schema([Fields::richEditor('body')->hiddenLabel()]),
+                Section::make('Topic page introduction')->heading(__('Topic page introduction'))->collapsible()->schema([Fields::richEditor('body')->hiddenLabel()]),
                 Fields::seo('name', 'description'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Section::make('Display')->schema([
-                    Toggle::make('is_featured')->label('Feature on homepage & search'),
+                Section::make('Display')->heading(__('Display'))->schema([
+                    Toggle::make('is_featured')->label(__('Feature on homepage & search')),
                     ColorPicker::make('color'),
-                    MediaPicker::make('media_id')->label('Icon image'),
+                    MediaPicker::make('media_id')->label(__('Icon image')),
                 ]),
             ]),
         ]);
@@ -75,12 +77,12 @@ class TopicResource extends Resource
                 ColorColumn::make('color')->label(''),
                 TextColumn::make('name')->searchable(['name', 'abbreviation'])->weight('medium')->description(fn (Topic $record) => $record->parent?->name),
                 TextColumn::make('abbreviation')->badge()->color('gray'),
-                TextColumn::make('cases_count')->label('Cases')->sortable(),
-                TextColumn::make('articles_count')->label('Articles'),
-                TextColumn::make('videos_count')->label('Videos'),
-                IconColumn::make('is_featured')->label('Featured')->boolean(),
+                TextColumn::make('cases_count')->label(__('Cases'))->sortable(),
+                TextColumn::make('articles_count')->label(__('Articles')),
+                TextColumn::make('videos_count')->label(__('Videos')),
+                IconColumn::make('is_featured')->label(__('Featured'))->boolean(),
             ])
-            ->filters([SelectFilter::make('parent_id')->label('Parent')->relationship('parent', 'name', fn (Builder $query) => $query->whereNull('parent_id'))])
+            ->filters([SelectFilter::make('parent_id')->label(__('Parent'))->relationship('parent', 'name', fn (Builder $query) => $query->whereNull('parent_id'))])
             ->recordActions([
                 Action::make('view')->icon('heroicon-o-arrow-top-right-on-square')->iconButton()->url(fn (Topic $record) => $record->url(), true),
                 EditAction::make(), DeleteAction::make(),

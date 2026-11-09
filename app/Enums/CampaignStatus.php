@@ -16,11 +16,11 @@ enum CampaignStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Draft => 'Draft',
-            self::Scheduled => 'Scheduled',
-            self::Sending => 'Sending',
-            self::Sent => 'Sent',
-            self::Cancelled => 'Cancelled',
+            self::Draft => __('Draft'),
+            self::Scheduled => __('Scheduled'),
+            self::Sending => __('Sending'),
+            self::Sent => __('Sent'),
+            self::Cancelled => __('Cancelled'),
         };
     }
 

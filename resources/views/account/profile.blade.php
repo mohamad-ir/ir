@@ -27,6 +27,16 @@
         </form>
 
         <div class="space-y-8">
+            @include('account.partials.avatar-card')
+
+            @if (\App\Support\ColorMode::switchable())
+                <section class="card p-6" aria-labelledby="appearance-heading">
+                    <h2 id="appearance-heading" class="font-heading text-xl font-semibold text-ink">Appearance</h2>
+                    <p class="mt-1 text-sm text-muted">“System” follows your device’s light or dark setting. Your choice is saved to your account, so it applies on all your devices.</p>
+                    <x-color-mode-switcher variant="segmented" class="mt-4" />
+                </section>
+            @endif
+
             <form method="post" action="{{ route('account.password.update') }}" class="card space-y-4 p-6">
                 @csrf @method('put')
                 <h2 class="font-heading text-xl font-semibold text-ink">Change password</h2>

@@ -63,6 +63,14 @@
                     </ul>
                 @endif
             </div>
+            {{-- Developer credit: deliberately quiet; kept away from the bottom-right corner used by “Back to top”. --}}
+            <button type="button" x-data x-cloak x-show="$store.pwa?.canInstall" x-on:click="$store.pwa.install('footer')"
+                    class="mt-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium ring-1 transition {{ $dark ? 'text-white/85 ring-white/25 hover:bg-white/10' : 'text-ink ring-line-strong hover:bg-ink/5' }}">
+                <x-heroicon-o-arrow-down-tray class="size-4" /> Install the app
+            </button>
+            <p class="mt-6 text-center text-[0.6875rem] tracking-[.04em] sm:text-left {{ $dark ? 'text-white/50' : 'text-muted' }}">
+                Developed by <span class="font-medium {{ $dark ? 'text-white/65' : 'text-fg/70' }}">mj tayaran</span>
+            </p>
         </div>
     </div>
 </footer>

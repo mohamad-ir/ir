@@ -7,6 +7,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateCampaign extends CreateRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = CampaignResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

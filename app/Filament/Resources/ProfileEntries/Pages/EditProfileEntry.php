@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditProfileEntry extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = ProfileEntryResource::class;
 
     protected function getHeaderActions(): array

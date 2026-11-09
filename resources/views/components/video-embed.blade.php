@@ -18,7 +18,7 @@
                 @endif
                 <span class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></span>
                 <span class="absolute inset-0 grid place-items-center">
-                    <span class="grid size-16 place-items-center rounded-full bg-white/95 text-ink shadow-2xl ring-[12px] ring-white/15 transition duration-300 group-hover:scale-110"><x-heroicon-s-play class="ml-1 size-7" /></span>
+                    <span class="grid size-16 place-items-center on-light rounded-full bg-white/95 text-ink shadow-2xl ring-[12px] ring-white/15 transition duration-300 group-hover:scale-110"><x-heroicon-s-play class="ml-1 size-7" /></span>
                 </span>
                 <span class="absolute bottom-3 left-4 right-4 truncate text-left text-sm font-semibold text-white">{{ $embed['title'] }}</span>
                 @if (in_array($embed['provider'], ['youtube', 'vimeo'], true))

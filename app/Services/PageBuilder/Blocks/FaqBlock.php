@@ -12,7 +12,7 @@ class FaqBlock extends PageBlock
 {
     public static function key(): string { return 'faq'; }
 
-    public static function label(): string { return 'FAQ'; }
+    public static function label(): string { return __('FAQ'); }
 
     public static function icon(): string { return 'heroicon-o-question-mark-circle'; }
 
@@ -24,7 +24,7 @@ class FaqBlock extends PageBlock
             Repeater::make('items')->schema([
                 TextInput::make('question')->required()->maxLength(250),
                 Textarea::make('answer')->required()->rows(3),
-            ])->reorderable()->collapsible()->cloneable()->itemLabel(fn (array $state) => $state['question'] ?? null)->addActionLabel('Add question'),
+            ])->reorderable()->collapsible()->cloneable()->itemLabel(fn (array $state) => $state['question'] ?? null)->addActionLabel(__('Add question')),
         ];
     }
 

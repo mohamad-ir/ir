@@ -19,7 +19,7 @@ class FigureBlock extends RichContentCustomBlock
 
     public static function getLabel(): string
     {
-        return 'Figure from media library';
+        return __('Figure from media library');
     }
 
     public static function getIcon(): string
@@ -30,11 +30,11 @@ class FigureBlock extends RichContentCustomBlock
     public static function configureEditorAction(Action $action): Action
     {
         return $action
-            ->modalDescription('Insert an optimised, responsive image with a numbered caption.')
+            ->modalDescription(__('Insert an optimised, responsive image with a numbered caption.'))
             ->schema([
-                MediaPicker::make('media_id')->label('Image')->required(),
-                Textarea::make('caption')->rows(2)->helperText('Leave empty to use the caption saved in the media library.'),
-                Select::make('size')->options(['normal' => 'Text width', 'wide' => 'Wide', 'full' => 'Full width'])->default('normal'),
+                MediaPicker::make('media_id')->label(__('Image'))->required(),
+                Textarea::make('caption')->rows(2)->helperText(__('Leave empty to use the caption saved in the media library.')),
+                Select::make('size')->options(\App\Support\Ui::options(['normal' => 'Text width', 'wide' => 'Wide', 'full' => 'Full width']))->default('normal'),
             ]);
     }
 
@@ -42,7 +42,7 @@ class FigureBlock extends RichContentCustomBlock
     {
         $media = Media::find($config['media_id'] ?? null);
 
-        return 'Figure: '.($media?->title ?: $media?->original_name ?: 'missing image');
+        return __('Figure').': '.($media?->title ?: $media?->original_name ?: __('missing image'));
     }
 
     public static function toPreviewHtml(array $config): ?string

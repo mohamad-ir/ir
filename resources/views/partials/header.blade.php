@@ -61,10 +61,12 @@
                 </button>
             @endif
 
+            <x-color-mode-switcher :dark="$dark" />
+
             @if (setting('header.show_account', true))
                 @auth
                     <a href="{{ route('account.dashboard') }}" aria-label="My learning" class="hidden sm:inline-flex items-center gap-2 rounded-full p-1 pr-3 text-sm font-medium transition {{ $dark ? 'hover:bg-white/10' : 'hover:bg-ink/5' }}">
-                        <span class="grid size-8 place-items-center rounded-full bg-accent text-xs font-bold text-accent-contrast">{{ auth()->user()->initials() }}</span>
+                        <x-avatar :user="auth()->user()" size="xs" />
                         <span class="hidden whitespace-nowrap xl:inline">My learning</span>
                     </a>
                 @else
@@ -116,6 +118,13 @@
                     @endforeach
                 </nav>
                 <div class="space-y-2 border-t border-line p-5">
+                    <button type="button" x-cloak x-show="$store.pwa?.canInstall" x-on:click="mobile = false; $store.pwa.install('menu')" class="mb-3 flex w-full items-center gap-3 rounded-ui bg-accent/10 px-4 py-3 text-left text-sm font-semibold text-accent-ink">
+                        <x-heroicon-o-device-phone-mobile class="size-5" /> Install the app
+                    </button>
+                    @if (\App\Support\ColorMode::switchable())
+                        <p class="text-xs font-semibold uppercase tracking-[.14em] text-muted">Display</p>
+                        <x-color-mode-switcher variant="segmented" class="mb-3" />
+                    @endif
                     @auth
                         <a href="{{ route('account.dashboard') }}" class="btn btn-secondary w-full">My learning</a>
                     @else

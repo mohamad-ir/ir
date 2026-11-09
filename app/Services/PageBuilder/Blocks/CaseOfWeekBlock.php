@@ -12,7 +12,7 @@ class CaseOfWeekBlock extends PageBlock
 {
     public static function key(): string { return 'case_of_week'; }
 
-    public static function label(): string { return 'Case of the Week'; }
+    public static function label(): string { return __('Case of the Week'); }
 
     public static function icon(): string { return 'heroicon-o-academic-cap'; }
 
@@ -23,7 +23,7 @@ class CaseOfWeekBlock extends PageBlock
         return [
             Grid::make(2)->schema([
                 TextInput::make('eyebrow')->default('Case of the Week')->maxLength(80),
-                TextInput::make('heading')->placeholder('Uses the case title')->maxLength(160),
+                TextInput::make('heading')->placeholder(__('Uses the case title'))->maxLength(160),
             ]),
             Textarea::make('intro')->rows(2)->default('Study the images, commit to a diagnosis, then reveal the answer and teaching points.'),
             TextInput::make('button_label')->default('Attempt this case')->maxLength(60),

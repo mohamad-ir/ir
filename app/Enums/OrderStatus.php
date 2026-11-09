@@ -17,12 +17,12 @@ enum OrderStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Pending => 'Awaiting payment',
-            self::Paid => 'Paid',
-            self::PartiallyRefunded => 'Partly refunded',
-            self::Refunded => 'Refunded',
-            self::Failed => 'Failed',
-            self::Canceled => 'Abandoned',
+            self::Pending => __('Awaiting payment'),
+            self::Paid => __('Paid'),
+            self::PartiallyRefunded => __('Partly refunded'),
+            self::Refunded => __('Refunded'),
+            self::Failed => __('Failed'),
+            self::Canceled => __('Abandoned'),
         };
     }
 

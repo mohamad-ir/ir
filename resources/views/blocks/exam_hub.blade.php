@@ -2,7 +2,7 @@
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     @foreach ($data['topics'] ?? [] as $topic)
         <a href="{{ $topic->urlPath() }}" class="group card-interactive flex items-start gap-4 p-5">
-            <span class="grid size-11 shrink-0 place-items-center rounded-ui bg-highlight/15 text-[color-mix(in_oklab,var(--color-highlight)_55%,black)]">
+            <span class="grid size-11 shrink-0 place-items-center rounded-ui bg-highlight/15 text-highlight-ink">
                 <x-dynamic-component :component="'heroicon-o-'.($topic->icon ?: 'clipboard-document-check')" class="size-5.5" />
             </span>
             <span>

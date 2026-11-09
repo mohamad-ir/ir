@@ -13,11 +13,11 @@ class CoursesBlock extends PageBlock
 {
     public static function key(): string { return 'courses'; }
 
-    public static function label(): string { return 'Courses'; }
+    public static function label(): string { return __('Courses'); }
 
     public static function icon(): string { return 'heroicon-o-academic-cap'; }
 
-    public static function description(): string { return 'Featured or latest online courses with prices.'; }
+    public static function description(): string { return __('Featured or latest online courses with prices.'); }
 
     public static function schema(): array
     {
@@ -25,8 +25,8 @@ class CoursesBlock extends PageBlock
             TextInput::make('eyebrow')->default('Courses')->maxLength(80),
             TextInput::make('heading')->default('Structured online courses')->maxLength(160),
             Textarea::make('intro')->rows(2),
-            ToggleButtons::make('mode')->label('Show')->inline()->default('featured')->options(['featured' => 'Featured first', 'latest' => 'Latest', 'selected' => 'Choose courses'])->live(),
-            Select::make('course_ids')->label('Courses')->multiple()->searchable()
+            ToggleButtons::make('mode')->label(__('Show'))->inline()->default('featured')->options(\App\Support\Ui::options(['featured' => 'Featured first', 'latest' => 'Latest', 'selected' => 'Choose courses']))->live(),
+            Select::make('course_ids')->label(__('Courses'))->multiple()->searchable()
                 ->options(fn () => Course::published()->orderBy('title')->pluck('title', 'id'))
                 ->visible(fn ($get) => $get('mode') === 'selected'),
             TextInput::make('limit')->numeric()->default(3)->minValue(1)->maxValue(12),

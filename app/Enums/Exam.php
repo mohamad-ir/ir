@@ -16,11 +16,11 @@ enum Exam: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::All => 'All examinations',
-            self::FrcophthPart1 => 'FRCOphth Part 1',
-            self::FrcophthPart2Written => 'FRCOphth Part 2 Written',
-            self::FrcophthPart2Oral => 'FRCOphth Part 2 Oral / Viva',
-            self::Frcs => 'FRCS Ophthalmology',
+            self::All => __('All examinations'),
+            self::FrcophthPart1 => __('FRCOphth Part 1'),
+            self::FrcophthPart2Written => __('FRCOphth Part 2 Written'),
+            self::FrcophthPart2Oral => __('FRCOphth Part 2 Oral / Viva'),
+            self::Frcs => __('FRCS Ophthalmology'),
         };
     }
 

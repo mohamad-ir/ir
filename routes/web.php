@@ -61,6 +61,13 @@ Route::post('/currency', function (\Illuminate\Http\Request $request) {
 })->name('currency')->middleware('throttle:30,1');
 
 // Banner click counter (sent with navigator.sendBeacon)
+Route::post('/color-mode', function (\Illuminate\Http\Request $request) {
+    $mode = \App\Support\ColorMode::valid($request->input('mode')) ?? abort(422);
+    $request->user()?->forceFill(['color_mode' => $mode])->saveQuietly();
+
+    return response()->json(['mode' => $mode])->cookie(\App\Support\ColorMode::COOKIE, $mode, 60 * 24 * 365, '/', null, null, false);
+})->name('color-mode')->middleware('throttle:30,1');
+
 Route::post('/banner-click/{slide}', function (\App\Models\BannerSlide $slide) {
     $slide->increment('clicks_count');
 
@@ -91,6 +98,9 @@ Route::get('/newsletter/click/{campaign}/{token}', [Controllers\NewsletterContro
 // Contact (falls back to a built-in page when no CMS page uses the slug)
 Route::get('/contact', [Controllers\PageController::class, 'contact'])->name('contact');
 
+// Popup views, clicks, closes and sign-ups
+Route::post('/_p', [Controllers\PopupController::class, 'track'])->name('popups.track')->middleware('throttle:collect');
+
 // First-party analytics beacons
 Route::post('/_a', [Controllers\AnalyticsController::class, 'collect'])->name('analytics.collect')->middleware('throttle:collect');
 Route::post('/_e', [Controllers\AnalyticsController::class, 'event'])->name('analytics.event')->middleware('throttle:collect');
@@ -98,6 +108,15 @@ Route::post('/_e', [Controllers\AnalyticsController::class, 'event'])->name('ana
 // SEO endpoints
 Route::get('/sitemap.xml', [Controllers\SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-{type}.xml', [Controllers\SitemapController::class, 'type'])->name('sitemap.type')->where('type', '[a-z_]+');
+// Installable app (PWA)
+// Requested by browsers very often: no session, cookies or CSRF work needed.
+$stateless = [\Illuminate\Session\Middleware\StartSession::class, \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class, \Illuminate\View\Middleware\ShareErrorsFromSession::class, \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, \App\Http\Middleware\MarkOfflineCacheable::class];
+Route::get('/manifest.webmanifest', [Controllers\PwaController::class, 'manifest'])->name('pwa.manifest')->withoutMiddleware($stateless);
+Route::get('/sw.js', [Controllers\PwaController::class, 'worker'])->name('pwa.worker')->withoutMiddleware($stateless);
+Route::get('/offline', [Controllers\PwaController::class, 'offline'])->name('pwa.offline');
+Route::get('/pwa/splash/{size}.png', [Controllers\PwaController::class, 'splash'])->name('pwa.splash')->middleware('throttle:60,1')->where('size', '[0-9]{3,4}x[0-9]{3,4}');
+
+Route::get('/favicon.ico', fn () => redirect(app(\App\Services\Branding\BrandingService::class)->iconUrl('favicon-48'), 302)->header('Cache-Control', 'public, max-age=86400'))->name('favicon');
 Route::get('/robots.txt', [Controllers\SitemapController::class, 'robots'])->name('robots');
 Route::get('/feed', [Controllers\SitemapController::class, 'feed'])->name('feed');
 
@@ -129,6 +148,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/password', 'updatePassword')->name('password.update');
         Route::get('/export', 'export')->name('export');
         Route::delete('/', 'destroy')->name('destroy');
+        Route::post('/avatar', [Controllers\AvatarController::class, 'store'])->name('avatar.store')->middleware('throttle:10,1');
+        Route::delete('/avatar', [Controllers\AvatarController::class, 'destroy'])->name('avatar.destroy')->middleware('throttle:10,1');
         Route::post('/bookmarks/{type}/{id}', 'toggleBookmark')->name('bookmark')->where('type', 'case|article|video|question');
     });
 
@@ -150,9 +171,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/billing', [Controllers\AccountController::class, 'billing'])->name('account.billing');
     Route::post('/account/billing/portal', [Controllers\CheckoutController::class, 'portal'])->name('account.billing.portal')->middleware('throttle:10,1');
 
+    // Dashboard language (the public website always stays in English)
+    Route::get('/'.config('cms.admin_path').'/locale/{locale}', function (\Illuminate\Http\Request $request, string $locale) {
+        $locale = \App\Support\AdminLocale::valid($locale) ?? abort(404);
+        // A link on another website must not change the dashboard language.
+        abort_if($request->headers->get('Sec-Fetch-Site') === 'cross-site', 403);
+        $request->user()->forceFill(['admin_locale' => $locale])->saveQuietly();
+        $back = url()->previous();
+
+        return redirect(str_starts_with($back, url(config('cms.admin_path'))) ? $back : url(config('cms.admin_path')))
+            ->withCookie(cookie()->forever(\App\Support\AdminLocale::COOKIE, $locale));
+    })->middleware('staff')->name('admin.locale');
+
     // Staff previews of drafts and the live page-builder canvas
     Route::middleware('staff')->prefix('_preview')->name('preview.')->controller(Controllers\PreviewController::class)->group(function () {
         Route::get('/builder/{token}', 'builder')->name('builder');
+        Route::get('/popup/{popup}', 'popup')->name('popup');
         Route::get('/{type}/{id}', 'show')->name('show')->where('type', 'case|article|video|page|exam_topic|topic|question|course|webinar|gallery');
     });
 });

@@ -20,10 +20,10 @@ enum ContentStatus: string implements HasColor, HasIcon, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Draft => 'Draft',
-            self::Pending => 'In review',
-            self::Published => 'Published',
-            self::Archived => 'Archived',
+            self::Draft => __('Draft'),
+            self::Pending => __('In review'),
+            self::Published => __('Published'),
+            self::Archived => __('Archived'),
         };
     }
 

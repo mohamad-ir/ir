@@ -10,11 +10,11 @@
 @if ($items->isNotEmpty())
     <x-filament::dropdown placement="bottom-end" teleport>
         <x-slot name="trigger">
-            <x-filament::button icon="heroicon-m-plus" size="sm">New</x-filament::button>
+            <x-filament::button icon="heroicon-m-plus" size="sm">{{ __('New') }}</x-filament::button>
         </x-slot>
         <x-filament::dropdown.list>
             @foreach ($items as [$label, $key, $resource, $icon])
-                <x-filament::dropdown.list.item :href="$resource::getUrl('create')" tag="a" :icon="$icon">{{ $label }}</x-filament::dropdown.list.item>
+                <x-filament::dropdown.list.item :href="$resource::getUrl('create')" tag="a" :icon="$icon">{{ __($label) }}</x-filament::dropdown.list.item>
             @endforeach
         </x-filament::dropdown.list>
     </x-filament::dropdown>

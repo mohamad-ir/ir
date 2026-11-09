@@ -35,6 +35,11 @@ class SettingDefaults
                 'logo_dark_id' => null,
                 'favicon_id' => null,
                 'logo_text' => null,
+                'logo_alt' => null,
+                'logo_height' => 'md',
+                'short_name' => null,
+                'icon_background' => '#ffffff',
+                'icon_set' => null,
                 'og_image_id' => null,
             ],
             'theme' => [
@@ -55,13 +60,15 @@ class SettingDefaults
                 'footer_style' => 'dark',
                 'container' => 'standard',
                 'custom_css' => null,
+                'color_mode' => 'system',
+                'color_mode_switch' => true,
+                'dark_background' => null,
+                'dark_surface' => null,
+                'dark_text' => null,
             ],
             'header' => [
                 'show_search' => true,
                 'show_account' => true,
-                'announcement' => null,
-                'announcement_url' => null,
-                'announcement_enabled' => false,
             ],
             'footer' => [
                 'about' => 'An independent educational resource for ophthalmologists in training and practice, focused on OCT, medical retina and uveitis.',
@@ -155,6 +162,19 @@ class SettingDefaults
                 'edit_minutes' => 15,
                 'notify_staff' => true,
                 'guidelines' => 'Keep discussions professional and evidence-based. Never post information that could identify a patient.',
+            ],
+            'popups' => [
+                'enabled' => true,
+                'cooldown_minutes' => 10,
+                'max_per_session' => 2,
+                'exclude_paths' => null,
+            ],
+            'pwa' => [
+                'enabled' => true,
+                'install_prompt' => true,
+            ],
+            'admin' => [
+                'fa_direction' => 'ltr',
             ],
             'backup' => [
                 'schedule' => 'weekly',

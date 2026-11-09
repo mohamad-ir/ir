@@ -12,7 +12,10 @@ class TrafficOverview extends TrafficChart
 
     protected int|string|array $columnSpan = ['md' => 2, 'xl' => 8];
 
-    protected ?string $heading = 'Traffic — last 30 days';
+    public function getHeading(): ?string
+    {
+        return __('Traffic — last 30 days');
+    }
 
     public static function canView(): bool
     {

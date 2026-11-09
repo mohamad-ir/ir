@@ -28,14 +28,14 @@ enum SubscriptionStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Active => 'Active',
-            self::Trialing => 'Free trial',
-            self::PastDue => 'Payment overdue',
-            self::Incomplete => 'Incomplete',
-            self::IncompleteExpired => 'Expired',
-            self::Unpaid => 'Unpaid',
-            self::Paused => 'Paused',
-            self::Canceled => 'Cancelled',
+            self::Active => __('Active'),
+            self::Trialing => __('Free trial'),
+            self::PastDue => __('Payment overdue'),
+            self::Incomplete => __('Incomplete'),
+            self::IncompleteExpired => __('Expired'),
+            self::Unpaid => __('Unpaid'),
+            self::Paused => __('Paused'),
+            self::Canceled => __('Cancelled'),
         };
     }
 

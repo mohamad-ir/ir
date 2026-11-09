@@ -10,20 +10,22 @@ use Filament\Schemas\Components\Tabs\Tab;
 
 class ListCases extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = CaseResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New case')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New case'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array
     {
         return [
             ...$this->statusTabs(),
-            'cotw' => Tab::make('Case of the Week')->icon('heroicon-m-sparkles')->modifyQueryUsing(fn ($query) => $query->where('is_case_of_week', true)->reorder()->orderByDesc('case_of_week_date')),
+            'cotw' => Tab::make('Case of the Week')->label(__('Case of the Week'))->icon('heroicon-m-sparkles')->modifyQueryUsing(fn ($query) => $query->where('is_case_of_week', true)->reorder()->orderByDesc('case_of_week_date')),
         ];
     }
 }

@@ -3,7 +3,7 @@
     <div class="border-b border-line bg-surface">
         <div class="container-site flex flex-col gap-6 py-8 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-4">
-                <span class="grid size-14 place-items-center rounded-full bg-accent font-heading text-xl font-bold text-accent-contrast">{{ auth()->user()->initials() }}</span>
+                <x-avatar :user="auth()->user()" size="md" />
                 <div>
                     <h1 class="font-heading text-3xl font-medium text-ink">{{ auth()->user()->displayName() }}</h1>
                     <p class="text-sm text-muted">{{ auth()->user()->career_stage?->getLabel() }} @if(auth()->user()->institution) · {{ auth()->user()->institution }} @endif</p>

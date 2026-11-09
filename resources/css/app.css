@@ -18,6 +18,10 @@
     --color-accent-ink: #0b6e70;
     --color-highlight: #d9822b;
     --color-highlight-contrast: #111;
+    --color-highlight-ink: #a45a14;
+    --color-panel: #12324f;
+    --color-panel-contrast: #fff;
+    --color-logo-tile: #12324f;
     --color-paper: #fbfaf7;
     --color-surface: #fff;
     --color-fg: #1c2733;
@@ -53,6 +57,9 @@
 
 @custom-variant hocus (&:hover, &:focus-visible);
 
+/* Dark mode follows the .dark class set on <html> (Light / Dark / System switcher, see layouts/app). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
     html {
         font-size: var(--font-size-root, 106.25%);
@@ -85,6 +92,35 @@
     }
 
     [x-cloak] { display: none !important; }
+
+    /*
+     * Dark mode. ThemeService swaps the colour tokens on :root.dark; the rules below handle
+     * the places where one token plays two roles.
+     */
+    /* "ink" is the heading colour AND the colour of brand panels (dark header/footer, hero bands):
+       inside a panel it falls back to the dark panel colour so the panel stays dark. */
+    .dark :where(.bg-ink, .tone-ink) { --color-ink: var(--color-panel); --color-ink-contrast: var(--color-panel-contrast); }
+    /* White chips and buttons (e.g. play buttons over thumbnails) keep the light palette inside them. */
+    .dark :where(.on-light, .btn-light) {
+        --color-ink: var(--light-ink); --color-fg: var(--light-fg); --color-surface: var(--light-surface); --color-paper: var(--light-paper);
+        --color-muted: color-mix(in oklab, var(--light-fg) 64%, var(--light-paper));
+        --color-line: color-mix(in oklab, var(--light-fg) 11%, transparent);
+        --color-line-strong: color-mix(in oklab, var(--light-fg) 20%, transparent);
+        color-scheme: light;
+    }
+    /* Status tints (correct/incorrect answers, alerts) re-mapped for dark backgrounds. */
+    .dark {
+        --color-emerald-50: color-mix(in oklab, #10b981 15%, transparent);
+        --color-emerald-700: #6ee7b7;
+        --color-emerald-800: #6ee7b7;
+        --color-emerald-900: #a7f3d0;
+        --color-red-50: color-mix(in oklab, #ef4444 15%, transparent);
+        --color-red-200: color-mix(in oklab, #ef4444 40%, transparent);
+        --color-red-700: #fca5a5;
+        --color-red-800: #fca5a5;
+    }
+    /* No colour animations while the mode switches. */
+    .color-mode-switching, .color-mode-switching * { transition: none !important; }
 
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
@@ -158,7 +194,7 @@
     }
     .chip-outline, .chip-accent, .chip-highlight { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
     .chip-accent { @apply bg-accent/10 text-accent-ink; }
-    .chip-highlight { @apply bg-highlight/15 text-[color-mix(in_oklab,var(--color-highlight)_60%,black)]; }
+    .chip-highlight { @apply bg-highlight/15 text-highlight-ink; }
     .chip-outline { @apply bg-transparent ring-1 ring-line-strong text-muted; }
 
     .filter-chip {
@@ -190,18 +226,6 @@
     /* Rich clinical content */
     .prose-clinical {
         max-width: none;
-        --tw-prose-body: var(--color-fg);
-        --tw-prose-headings: var(--color-ink);
-        --tw-prose-links: var(--color-accent-ink);
-        --tw-prose-bold: var(--color-fg);
-        --tw-prose-counters: var(--color-muted);
-        --tw-prose-bullets: color-mix(in oklab, var(--color-accent) 70%, transparent);
-        --tw-prose-hr: var(--color-line);
-        --tw-prose-quotes: var(--color-ink);
-        --tw-prose-quote-borders: var(--color-accent);
-        --tw-prose-captions: var(--color-muted);
-        --tw-prose-th-borders: var(--color-line-strong);
-        --tw-prose-td-borders: var(--color-line);
         font-size: 1.0625rem;
         line-height: 1.75;
 
@@ -231,7 +255,7 @@
     .callout-pearl { @apply border-accent; background: color-mix(in oklab, var(--color-accent) 8%, var(--color-surface)); & .callout-title { @apply text-accent-ink; } }
     .callout-pitfall { @apply border-red-600 bg-red-50; & .callout-title { @apply text-red-800; } }
     .callout-key { @apply border-ink bg-ink/[.04]; & .callout-title { @apply text-ink; } }
-    .callout-exam { @apply border-highlight; background: color-mix(in oklab, var(--color-highlight) 10%, var(--color-surface)); & .callout-title { color: color-mix(in oklab, var(--color-highlight) 55%, black); } }
+    .callout-exam { @apply border-highlight; background: color-mix(in oklab, var(--color-highlight) 10%, var(--color-surface)); & .callout-title { @apply text-highlight-ink; } }
     .callout-note { @apply border-line-strong bg-subtle; & .callout-title { @apply text-muted; } }
 
     /* Image viewer surfaces */
@@ -249,6 +273,28 @@
             radial-gradient(120% 80% at 100% 0%, color-mix(in oklab, var(--color-accent) 22%, transparent), transparent 60%),
             radial-gradient(90% 70% at 0% 100%, color-mix(in oklab, var(--color-highlight) 12%, transparent), transparent 60%);
     }
+}
+
+/*
+ * Rich-text colours follow the theme. Kept outside @layer on purpose: the Typography plugin's
+ * own colour variables live in the utilities layer and would otherwise win over these.
+ */
+.prose-clinical:not(.prose-invert) {
+    --tw-prose-body: var(--color-fg);
+    --tw-prose-headings: var(--color-ink);
+    --tw-prose-lead: var(--color-muted);
+    --tw-prose-links: var(--color-accent-ink);
+    --tw-prose-bold: var(--color-fg);
+    --tw-prose-counters: var(--color-muted);
+    --tw-prose-bullets: color-mix(in oklab, var(--color-accent) 70%, transparent);
+    --tw-prose-hr: var(--color-line);
+    --tw-prose-quotes: var(--color-ink);
+    --tw-prose-quote-borders: var(--color-accent);
+    --tw-prose-captions: var(--color-muted);
+    --tw-prose-code: var(--color-ink);
+    --tw-prose-kbd: var(--color-ink);
+    --tw-prose-th-borders: var(--color-line-strong);
+    --tw-prose-td-borders: var(--color-line);
 }
 
 /* Responsive builder visibility */

@@ -30,7 +30,7 @@ class ChannelsChart extends ChartWidget
             : $q->breakdown($this->dimension, 6)->pluck('visits', 'label')->all();
 
         return [
-            'labels' => array_keys($data) ?: ['No data yet'],
+            'labels' => array_keys($data) ?: [__('No data yet')],
             'datasets' => [[
                 'data' => array_values($data) ?: [1],
                 'backgroundColor' => $data ? ['#12324f', '#0f7f81', '#d9822b', '#6b4fa0', '#b4413b', '#3a6b35', '#8a96a3'] : ['#e5e7eb'],
@@ -51,11 +51,11 @@ class ChannelsChart extends ChartWidget
 
     public function getHeading(): ?string
     {
-        return ['channels' => 'Traffic sources', 'device' => 'Devices', 'country' => 'Countries', 'browser' => 'Browsers'][$this->dimension] ?? 'Breakdown';
+        return __(['channels' => 'Traffic sources', 'device' => 'Devices', 'country' => 'Countries', 'browser' => 'Browsers'][$this->dimension] ?? 'Breakdown');
     }
 
     public function getDescription(): ?string
     {
-        return $this->dimension === 'channels' ? 'How new visits arrived' : 'Share of visits';
+        return $this->dimension === 'channels' ? __('How new visits arrived') : __('Share of visits');
     }
 }

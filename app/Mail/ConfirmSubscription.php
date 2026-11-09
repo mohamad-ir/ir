@@ -10,6 +10,9 @@ use Illuminate\Mail\Mailables\Envelope;
 
 class ConfirmSubscription extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable;
 
     public function __construct(public Subscriber $subscriber) {}

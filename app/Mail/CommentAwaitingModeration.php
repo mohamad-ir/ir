@@ -12,6 +12,9 @@ use Illuminate\Queue\SerializesModels;
 /** Tells the editorial team a comment is waiting for approval. */
 class CommentAwaitingModeration extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable, SerializesModels;
 
     public function __construct(public Comment $comment) {}

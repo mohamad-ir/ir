@@ -9,12 +9,14 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListOrders extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('export')->label('Export CSV (accounting)')->icon('heroicon-m-arrow-down-tray')->color('gray')
+            Action::make('export')->label(__('Export CSV (accounting)'))->icon('heroicon-m-arrow-down-tray')->color('gray')
                 ->action(fn () => response()->streamDownload(function () {
                     $out = fopen('php://output', 'w');
                     fputcsv($out, ['Number', 'Date paid', 'Customer', 'Email', 'Country', 'VAT ID', 'Item', 'Type', 'Currency', 'Subtotal', 'Tax', 'Total', 'Refunded', 'Status', 'Stripe payment']);

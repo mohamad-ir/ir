@@ -18,6 +18,8 @@ use Filament\Tables\Table;
 
 class SearchSynonymResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = SearchSynonym::class;
 
     protected static ?string $navigationLabel = 'Search dictionary';
@@ -34,8 +36,8 @@ class SearchSynonymResource extends Resource
     {
         return $schema->components([Section::make()->schema([
             TextInput::make('term')->required()->maxLength(100)->unique(ignoreRecord: true)->placeholder('csr'),
-            Textarea::make('synonyms')->required()->rows(3)->placeholder('central serous chorioretinopathy, central serous retinopathy')
-                ->helperText('Comma-separated. A search for any of these words also finds the others.'),
+            Textarea::make('synonyms')->required()->rows(3)->placeholder(__('central serous chorioretinopathy, central serous retinopathy'))
+                ->helperText(__('Comma-separated. A search for any of these words also finds the others.')),
             Toggle::make('is_active')->default(true),
         ])]);
     }
@@ -45,7 +47,7 @@ class SearchSynonymResource extends Resource
         return $table->defaultSort('term')->columns([
             TextColumn::make('term')->searchable()->weight('medium')->badge(),
             TextColumn::make('synonyms')->searchable()->wrap(),
-            ToggleColumn::make('is_active')->label('Active'),
+            ToggleColumn::make('is_active')->label(__('Active')),
         ])->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()]);
     }
 

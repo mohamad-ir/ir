@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests (PHP 8.3, MariaDB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: oculus_test
+          MARIADB_USER: oculus
+          MARIADB_PASSWORD: secret
+          MARIADB_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: gd, intl, zip, exif, fileinfo, mbstring, pdo_mysql, sodium
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Composer install
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Security audit (PHP and JS dependencies)
+        run: |
+          composer audit --no-interaction
+          npm audit --omit=dev --audit-level=high
+
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Production caches build (config, routes, views)
+        run: |
+          php artisan optimize
+          php artisan optimize:clear
+
+      - name: Tests
+        run: php artisan test

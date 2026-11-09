@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ActivityLogResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = ActivityLog::class;
 
     protected static ?string $navigationLabel = 'Activity log';
@@ -35,15 +37,15 @@ class ActivityLogResource extends Resource
         return $table->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query->with('user'))
             ->columns([
-                TextColumn::make('created_at')->label('When')->dateTime('j M Y H:i')->sortable()->description(fn (ActivityLog $record) => $record->created_at?->diffForHumans()),
-                TextColumn::make('user.name')->label('Who')->placeholder('System'),
+                TextColumn::make('created_at')->label(__('When'))->dateTime('j M Y H:i')->sortable()->description(fn (ActivityLog $record) => $record->created_at?->diffForHumans()),
+                TextColumn::make('user.name')->label(__('Who'))->placeholder(__('System')),
                 TextColumn::make('event')->badge()->color(fn ($state) => match ($state) { 'deleted', 'demo_removed' => 'danger', 'created' => 'success', 'login' => 'gray', default => 'info' }),
                 TextColumn::make('description')->wrap()->searchable(),
                 TextColumn::make('changes')->getStateUsing(fn (ActivityLog $record) => isset($record->properties['changed']) ? implode(', ', array_slice($record->properties['changed'], 0, 6)) : null)->color('gray')->size('xs')->toggleable(),
-                TextColumn::make('ip_address')->label('IP')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('ip_address')->label(__('IP'))->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('user_id')->label('User')->options(fn () => User::role(User::STAFF_ROLES)->pluck('name', 'id')),
+                SelectFilter::make('user_id')->label(__('User'))->options(fn () => User::role(User::STAFF_ROLES)->pluck('name', 'id')),
                 SelectFilter::make('event')->options(fn () => ActivityLog::query()->distinct()->pluck('event', 'event')),
                 Filter::make('date')->schema([DatePicker::make('from'), DatePicker::make('until')])
                     ->query(fn (Builder $query, array $data) => $query

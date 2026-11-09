@@ -13,21 +13,23 @@ use Throwable;
 
 class ListMedia extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = MediaResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('upload')->label('Upload files')->icon('heroicon-m-arrow-up-tray')
+            Action::make('upload')->label(__('Upload files'))->icon('heroicon-m-arrow-up-tray')
                 ->visible(fn () => auth()->user()->can('media.create'))
-                ->modalHeading('Upload to the media library')
-                ->modalDescription('Images are optimised automatically: metadata (EXIF, GPS) is removed and responsive WebP versions are created.')
+                ->modalHeading(__('Upload to the media library'))
+                ->modalDescription(__('Images are optimised automatically: metadata (EXIF, GPS) is removed and responsive WebP versions are created.'))
                 ->schema([
                     FileUpload::make('files')->multiple()->required()->storeFiles(false)
                         ->acceptedFileTypes(MediaService::acceptedMimeTypes())->maxSize(204800)->maxParallelUploads(3)
-                        ->helperText('JPG, PNG, WebP, GIF, PDF, MP4, WebM or MOV.'),
+                        ->helperText(__('JPG, PNG, WebP, GIF, PDF, MP4, WebM or MOV.')),
                     MediaResource::folderSelect(),
-                    Toggle::make('is_deidentified')->label('I confirm these files contain no patient-identifiable information')->accepted(),
+                    Toggle::make('is_deidentified')->label(__('I confirm these files contain no patient-identifiable information'))->accepted(),
                 ])
                 ->action(function (array $data) {
                     $ok = 0;

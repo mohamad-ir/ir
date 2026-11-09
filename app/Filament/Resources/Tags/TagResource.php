@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 
 class TagResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Tag::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-hashtag';
@@ -29,7 +31,7 @@ class TagResource extends Resource
     {
         return $schema->components([Section::make()->columns(2)->schema([
             TextInput::make('name')->required()->maxLength(80),
-            TextInput::make('slug')->unique(ignoreRecord: true)->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')->helperText('Leave empty to generate.'),
+            TextInput::make('slug')->unique(ignoreRecord: true)->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')->helperText(__('Leave empty to generate.')),
         ])]);
     }
 
@@ -37,7 +39,7 @@ class TagResource extends Resource
     {
         return $table->defaultSort('name')->columns([
             TextColumn::make('name')->searchable()->weight('medium'),
-            TextColumn::make('used')->label('Used')->getStateUsing(fn (Tag $record) => DB::table('taggables')->where('tag_id', $record->id)->count()),
+            TextColumn::make('used')->label(__('Used'))->getStateUsing(fn (Tag $record) => DB::table('taggables')->where('tag_id', $record->id)->count()),
         ])->recordActions([EditAction::make(), DeleteAction::make()])->toolbarActions([DeleteBulkAction::make()]);
     }
 

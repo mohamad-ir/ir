@@ -7,6 +7,8 @@ use Filament\Resources\Pages\ViewRecord;
 
 class ViewOrder extends ViewRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array

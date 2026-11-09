@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditMembershipPlan extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = MembershipPlanResource::class;
 
     protected function getHeaderActions(): array

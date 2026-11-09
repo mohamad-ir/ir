@@ -7,5 +7,7 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListActivityLogs extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = ActivityLogResource::class;
 }

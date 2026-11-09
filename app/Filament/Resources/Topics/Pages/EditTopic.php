@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditTopic extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = TopicResource::class;
 
     protected function getHeaderActions(): array

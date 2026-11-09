@@ -30,14 +30,14 @@ class SetupChecklist extends Widget
         $cron = Settings::get('system.last_cron_at');
 
         return [
-            ['Add your name, credentials and professional photo', Settings::get('doctor.name') !== 'Dr Alex Morgan' && filled(Settings::get('doctor.photo_id')) && ! in_array('media:'.Settings::get('doctor.photo_id'), DemoContent::items(), true), GeneralSettings::getUrl()],
-            ['Upload your logo and favicon (optional)', filled(Settings::get('branding.logo_id')) || filled(Settings::get('branding.favicon_id')), ThemeSettings::getUrl()],
-            ['Connect an email mailbox for notifications and the newsletter', filled(Settings::get('mail.mailer')) || config('mail.default') === 'smtp', EmailSettings::getUrl()],
-            ['Add the cron job so newsletters and backups run automatically', $cron && now()->diffInMinutes(\Illuminate\Support\Carbon::parse($cron)) < 15, SystemTools::getUrl()],
-            ['Turn on two-factor authentication for your account', filled(auth()->user()?->app_authentication_secret), filament()->getProfileUrl()],
-            ['Connect Google Analytics & Search Console (optional)', filled(Settings::get('analytics.google_credentials')) || filled(Settings::get('analytics.ga4_measurement_id')), AnalyticsSettings::getUrl()],
-            ['Connect Stripe to sell membership, courses and webinar tickets (optional)', \App\Services\Payments\StripeClient::configured() && filled(Settings::get('payments.stripe_webhook_secret')), \App\Filament\Pages\Settings\PaymentSettings::getUrl()],
-            ['Replace the sample cases and remove sample content', ! DemoContent::present(), SystemTools::getUrl()],
+            [__('Add your name, credentials and professional photo'), Settings::get('doctor.name') !== 'Dr Alex Morgan' && filled(Settings::get('doctor.photo_id')) && ! in_array('media:'.Settings::get('doctor.photo_id'), DemoContent::items(), true), GeneralSettings::getUrl()],
+            [__('Upload your logo and favicon (optional)'), filled(Settings::get('branding.logo_id')) || filled(Settings::get('branding.favicon_id')), ThemeSettings::getUrl()],
+            [__('Connect an email mailbox for notifications and the newsletter'), filled(Settings::get('mail.mailer')) || config('mail.default') === 'smtp', EmailSettings::getUrl()],
+            [__('Add the cron job so newsletters and backups run automatically'), $cron && now()->diffInMinutes(\Illuminate\Support\Carbon::parse($cron)) < 15, SystemTools::getUrl()],
+            [__('Turn on two-factor authentication for your account'), filled(auth()->user()?->app_authentication_secret), filament()->getProfileUrl()],
+            [__('Connect Google Analytics & Search Console (optional)'), filled(Settings::get('analytics.google_credentials')) || filled(Settings::get('analytics.ga4_measurement_id')), AnalyticsSettings::getUrl()],
+            [__('Connect Stripe to sell membership, courses and webinar tickets (optional)'), \App\Services\Payments\StripeClient::configured() && filled(Settings::get('payments.stripe_webhook_secret')), \App\Filament\Pages\Settings\PaymentSettings::getUrl()],
+            [__('Replace the sample cases and remove sample content'), ! DemoContent::present(), SystemTools::getUrl()],
         ];
     }
 

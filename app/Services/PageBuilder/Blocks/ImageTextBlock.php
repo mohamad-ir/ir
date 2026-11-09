@@ -16,7 +16,7 @@ class ImageTextBlock extends PageBlock
 {
     public static function key(): string { return 'image_text'; }
 
-    public static function label(): string { return 'Image & text'; }
+    public static function label(): string { return __('Image & text'); }
 
     public static function icon(): string { return 'heroicon-o-photo'; }
 
@@ -28,10 +28,10 @@ class ImageTextBlock extends PageBlock
                 TextInput::make('heading')->maxLength(160),
             ]),
             RichEditor::make('content')->toolbarButtons([['bold', 'italic', 'link'], ['bulletList', 'orderedList'], ['h3']]),
-            MediaPicker::make('image_id')->label('Image')->required(),
+            MediaPicker::make('image_id')->label(__('Image'))->required(),
             Grid::make(2)->schema([
-                ToggleButtons::make('image_position')->inline()->options(['left' => 'Image left', 'right' => 'Image right'])->default('right'),
-                ToggleButtons::make('image_style')->inline()->options(['rounded' => 'Rounded', 'framed' => 'Framed', 'dark' => 'Dark viewer'])->default('rounded'),
+                ToggleButtons::make('image_position')->inline()->options(\App\Support\Ui::options(['left' => 'Image left', 'right' => 'Image right']))->default('right'),
+                ToggleButtons::make('image_style')->inline()->options(\App\Support\Ui::options(['rounded' => 'Rounded', 'framed' => 'Framed', 'dark' => 'Dark viewer']))->default('rounded'),
             ]),
             static::buttonsRepeater(),
         ];
