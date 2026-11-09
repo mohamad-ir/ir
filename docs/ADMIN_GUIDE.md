@@ -80,6 +80,15 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 - A **live preview** shows the logos on light and dark headers, the browser tab and the home-screen icons before you save.
 - SVG files are not accepted for logos and icons because an SVG can contain scripts; use PNG or WebP.
 
+**Installable app (PWA)** (Theme & branding › *Site identity* › *Installable app*)
+- Visitors can install the website as an app: **Android** (Chrome, Edge, Samsung Internet) and **desktop** Chrome/Edge show an *Install* button; on **iPhone/iPad** there is no install button, so the site shows short *Add to Home Screen* instructions instead. Firefox on desktop does not support installing websites.
+- The app uses your site name, short name, square site icon (home-screen and launch screens are generated from it) and page colour. It opens full screen with its own window.
+- **Suggestion on phones**: after a visitor’s third page view a small card offers the app (Install or *How to install* on iPhone). “Not now” hides it for 30 days; it never appears inside the installed app or while the cookie banner is open. An *Install the app* button is also in the mobile menu and the footer whenever the browser supports it.
+- **Offline**: public pages a visitor has read *without being signed in* (up to 40) stay readable offline, together with images; other pages show a friendly offline page with the list of saved pages. Dashboard, account, sign-in, checkout, lessons, webinar join links and anything seen while signed in are **never stored** on the device.
+- **Updates** are automatic: every release or design change creates a new app version; open apps show *“A new version is available — Refresh”*, and old cached files are removed.
+- Switching *Let visitors install the website as an app* off removes the app support (and its stored files) from visitors’ browsers on their next visit.
+- Requires **HTTPS** (System › Health shows a warning when the site is not on https://).
+
 **Light & dark mode** (Theme & branding › *Light & dark mode*)
 - **Default for visitors**: *System* (follows each visitor’s phone or computer — recommended), *Light* or *Dark*.
 - **Let visitors choose**: shows a sun/moon button in the header (and *Display* in the mobile menu and in *My account › Settings*). The choice is remembered on the device and, for signed-in members, on their account so it follows them to other devices. Switch it off to force the default for everyone.

@@ -192,6 +192,18 @@ Same steps. **Apply database updates** adds one column (each member’s light/da
 ### Upgrading to the next version (site identity, back-to-top, dashboard in Persian)
 Same steps. **Apply database updates** adds one column (each team member’s dashboard language). Then open **Design › Theme & branding › Site identity**: the site name and tagline now live there (moved from Settings › General), and uploading a **square site icon** creates the browser, iPhone/Android and future app icons automatically. Persian dashboard text needs no extra setup (fonts are included in the package). Add a sentence about profile photos to your privacy policy if you have not yet.
 
+### Installable app (PWA) — staging and go-live checklist
+Browsers only install apps and run the offline worker on **HTTPS** (or `localhost`). On staging:
+1. Give staging a real certificate: DirectAdmin › SSL Certificates › *Let’s Encrypt*, then set `APP_URL=https://staging.yourdomain…` in `.env` and **Clear all caches**. Self-signed certificates do not work for installation.
+2. Open **System › Health** — the *Installable app (PWA)* row must be green.
+3. Desktop Chrome/Edge: open the site, DevTools › *Application* › *Manifest* (no errors) and *Service workers* (status *activated*); the install icon appears in the address bar. Lighthouse › *PWA/Best practices* should pass.
+4. Android (Chrome): visit 3 pages → the suggestion card appears → *Install*. Open the app from the home screen: it starts full screen with the launch screen. Turn on airplane mode: pages you read appear, others show the offline page.
+5. iPhone/iPad (Safari): Share › *Add to Home Screen*; check the icon, the name, the launch screen and full-screen start.
+6. Sign in on the phone, open *My learning*, sign out, go offline: no account page must be available offline.
+7. Update test: change any theme colour and save; reopen the installed app → *“A new version is available”* → *Refresh*.
+8. To switch the app off in an emergency: Theme & branding › Site identity › untick *Let visitors install the website as an app* — browsers remove the worker and its caches on their next visit.
+The worker is served by Laravel at `/sw.js` (never cached by browsers or proxies); if a CDN/Cloudflare is used, exclude `/sw.js` and `/manifest.webmanifest` from edge caching.
+
 ## 12. Troubleshooting
 
 | Problem | Fix |

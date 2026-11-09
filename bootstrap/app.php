@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(prepend: [EnsureInstalled::class], append: [SecurityHeaders::class]);
+        $middleware->web(prepend: [EnsureInstalled::class], append: [SecurityHeaders::class, \App\Http\Middleware\MarkOfflineCacheable::class]);
         $middleware->trustProxies(at: '*');
         // Written by the Light/Dark/System switcher in the browser, so it cannot be encrypted.
         $middleware->encryptCookies(except: [\App\Support\ColorMode::COOKIE]);

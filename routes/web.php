@@ -105,6 +105,12 @@ Route::post('/_e', [Controllers\AnalyticsController::class, 'event'])->name('ana
 // SEO endpoints
 Route::get('/sitemap.xml', [Controllers\SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-{type}.xml', [Controllers\SitemapController::class, 'type'])->name('sitemap.type')->where('type', '[a-z_]+');
+// Installable app (PWA)
+Route::get('/manifest.webmanifest', [Controllers\PwaController::class, 'manifest'])->name('pwa.manifest');
+Route::get('/sw.js', [Controllers\PwaController::class, 'worker'])->name('pwa.worker');
+Route::get('/offline', [Controllers\PwaController::class, 'offline'])->name('pwa.offline');
+Route::get('/pwa/splash/{size}.png', [Controllers\PwaController::class, 'splash'])->name('pwa.splash')->where('size', '[0-9]{3,4}x[0-9]{3,4}');
+
 Route::get('/favicon.ico', fn () => redirect(app(\App\Services\Branding\BrandingService::class)->iconUrl('favicon-48'), 301)->header('Cache-Control', 'public, max-age=86400'))->name('favicon');
 Route::get('/robots.txt', [Controllers\SitemapController::class, 'robots'])->name('robots');
 Route::get('/feed', [Controllers\SitemapController::class, 'feed'])->name('feed');

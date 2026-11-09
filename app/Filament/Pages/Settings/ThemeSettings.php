@@ -49,7 +49,7 @@ class ThemeSettings extends SettingsPage
 
     protected function groups(): array
     {
-        return ['theme', 'branding', 'site'];
+        return ['theme', 'branding', 'site', 'pwa'];
     }
 
     /** Only the identity fields of the "site" group are edited here; the rest stays in General settings. */
@@ -201,6 +201,14 @@ class ThemeSettings extends SettingsPage
                                     ->helperText(__('Fills the space around the icon on iPhone and Android home screens.')),
                             ]),
                             View::make('filament.branding-preview'),
+                            Section::make('Installable app')->heading(__('Installable app (PWA)'))->compact()->schema([
+                                Toggle::make('pwa.enabled')->label(__('Let visitors install the website as an app'))
+                                    ->helperText(__('Adds the app to phone home screens and desktop app lists (Android, iPhone/iPad, Chrome/Edge), opens full screen and keeps recently read public pages for offline reading. Requires HTTPS. Switching off removes the app support from visitors’ browsers on their next visit.')),
+                                Toggle::make('pwa.install_prompt')->label(__('Suggest installing the app on phones'))
+                                    ->helperText(__('A small, dismissible card after a few page views. Visitors who choose “Not now” are not asked again for 30 days.')),
+                                Placeholder::make('pwa_https')->hiddenLabel()->visible(fn () => ! request()->isSecure() && ! in_array(request()->getHost(), ['localhost', '127.0.0.1'], true))
+                                    ->content(new HtmlString('<span class="text-sm text-warning-600">'.e(__('This address is not using HTTPS, so browsers will not install the app here. Enable SSL in DirectAdmin and use https:// in APP_URL.')).'</span>')),
+                            ]),
                             Section::make('Sharing')->heading(__('Sharing'))->compact()->schema([
                                 MediaPicker::make('branding.og_image_id')->label(__('Default social sharing image'))->helperText(__('1200×630 px, used when a page has no image.')),
                             ]),

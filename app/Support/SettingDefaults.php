@@ -166,6 +166,10 @@ class SettingDefaults
                 'notify_staff' => true,
                 'guidelines' => 'Keep discussions professional and evidence-based. Never post information that could identify a patient.',
             ],
+            'pwa' => [
+                'enabled' => true,
+                'install_prompt' => true,
+            ],
             'admin' => [
                 'fa_direction' => 'ltr',
             ],

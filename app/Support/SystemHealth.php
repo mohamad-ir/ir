@@ -54,6 +54,7 @@ class SystemHealth
             ['label' => __('Debug mode'), 'ok' => ! config('app.debug'), 'value' => config('app.debug') ? __('ON') : __('off'), 'help' => __('Set APP_DEBUG=false in .env on the live site — debug pages reveal sensitive information.')],
             ['label' => __('Environment'), 'ok' => app()->isProduction(), 'value' => app()->environment(), 'help' => __('Set APP_ENV=production in .env.')],
             ['label' => __('HTTPS'), 'ok' => str_starts_with((string) config('app.url'), 'https://'), 'value' => (string) config('app.url'), 'help' => __('Enable SSL in DirectAdmin and set APP_URL to https://…')],
+            ['label' => __('Installable app (PWA)'), 'ok' => ! app(\App\Services\Pwa\PwaService::class)->enabled() || str_starts_with((string) config('app.url'), 'https://'), 'value' => app(\App\Services\Pwa\PwaService::class)->enabled() ? __('on') : __('off'), 'help' => __('Installing the app and offline reading need HTTPS: enable SSL in DirectAdmin and set APP_URL to https://…')],
             ['label' => __('Pending queue jobs'), 'ok' => true, 'value' => (string) (rescue(fn () => DB::table('jobs')->count(), 0, false))],
             ['label' => __('Media library size'), 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(config('filesystems.disks.public.root')), 1)],
             ['label' => __('Backups size'), 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(storage_path('app/backups')), 1)],

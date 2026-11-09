@@ -20,6 +20,20 @@
         <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @endunless
     {{ app(\App\Services\Branding\BrandingService::class)->headTags() }}
+    @php
+        $pwa = app(\App\Services\Pwa\PwaService::class);
+        $pwaConfig = ['enabled' => $pwa->enabled(), 'suggest' => $pwa->suggestsInstall(), 'worker' => route('pwa.worker', [], false), 'auth' => auth()->check()];
+    @endphp
+    @if ($pwa->enabled())
+        <link rel="manifest" href="{{ route('pwa.manifest', [], false) }}">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        @foreach ($pwa->splashLinks() as $splash)
+            <link rel="apple-touch-startup-image" href="{{ $splash['href'] }}" media="{{ $splash['media'] }}">
+        @endforeach
+    @endif
+    <script>window.__pwa = {{ \Illuminate\Support\Js::from($pwaConfig) }};</script>
     <link rel="alternate" type="application/rss+xml" title="{{ setting('site.name') }}" href="{{ route('feed') }}">
     <style>{!! $theme->css() !!}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -40,6 +54,7 @@
     @endunless
 
     @include('partials.footer')
+    @include('partials.pwa')
     @include('partials.back-to-top')
     @include('partials.search-modal')
     @include('partials.cookie-banner')
