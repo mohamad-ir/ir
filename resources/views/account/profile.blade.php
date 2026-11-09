@@ -11,7 +11,7 @@
             <div><label for="email" class="field-label">Email</label><input id="email" type="email" name="email" value="{{ old('email', $user->email) }}" required class="input">@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <div><label for="career_stage" class="field-label">Career stage</label>
-                    <select id="career_stage" name="career_stage" class="input"><option value="">—</option>@foreach (\App\Enums\CareerStage::cases() as $s)<option value="{{ $s->value }}" @selected(old('career_stage', $user->career_stage?->value) === $s->value)>{{ $s->getLabel() }}</option>@endforeach</select></div>
+                    <select id="career_stage" name="career_stage" class="input"><option value="">—</option>@foreach (\App\Models\CareerStage::options(true, $user->career_stage) as $key => $name)<option value="{{ $key }}" @selected(old('career_stage', $user->career_stage) === $key)>{{ $name }}</option>@endforeach</select></div>
                 <div><label for="specialty" class="field-label">Sub-specialty</label><input id="specialty" name="specialty" value="{{ old('specialty', $user->specialty) }}" class="input" placeholder="Medical retina"></div>
             </div>
             <div class="grid gap-5 sm:grid-cols-2">

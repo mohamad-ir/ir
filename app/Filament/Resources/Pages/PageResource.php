@@ -56,7 +56,7 @@ class PageResource extends Resource
             ->reorderableWithButtons()
             ->blockNumbers(false)
             ->addActionLabel(__('Add section'))
-            ->addBetweenActionLabel('Insert section here')
+            ->addBetweenActionLabel(__('Insert section here'))
             ->truncateBlockLabel(false)
             ->default([]);
     }
@@ -80,7 +80,7 @@ class PageResource extends Resource
                 static::builder(),
                 Fields::seo('title', 'summary'),
             ]),
-            Group::make()->columnSpan(['xl' => 7])->schema([
+            Group::make()->columnSpan(['xl' => 7])->extraAttributes(['class' => 'oa-sticky-preview'])->schema([
                 View::make('filament.page-builder.preview'),
             ]),
         ]);

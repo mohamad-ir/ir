@@ -20,7 +20,7 @@
                 <label for="career_stage" class="field-label">I am a…</label>
                 <select id="career_stage" name="career_stage" required class="input">
                     <option value="">Select</option>
-                    @foreach (\App\Enums\CareerStage::cases() as $stage)<option value="{{ $stage->value }}" @selected(old('career_stage') === $stage->value)>{{ $stage->getLabel() }}</option>@endforeach
+                    @foreach (\App\Models\CareerStage::options() as $key => $name)<option value="{{ $key }}" @selected(old('career_stage') === $key)>{{ $name }}</option>@endforeach
                 </select>
                 @error('career_stage')<p class="field-error">{{ $message }}</p>@enderror
             </div>

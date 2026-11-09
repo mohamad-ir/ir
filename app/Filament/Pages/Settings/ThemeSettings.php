@@ -219,7 +219,7 @@ class ThemeSettings extends SettingsPage
                         ]),
                     ]),
                 ]),
-                Group::make()->columnSpan(['xl' => 7])->schema([View::make('filament.theme-preview')]),
+                Group::make()->columnSpan(['xl' => 7])->extraAttributes(['class' => 'oa-sticky-preview'])->schema([View::make('filament.theme-preview')]),
             ]),
         ];
     }

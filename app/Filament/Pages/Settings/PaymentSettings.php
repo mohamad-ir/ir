@@ -81,7 +81,7 @@ class PaymentSettings extends SettingsPage
                 }),
             Action::make('webhook')->label(__('Set up webhook automatically'))->icon('heroicon-o-bolt')
                 ->requiresConfirmation()
-                ->modalDescription(fn () => 'Creates a Stripe webhook that sends payment events to '.route('stripe.webhook').' and saves its signing secret here. Your website must be reachable on the internet at this address (it will not work on a local computer).')
+                ->modalDescription(fn () => __('Creates a Stripe webhook that sends payment events to :url and saves its signing secret here.', ['url' => route('stripe.webhook')]).' '.__('Your website must be reachable on the internet at this address (it will not work on a local computer).'))
                 ->action(function () {
                     try {
                         $stripe = new StripeClient;

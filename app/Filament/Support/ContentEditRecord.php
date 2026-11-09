@@ -2,17 +2,19 @@
 
 namespace App\Filament\Support;
 
+use App\Filament\Concerns\TranslatesPageLabels;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 
 abstract class ContentEditRecord extends EditRecord
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
-
     use InteractsWithContent;
+    use TranslatesPageLabels;
 
     protected function getHeaderActions(): array
     {
@@ -38,8 +40,14 @@ abstract class ContentEditRecord extends EditRecord
         $this->reindex();
     }
 
-    public function getSubheading(): ?string
+    public function getSubheading(): Htmlable|string|null
     {
-        return method_exists($this->record, 'displayStatus') ? $this->record->displayStatus().($this->record->published_at ? ' · '.$this->record->published_at->format('j M Y H:i') : '') : null;
+        if (! method_exists($this->record, 'displayStatus')) {
+            return null;
+        }
+
+        // The date is isolated so it reads correctly inside the Persian (right-to-left) dashboard.
+        return new HtmlString(e($this->record->displayStatus())
+            .($this->record->published_at ? ' · <bdi>'.e($this->record->published_at->format('j M Y H:i')).'</bdi>' : ''));
     }
 }

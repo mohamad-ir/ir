@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\CareerStage;
 use App\Models\Concerns\LogsActivity;
+use App\Services\Comments\CommentService;
+use App\Services\Users\AvatarService;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
@@ -41,13 +42,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'password' => 'hashed',
             'is_active' => 'boolean',
             'notify_replies' => 'boolean',
-            'career_stage' => CareerStage::class,
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
         ];
     }
 
     /** Emails and notifications to people are always English, whatever language the dashboard is shown in. */
+    /** Career stage name (managed in Audience › Career stages); null when none is set. */
+    public function careerStageLabel(): ?string
+    {
+        return CareerStage::labelFor($this->career_stage);
+    }
+
     public function preferredLocale(): string
     {
         return 'en';
@@ -56,12 +62,12 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     protected static function booted(): void
     {
         // Comments with replies are anonymised rather than removed, so threads stay readable.
-        static::deleting(fn (User $user) => app(\App\Services\Comments\CommentService::class)->eraseUser($user));
+        static::deleting(fn (User $user) => app(CommentService::class)->eraseUser($user));
         // The account's photo files go with it.
-        static::deleted(fn (User $user) => app(\App\Services\Users\AvatarService::class)->deleteFiles($user->avatar_path));
+        static::deleted(fn (User $user) => app(AvatarService::class)->deleteFiles($user->avatar_path));
     }
 
-    public function comments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
     }
@@ -89,7 +95,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     /** Profile photo URL in one of AvatarService::SIZES (sm 96px, md 256px, lg 512px), or null to show initials. */
     public function avatarUrl(string $size = 'md'): ?string
     {
-        return \App\Services\Users\AvatarService::url($this->avatar_path, $size);
+        return AvatarService::url($this->avatar_path, $size);
     }
 
     public function initials(): string

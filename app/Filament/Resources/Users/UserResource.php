@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
-use App\Enums\CareerStage;
+use App\Models\CareerStage;
 use App\Models\User;
 use App\Support\Countries;
 use App\Support\Permissions;
@@ -66,11 +66,11 @@ class UserResource extends Resource
                         ->rule(Password::min(10)->letters()->numbers())
                         ->required(fn (string $operation) => $operation === 'create')
                         ->dehydrated(fn (?string $state) => filled($state))
-                        ->helperText(fn (string $operation) => $operation === 'edit' ? 'Leave empty to keep the current password.' : 'At least 10 characters with letters and numbers.'),
+                        ->helperText(fn (string $operation) => $operation === 'edit' ? __('Leave empty to keep the current password.') : __('At least 10 characters with letters and numbers.')),
                     DateTimePicker::make('email_verified_at')->label(__('Email verified'))->native(false),
                 ]),
                 Section::make('Professional profile')->heading(__('Professional profile'))->columns(2)->schema([
-                    Select::make('career_stage')->options(CareerStage::options()),
+                    Select::make('career_stage')->label(__('Career stage'))->options(fn (?User $record) => CareerStage::options(true, $record?->career_stage))->native(false),
                     TextInput::make('specialty'),
                     TextInput::make('institution'),
                     Select::make('country')->options(Countries::all())->searchable(),
@@ -101,7 +101,7 @@ class UserResource extends Resource
                 TextColumn::make('name')->searchable(['name', 'email'])->sortable()->weight('medium')->description(fn (User $record) => $record->email),
                 TextColumn::make('roles.name')->label(__('Role'))->badge()->formatStateUsing(fn ($state) => __(Permissions::ROLES[$state] ?? $state))
                     ->color(fn ($state) => match ($state) { 'super_admin', 'administrator' => 'danger', 'editor' => 'warning', 'author', 'contributor' => 'info', default => 'gray' }),
-                TextColumn::make('career_stage')->badge()->color('gray')->toggleable(),
+                TextColumn::make('career_stage')->label(__('Career stage'))->badge()->formatStateUsing(fn (?string $state) => CareerStage::labelFor($state))->color(fn (?string $state) => CareerStage::colorFor($state))->toggleable(),
                 TextColumn::make('country')->formatStateUsing(fn ($state) => Countries::name($state))->toggleable(),
                 IconColumn::make('two_factor')->label(__('2FA'))->getStateUsing(fn (User $record) => filled($record->app_authentication_secret))->boolean()->toggleable(),
                 IconColumn::make('email_verified_at')->label(__('Verified'))->getStateUsing(fn (User $record) => $record->email_verified_at !== null)->boolean(),
@@ -111,7 +111,7 @@ class UserResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('roles')->relationship('roles', 'name')->getOptionLabelFromRecordUsing(fn ($record) => __(Permissions::ROLES[$record->name] ?? $record->name)),
-                SelectFilter::make('career_stage')->options(CareerStage::options()),
+                SelectFilter::make('career_stage')->label(__('Career stage'))->options(fn () => CareerStage::options(false)),
                 TernaryFilter::make('staff')->label(__('Account type'))->trueLabel(__('Staff'))->falseLabel(__('Members'))
                     ->queries(true: fn (Builder $query) => $query->role(User::STAFF_ROLES), false: fn (Builder $query) => $query->withoutRole(User::STAFF_ROLES)),
                 TernaryFilter::make('is_active')->label(__('Active')),

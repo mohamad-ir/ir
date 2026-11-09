@@ -55,7 +55,42 @@ html:not(.dark) .fi-section, html:not(.dark) .fi-ta-ctn, html:not(.dark) .fi-wi-
 }
 .fi-wi-stats-overview-stat-value { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
 
-/* Page-builder live preview */
-.oa-preview-shell { position: sticky; top: 5rem; }
-.oa-preview-frame-wrap { overflow: hidden; border-radius: .75rem; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 12px 32px -12px rgb(16 24 40 / .25); }
-.oa-preview-frame { border: 0; transform-origin: 0 0; background: #fff; }
+/* Live previews (page builder, reusable blocks, theme, popups).
+   The frame always lays out left-to-right: the previewed website is English, and the scaled iframe
+   (transform-origin top left) would otherwise be anchored to the right edge in the Persian (RTL) dashboard,
+   pushing the page out of view. */
+.oa-preview-frame-wrap { direction: ltr; overflow: hidden; border-radius: .75rem; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 12px 32px -12px rgb(16 24 40 / .25); }
+.dark .oa-preview-frame-wrap { box-shadow: 0 0 0 1px rgb(255 255 255 / .08), 0 12px 32px -12px rgb(0 0 0 / .6); }
+.oa-preview-frame { display: block; border: 0; transform-origin: 0 0; background: #fff; }
+
+/* The preview column stays in view while the form beside it scrolls (two-column layout, xl and up).
+   Below xl the columns stack and the preview is a normal block with its own show/hide toggle. */
+@media (min-width: 80rem) {
+    .oa-sticky-preview { position: sticky; top: calc(4rem + 1rem); align-self: start; }
+}
+
+/* Dashboard language switch (top bar) */
+.oa-locale-switch { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border-radius: .6rem; background: var(--gray-100); margin-inline-end: .5rem; }
+.dark .oa-locale-switch { background: rgb(255 255 255 / .06); }
+.oa-locale-switch-item { display: inline-flex; align-items: center; min-height: 1.85rem; padding: 0 .6rem; border-radius: .45rem; font-size: .75rem; font-weight: 600; line-height: 1; color: var(--gray-500); text-decoration: none; transition: color .15s, background-color .15s; }
+.oa-locale-switch-item:hover { color: var(--gray-900); }
+.dark .oa-locale-switch-item:hover { color: #fff; }
+.oa-locale-switch-item:focus-visible { outline: 2px solid var(--primary-600); outline-offset: 1px; }
+.oa-locale-switch-current { background: #fff; color: var(--gray-950); box-shadow: 0 1px 2px rgb(16 24 40 / .08); }
+.dark .oa-locale-switch-current { background: var(--gray-800); color: #fff; }
+.oa-locale-switch-item[lang="fa"] { font-family: 'Vazirmatn Variable', var(--font-sans); }
+
+/* Persian (RTL) dashboard showing English content.
+   The website's content is English, so English titles, sentences, dates and amounts appear inside a
+   right-to-left interface. Without this, the browser's bidi algorithm reorders them (“38 years” shown as
+   “years 38”, the full stop jumping to the start of a sentence, “14 Nov, 19:00 GMT” scrambled).
+   - Fields and the rich editor take their direction from what is typed, paragraph by paragraph (like dir="auto").
+   - Displayed values are ordered by their own language but keep the column/card alignment of the interface. */
+[dir="rtl"] :is(input.fi-input, textarea, .fi-fo-rich-editor .tiptap, .fi-fo-rich-editor .ProseMirror) { unicode-bidi: plaintext; }
+[dir="rtl"] .fi-fo-rich-editor :is(.tiptap, .ProseMirror) :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, td, th) { unicode-bidi: plaintext; }
+[dir="rtl"] :is(.fi-ta-text-item, .fi-ta-text-description, .fi-in-text-item, .fi-in-text-description, .fi-header-subheading,
+    .fi-wi-stats-overview-stat-value, .fi-wi-stats-overview-stat-description, .fi-section-header-description,
+    .fi-fo-field-wrp-helper-text, .fi-sc-text, .fi-modal-description) { unicode-bidi: plaintext; text-align: right; }
+[dir="rtl"] .fi-breadcrumbs-item-label, [dir="rtl"] .fi-header-heading, [dir="rtl"] .fi-badge-label-ctn { unicode-bidi: isolate; }
+[dir="rtl"] .fi-ta-text.fi-align-center :is(.fi-ta-text-item, .fi-ta-text-description) { text-align: center; }
+[dir="rtl"] .fi-ta-text:is(.fi-align-end, .fi-align-left) :is(.fi-ta-text-item, .fi-ta-text-description) { text-align: left; }

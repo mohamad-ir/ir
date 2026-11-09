@@ -51,7 +51,8 @@ Pages are built from **sections**. Click **Add section** to choose from 24 types
 
 - Drag sections to reorder, duplicate them, or hide one without deleting it.
 - Each section has **Content** and **Appearance** tabs (background, spacing, width, show on desktop/mobile only, anchor link).
-- The **live preview** on the right shows unsaved changes; switch between desktop, tablet and mobile.
+- The **live preview** shows unsaved changes; switch between desktop, tablet and mobile. On large screens it stays in view while you scroll through the sections (the same applies to the previews in Theme & branding and Popups); on tablets and phones it sits below the form and can be hidden with **Hide preview** (remembered on the device).
+- Adding, duplicating or moving a section keeps the other sections open or closed as you left them; only the new section opens. *Expand all* / *Collapse all* open or close everything. The same applies to every list of items in the dashboard (FAQ questions, images, answers, menu items…).
 - **Set as homepage** is in the page list’s row actions.
 - **About page: video and photo gallery** — open *Design › Pages › About*, **Add section** → **Featured video** (a library video, a YouTube/Vimeo link or an uploaded file) or **Gallery** (pick images from the media library with captions, or show an existing photo album; grid, masonry or justified layout). Drag the section to where you want it. A sample of each is included in a fresh installation.
 - **Reusable blocks** are sections you edit once and place on many pages (e.g. a newsletter banner).
@@ -115,10 +116,11 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 - The dashboard has its own light/dark/system setting in your user menu (top right).
 
 ### Dashboard language (English / فارسی)
-Each team member can use the dashboard in **English** or **Persian (فارسی)**: user menu (top right) › **فارسی / English**, or **Profile › Dashboard language**. The choice is personal and remembered on the account (and on the device for the sign-in page). Menus, page titles, tables, columns, buttons, forms, validation messages, notifications and filters are translated.
+Each team member can use the dashboard in **English** or **Persian (فارسی)**: the **English | فارسی** switch in the top bar (next to your avatar; on phones *EN | فا*), or **Profile › Dashboard language**. The choice is personal and remembered on the account (and on the device for the sign-in page). Menus, page titles, tables, columns, buttons, forms, validation messages, notifications and filters are translated.
 
 - Only the dashboard changes. The **website, member pages and every email stay in English**, and your content — case and article titles, names, comments, settings values — is never translated or altered.
 - Layout direction for Persian: **Settings › General › Dashboard** — *left to right* (same layout as English, default) or *right to left*.
+- In the right-to-left layout, English content keeps its own reading order: text fields and the text editor follow the language you type (English left-to-right, Persian right-to-left, paragraph by paragraph), and English titles, dates and amounts in tables and cards are shown in the correct order. Live previews always show the (English) website exactly as visitors see it.
 - Translations live in `lang/fa.json` (dashboard wording) and `lang/fa/validation.php` (form errors); Filament’s own Persian translations cover its built-in texts. When new dashboard text is added in code, run the site with `TRANSLATION_AUDIT=true` and open the new pages in Persian: missing Persian strings are listed in `storage/logs/missing-fa.log`.
 
 ## Library
@@ -129,6 +131,7 @@ Each team member can use the dashboard in **English** or **Persian (فارسی)*
 - **Users & members** — invite team members and give them a role. *Roles & permissions* (System) lets you fine-tune what each role may do.
   - *Super administrator* — everything. *Administrator* — everything except roles. *Editor* — all content including courses and webinars, menus, SEO, newsletter, enquiries, and read-only sales. *Author* — own cases/articles/videos/questions, can publish. *Contributor* — drafts for review. *Member* — public account only.
 - **Profile photos** — members add, crop, change or remove their photo in *My account › Settings*. Photos appear in the header, the account page, next to comments and on author/teacher boxes; without a photo a coloured initials circle is shown. Every upload is checked and re-saved by the server (JPG, PNG or WebP, at least 128 × 128 px, up to 5 MB; location and camera data are removed) and the previous photo’s files are deleted. To remove an unsuitable photo: *Users & members* › row menu › **Remove profile photo**. Team members use the same account page for the photo shown on articles, courses and webinars.
+- **Career stages** (Audience › Career stages) — the options members choose from (“I am a…”) at registration and in their profile, also shown next to their comments and in the dashboard. Add, rename, recolour, drag to reorder, or switch a stage off: switched-off stages disappear from the forms but members who chose them keep them. A stage that members have chosen cannot be deleted (switch it off instead). Each stage has a fixed key stored with the member, so renaming never affects members. The starting list (international): medical student, resident / trainee, fellow, ophthalmologist (specialist / consultant), doctor in another specialty / GP, optometrist, orthoptist, ophthalmic nurse / technician / photographer, researcher / scientist, other. Managed by roles with *users.manage*.
 - **Newsletter subscribers** — import/export CSV; people who unsubscribed are never re-added.
 - **Email campaigns** — write, **Send test**, then **Send now** or **Schedule**. Sending is throttled (Settings › Email) to respect your host’s limits; the report shows opens and clicks.
 - **Enquiries** — messages from the contact form. **Reply** sends an email and records it in the notes.

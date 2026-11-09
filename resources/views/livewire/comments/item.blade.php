@@ -10,7 +10,7 @@
             <span class="font-semibold text-ink">{{ $comment->authorName() }}</span>
             @if ($isAuthor)<span class="chip chip-accent !py-0 !text-[11px]">Author</span>
             @elseif ($isTeam)<span class="chip !py-0 !text-[11px]">{{ setting('site.name') }} team</span>@endif
-            @if ($comment->user?->career_stage)<span class="text-xs text-muted">{{ $comment->user->career_stage->getLabel() }}</span>@endif
+            @if ($comment->user?->career_stage)<span class="text-xs text-muted">{{ $comment->user->careerStageLabel() }}</span>@endif
             <span class="text-muted" aria-hidden="true">·</span>
             <a href="#comment-{{ $comment->id }}" class="text-xs text-muted hover:text-ink"><time datetime="{{ $comment->created_at->toIso8601String() }}" title="{{ $comment->created_at->format('j M Y, H:i') }}">{{ $comment->created_at->diffForHumans() }}</time></a>
             @if ($comment->edited_at)<span class="text-xs text-muted">(edited)</span>@endif

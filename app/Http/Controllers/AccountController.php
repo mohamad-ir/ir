@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CareerStage;
+use App\Models\CareerStage;
 use App\Models\Article;
 use App\Models\Bookmark;
 use App\Models\ClinicalCase;
@@ -84,7 +84,7 @@ class AccountController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'title' => ['nullable', 'string', 'max:40'],
             'email' => ['required', 'email', 'max:190', Rule::unique('users')->ignore($user->id)],
-            'career_stage' => ['nullable', Rule::enum(CareerStage::class)],
+            'career_stage' => ['nullable', Rule::in(CareerStage::selectableKeys($request->user()->career_stage))],
             'specialty' => ['nullable', 'string', 'max:120'],
             'institution' => ['nullable', 'string', 'max:160'],
             'country' => ['nullable', 'string', 'size:2'],
@@ -131,7 +131,7 @@ class AccountController extends Controller
     {
         $user = $request->user();
         $data = [
-            'account' => $user->only(['name', 'title', 'email', 'career_stage', 'specialty', 'institution', 'country', 'created_at', 'last_login_at']),
+            'account' => [...$user->only(['name', 'title', 'email', 'career_stage', 'specialty', 'institution', 'country', 'created_at', 'last_login_at']), 'career_stage_name' => $user->careerStageLabel()],
             'bookmarks' => $user->bookmarks()->with('bookmarkable')->get()->map(fn ($b) => ['type' => $b->bookmarkable_type, 'title' => $b->bookmarkable?->title, 'saved_at' => $b->created_at])->all(),
             'question_attempts' => $user->questionAttempts()->with('question:id,title')->get()->map(fn ($a) => ['question' => $a->question?->title, 'answer' => $a->selected_key, 'correct' => $a->is_correct, 'at' => $a->created_at])->all(),
             'newsletter' => Subscriber::where('email', $user->email)->first()?->only(['email', 'status', 'interests', 'confirmed_at']),

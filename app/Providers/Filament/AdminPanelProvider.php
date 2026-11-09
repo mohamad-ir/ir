@@ -8,11 +8,11 @@ use App\Filament\Support\InitialsAvatarProvider;
 use App\Http\Middleware\RequireStaffMfa;
 use App\Http\Middleware\SetAdminLocale;
 use App\Services\Branding\BrandingService;
-use App\Support\AdminLocale;
 use App\Support\Settings;
-use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Repeater;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,6 +30,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -108,14 +109,21 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->middleware([SetAdminLocale::class], isPersistent: true)
-            ->userMenuItems([
-                'admin-locale' => Action::make('adminLocale')
-                    ->label(fn () => AdminLocale::current() === 'fa' ? 'English' : 'فارسی')
-                    ->icon('heroicon-o-language')
-                    ->url(fn () => route('admin.locale', ['locale' => AdminLocale::current() === 'fa' ? 'en' : 'fa'])),
-            ])
+            // Dashboard language: always visible English | فارسی switch in the top bar (the public site stays English).
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.locale-switch'))
+            // Builder/repeater items keep their open/closed state when an item is added, cloned or moved
+            // (Filament otherwise re-opens every item). The stored states are cleared on each page load.
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString(
+                "<script>(function(){function c(){try{Object.keys(localStorage).forEach(function(k){if(/^_x_filament:(builder|repeater):collapsed:/.test(k))localStorage.removeItem(k)})}catch(e){}}c();document.addEventListener('livewire:navigating',c)})()</script>"
+            ))
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    public function boot(): void
+    {
+        Builder::configureUsing(fn (Builder $builder) => $builder->persistCollapsed());
+        Repeater::configureUsing(fn (Repeater $repeater) => $repeater->persistCollapsed());
     }
 }
