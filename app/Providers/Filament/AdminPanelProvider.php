@@ -2,8 +2,15 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Support\InitialsAvatarProvider;
+use App\Http\Middleware\RequireStaffMfa;
+use App\Http\Middleware\SetAdminLocale;
+use App\Services\Branding\BrandingService;
+use App\Support\AdminLocale;
 use App\Support\Settings;
+use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -35,16 +42,18 @@ class AdminPanelProvider extends PanelProvider
             ->path(config('cms.admin_path'))
             ->login()
             ->passwordReset()
-            ->profile(\App\Filament\Pages\Auth\EditProfile::class, isSimple: false)
+            ->profile(EditProfile::class, isSimple: false)
             ->multiFactorAuthentication(
                 [AppAuthentication::make()->recoverable()],
-                isRequired: fn () => (bool) Settings::get('security.require_staff_mfa', true) && ! app()->runningUnitTests(),
+                // Always registered (also in cached routes); RequireStaffMfa applies the setting on every request.
+                isRequired: fn () => ! app()->runningUnitTests(),
             )
+            ->multiFactorAuthenticationRequiredMiddlewareName(RequireStaffMfa::class)
             ->brandName(fn () => Settings::get('site.name'))
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('2rem')
-            ->favicon(fn () => app(\App\Services\Branding\BrandingService::class)->iconUrl('favicon-32'))
-            ->renderHook(\Filament\View\PanelsRenderHook::HEAD_END, fn () => app(\App\Services\Branding\BrandingService::class)->headTags())
+            ->favicon(fn () => app(BrandingService::class)->iconUrl('favicon-32'))
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => app(BrandingService::class)->headTags())
             ->colors([
                 'primary' => [50 => 'oklch(0.975 0.012 196)', 100 => 'oklch(0.948 0.024 196)', 200 => 'oklch(0.9 0.045 196)', 300 => 'oklch(0.83 0.07 196)', 400 => 'oklch(0.72 0.09 196)', 500 => 'oklch(0.6 0.098 196)', 600 => 'oklch(0.52 0.092 196)', 700 => 'oklch(0.45 0.082 196)', 800 => 'oklch(0.39 0.07 196)', 900 => 'oklch(0.33 0.058 196)', 950 => 'oklch(0.24 0.042 196)'],
                 'gray' => Color::Slate,
@@ -55,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->font('Inter Variable', provider: LocalFontProvider::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->defaultAvatarProvider(\App\Filament\Support\InitialsAvatarProvider::class)
+            ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->spa()
             ->sidebarCollapsibleOnDesktop()
             ->collapsibleNavigationGroups()
@@ -98,12 +107,12 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->middleware([\App\Http\Middleware\SetAdminLocale::class], isPersistent: true)
+            ->middleware([SetAdminLocale::class], isPersistent: true)
             ->userMenuItems([
-                'admin-locale' => \Filament\Actions\Action::make('adminLocale')
-                    ->label(fn () => \App\Support\AdminLocale::current() === 'fa' ? 'English' : 'فارسی')
+                'admin-locale' => Action::make('adminLocale')
+                    ->label(fn () => AdminLocale::current() === 'fa' ? 'English' : 'فارسی')
                     ->icon('heroicon-o-language')
-                    ->url(fn () => route('admin.locale', ['locale' => \App\Support\AdminLocale::current() === 'fa' ? 'en' : 'fa'])),
+                    ->url(fn () => route('admin.locale', ['locale' => AdminLocale::current() === 'fa' ? 'en' : 'fa'])),
             ])
             ->authMiddleware([
                 Authenticate::class,

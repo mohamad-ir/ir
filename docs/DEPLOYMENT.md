@@ -29,7 +29,7 @@ The installer checks all of these and tells you exactly what is missing.
 
 ## 3. Upload the files
 
-The package `oct-academy-1.0.0.zip` contains:
+The package `oct-academy-<version>.zip` (e.g. `oct-academy-1.4.1.zip`) contains:
 
 ```
 oct-academy/    ← the application (must NOT be inside public_html)
@@ -54,14 +54,25 @@ domains/YOURDOMAIN/
 └── public_html/
     ├── index.php
     ├── .htaccess
-    ├── build/  css/  js/  fonts/
+    ├── favicon.svg
+    ├── build/  css/  js/  fonts/  icons/
     └── media/            (your uploaded images will be stored here)
 ```
 
+Check the download first (optional): the package's SHA-256 checksum is listed in `release/SHA256SUMS` of the project; on a computer, `shasum -a 256 oct-academy-1.4.1.zip` (macOS/Linux) or `certutil -hashfile oct-academy-1.4.1.zip SHA256` (Windows) must print the same value.
+
 > **Alternative (if your host lets you change the document root):** keep everything inside `oct-academy/` and point the domain’s document root to `oct-academy/public`. Then you do not need the package’s `public_html` folder.
+
+> **Trying it on your own computer (Laravel Herd, Valet, Laragon…):** use only the `oct-academy` folder as the site (its `public` folder is the web root), create an empty MySQL/MariaDB database, open the site and follow the installer. Do not create `.env` yourself — it is created automatically on the first visit.
 
 ### Folder permissions
 Folders should be `755` and files `644` (DirectAdmin’s default). These folders must be writable by PHP: `oct-academy/storage` (and everything inside), `oct-academy/bootstrap/cache`, `public_html/media`, and the file `oct-academy/.env` once it exists.
+
+### About `.env` (passwords and keys)
+- `oct-academy/.env` holds the database password, the application key and mail/payment credentials. The package does **not** contain one: it is created automatically on the first visit from `.env.example`, with a new random application key and permissions `640` (readable only by your account), and completed by the installer.
+- It lives in `oct-academy/`, **outside** `public_html`, so it can never be downloaded. Check after installing: `https://YOURDOMAIN/.env` must show the site’s “page not found” page. (`oct-academy/` also contains an `.htaccess` that refuses all web access, in case the folder is ever placed inside `public_html` by mistake.)
+- Never upload a `.env` from another site, never put it inside `public_html`, and keep a copy only in a safe place (it is needed to restore backups: the application key decrypts stored secrets).
+- When updating, **keep** the existing `.env` (the update steps below never replace it).
 
 ---
 
@@ -186,6 +197,9 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
 
+### Upgrading from 1.4.0 to 1.4.1 (installer fix)
+Same steps; there are **no database updates** and no new settings — all content, members, settings, uploads and the existing `.env` stay exactly as they are. The release fixes the first-run setup of new installations (see Troubleshooting) and makes *Settings › General › Require two-factor authentication* take effect immediately even after **Optimise for speed** (before, a change only applied after the caches were cleared). It is safe to apply to running sites. After uploading: **Clear all caches** and **Optimise for speed** (System › Health & maintenance), then check that the page shows version 1.4.1. Recommended once: in File Manager set the permissions of `oct-academy/.env` to `640` (new installations get this automatically; older ones were created with `644`).
+
 ### Upgrading from 1.3 to 1.4 (dark mode, profile photos, site identity, Persian dashboard, installable app, popups)
 Same steps — make sure the new **`public_html/icons`** folder is copied (default browser/app icons; without it the installable app cannot start offline). **Apply database updates** runs three updates:
 - each member’s light/dark preference and each team member’s dashboard language;
@@ -212,10 +226,32 @@ Browsers only install apps and run the offline worker on **HTTPS** (or `localhos
 8. To switch the app off in an emergency: Theme & branding › Site identity › untick *Let visitors install the website as an app* — browsers remove the worker and its caches on their next visit.
 The worker is served by Laravel at `/sw.js` (never cached by browsers or proxies); if a CDN/Cloudflare is used, exclude `/sw.js` and `/manifest.webmanifest` from edge caching.
 
-## 12. Troubleshooting
+## 12. Go-live checklist
+
+Tick these off before announcing the site:
+
+- [ ] PHP 8.3+, required extensions and recommended options (installer *Requirements* step all ✓)
+- [ ] `oct-academy/` sits **next to** `public_html/`, not inside it; `public_html` contains `index.php`, `.htaccess`, `favicon.svg`, `build/ css/ js/ fonts/ icons/ media/`
+- [ ] Installer finished; `https://YOURDOMAIN/install` now shows “page not found”
+- [ ] `https://YOURDOMAIN/.env` shows “page not found”; `oct-academy/.env` has permissions `640` or `600`
+- [ ] `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…` (with **https**)
+- [ ] SSL certificate active; the three “force HTTPS” lines in `public_html/.htaccess` enabled
+- [ ] Cron job added (section 5) — System › Health shows the scheduler as running
+- [ ] Two-factor authentication set up for every team member; recovery codes saved
+- [ ] Email: *Send test email* arrives (also check the spam folder)
+- [ ] Site identity: logo(s), square site icon, site name; privacy policy reviewed (profile photos, comments, analytics, payments if used)
+- [ ] Stripe (if used): one test purchase in test mode, then live keys and webhook (section 9)
+- [ ] Behind a proxy/CDN other than Cloudflare: `TRUSTED_PROXIES` set (see *Upgrading from 1.3 to 1.4*)
+- [ ] Installable app: checklist above passed on a phone
+- [ ] System › Health: everything green; **Optimise for speed** clicked
+- [ ] First backup created and downloaded; automatic backups scheduled
+- [ ] Sample content removed when your own content is ready
+
+## 13. Troubleshooting
 
 | Problem | Fix |
 |---|---|
+| **`/install` shows a 500 error “database.sqlite does not exist”** (versions up to 1.4.0, rare) | The first visit left a `.env` that contains only `APP_KEY`. Use 1.4.1 or later (it repairs such a `.env` automatically and the installer no longer needs a database before it is configured). With an older package: delete `oct-academy/.env` and open `/install` again. |
 | **500 error / blank page** | Check `oct-academy/storage/logs/laravel-YYYY-MM-DD.log`. Most often a folder is not writable or PHP < 8.3. |
 | **“No application encryption key”** | `.env` is not writable; give it permission `644` and reload — a key is generated automatically. |
 | **Styles missing** | `public_html/build` was not copied, or `.htaccess` is missing (hidden file). |

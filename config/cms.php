@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '1.4.0',
+    'version' => '1.4.1',
 
     // URL prefix of the administration dashboard. Changing it (e.g. to a
     // less predictable value) reduces automated login attempts.
