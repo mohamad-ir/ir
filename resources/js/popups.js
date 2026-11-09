@@ -94,15 +94,22 @@ document.addEventListener('alpine:init', () => {
                     if (p.cfg.trigger === 'click' || p.cfg.preview) { p.arm(); return; }
                     if (bySlot[p.cfg.slot]) return;
                     bySlot[p.cfg.slot] = p;
-                    p.arm();
+                    if (p.cfg.initial) {
+                        // Already visible from the server (no layout shift): just record the view.
+                        p.open = false;
+                        p.show(false);
+                    } else {
+                        p.arm();
+                    }
                 });
-            this.items.filter((p) => p.cfg.trigger === 'click' && !p.armed).forEach((p) => p.arm());
+            // Bars rendered visible by the server that this visitor should not see (closed, lower priority...).
+            this.items.filter((p) => p.cfg.initial && bySlot[p.cfg.slot] !== p).forEach((p) => { p.open = false; });
         },
     });
 
     Alpine.data('oaPopup', (cfg) => ({
         cfg,
-        open: false,
+        open: cfg.initial === true,
         armed: false,
         done: false,
         timers: [],
@@ -112,10 +119,20 @@ document.addEventListener('alpine:init', () => {
 
         init() {
             this.$store.popups.add(this);
+            // Any link to #popup-ID or element with data-open-popup="ID" opens it, every time, whatever the trigger.
+            this.onLink = (e) => {
+                const el = e.target.closest?.(`a[href="#popup-${this.cfg.id}"], [data-open-popup="${this.cfg.id}"]`);
+                if (!el) return;
+                e.preventDefault();
+                this.returnFocus = el;
+                this.show(true);
+            };
+            document.addEventListener('click', this.onLink);
         },
 
         destroy() {
             this.disarm();
+            document.removeEventListener('click', this.onLink);
         },
 
         get key() {
@@ -176,15 +193,6 @@ document.addEventListener('alpine:init', () => {
             this.armed = true;
             const c = this.cfg;
             const auto = () => this.show(false);
-
-            // Any link to #popup-ID or element with data-open-popup="ID" opens it (always, whatever the trigger).
-            this.listen(document, 'click', (e) => {
-                const el = e.target.closest?.(`a[href="#popup-${c.id}"], [data-open-popup="${c.id}"]`);
-                if (!el) return;
-                e.preventDefault();
-                this.returnFocus = el;
-                this.show(true);
-            });
 
             switch (c.trigger) {
                 case 'click':

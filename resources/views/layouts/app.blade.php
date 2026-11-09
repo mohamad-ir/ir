@@ -4,7 +4,8 @@
     $headerStyle = setting('theme.header_style', 'light');
     $colorMode = \App\Support\ColorMode::current();
     $darkPaper = $theme->darkVars(\App\Support\Settings::group('theme'))['--color-paper'];
-    $popupItems = app(\App\Services\Popups\PopupService::class)->forRequest(request());
+    // Never break a page because of popups (e.g. files uploaded before "Apply database updates" was run).
+    $popupItems = rescue(fn () => app(\App\Services\Popups\PopupService::class)->forRequest(request()), collect(), false);
 @endphp
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth{{ $colorMode === 'dark' ? ' dark' : '' }}" data-color-mode="{{ $colorMode }}">

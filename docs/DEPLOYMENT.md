@@ -171,7 +171,7 @@ DirectAdmin’s own *Create/Restore Backups* tool is a good additional safety ne
 
 1. **System › Backups → Create backup now**, and download it.
 2. **System › Health & maintenance → Enable maintenance mode** (keep the bypass link).
-3. Upload the new package and replace the contents of `oct-academy/` **except** `.env` and `storage/`, and replace `public_html/build`, `css`, `js`, `fonts` and `index.php` (never delete `public_html/media`).
+3. Upload the new package and replace the contents of `oct-academy/` **except** `.env` and `storage/`, and replace `public_html/build`, `css`, `js`, `fonts`, `icons`, `favicon.svg` and `index.php` with the ones from the package’s `public_html` folder (never delete `public_html/media`). Copy any other new folder found in the package’s `public_html` as well.
 4. Open **System › Health & maintenance** (`/admin/system/health`). If database updates are pending, click **Apply database updates**, then **Clear all caches** and **Optimise for speed**. (With SSH you can instead run `php artisan migrate --force && php artisan optimize`.)
 5. Bring the site back online.
 
@@ -186,14 +186,19 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
 
-### Upgrading from 1.3 (light/dark mode, profile photos)
-Same steps. **Apply database updates** adds one column (each member’s light/dark preference). Visitors get *System* mode with a header switcher by default — change it in **Design › Theme & branding › Light & dark mode**. If your logo is an image, upload a version for dark backgrounds there. Profile photos are stored in `public_html/media/avatars` (included in backups with the other media). Add a sentence about profile photos to your privacy policy (see the template in a fresh installation).
+### Upgrading from 1.3 to 1.4 (dark mode, profile photos, site identity, Persian dashboard, installable app, popups)
+Same steps — make sure the new **`public_html/icons`** folder is copied (default browser/app icons; without it the installable app cannot start offline). **Apply database updates** runs three updates:
+- each member’s light/dark preference and each team member’s dashboard language;
+- the **Popups & announcements** tables; Editors get the new *Manage popups* permission, and the old *Header & footer › Announcement bar* (text, link, on/off) becomes an announcement bar in **Design › Popups & announcements**.
 
-### Upgrading to the next version (site identity, back-to-top, dashboard in Persian)
-Same steps. **Apply database updates** adds one column (each team member’s dashboard language). Then open **Design › Theme & branding › Site identity**: the site name and tagline now live there (moved from Settings › General), and uploading a **square site icon** creates the browser, iPhone/Android and future app icons automatically. Persian dashboard text needs no extra setup (fonts are included in the package). Add a sentence about profile photos to your privacy policy if you have not yet.
+Then:
+1. **Design › Theme & branding › Site identity** — the site name and tagline now live here (moved from Settings › General). Upload a **square site icon** (PNG, ≥ 512 px): browser, iPhone/Android and app icons are created from it. If your logo is an image, upload a version for dark backgrounds under *Light & dark mode*.
+2. **Installable app** — on by default, needs HTTPS (System › Health shows a warning otherwise). Follow the checklist below on staging before going live.
+3. **Popup settings** (Design › Popups & announcements) — check the site-wide limits.
+4. Privacy policy — add a sentence about profile photos (see the template in a fresh installation).
+5. **Behind a proxy or CDN other than Cloudflare?** The application now trusts forwarded visitor IP addresses only from the same server/private network and from Cloudflare (so nobody can fake their IP to get around sign-in limits). If your host puts another proxy in front of the site and every visitor shows the same IP in the dashboard, add its address to `.env`: `TRUSTED_PROXIES=203.0.113.10,PRIVATE_SUBNETS` (or `*` if every request really comes through the proxy), then **Clear all caches**.
 
-### Upgrading to the version with Popups & announcements
-Same steps. **Apply database updates** creates two tables (popups and their daily statistics), gives Editors the new *popups.manage* permission and moves the old *Header & footer › Announcement bar* text, link and on/off state into **Design › Popups & announcements** (as an announcement bar at the top). Nothing else needs configuring; check *Popup settings* on that page for the site-wide limits.
+The dashboard can be shown in Persian per team member (top-right menu); the public website and all emails stay in English. Persian fonts are included in the package.
 
 ### Installable app (PWA) — staging and go-live checklist
 Browsers only install apps and run the offline worker on **HTTPS** (or `localhost`). On staging:

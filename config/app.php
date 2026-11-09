@@ -65,6 +65,12 @@ return [
     |
     */
 
+    // Set by the installer (also detected through storage/app/installed.lock).
+    'installed' => (bool) env('APP_INSTALLED', false),
+
+    // Developer aid: log dashboard text that has no Persian translation yet (TRANSLATION_AUDIT=true).
+    'translation_audit' => (bool) env('TRANSLATION_AUDIT', false),
+
     'timezone' => 'UTC',
 
     /*

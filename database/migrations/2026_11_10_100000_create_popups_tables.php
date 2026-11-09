@@ -1,6 +1,8 @@
 <?php
 
+use App\Services\Popups\PopupService;
 use App\Support\Permissions;
+use App\Support\Settings;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -107,6 +109,10 @@ return new class extends Migration
             Permissions::sync();
             Role::where('name', 'editor')->first()?->givePermissionTo('popups.manage');
         }
+
+        // Forget cached settings (the old announcement keys) and popups.
+        Settings::flush();
+        PopupService::flush();
     }
 
     /** The former Header & footer › Announcement bar becomes a bar in the new module (same text, link and on/off state). */

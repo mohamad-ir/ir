@@ -43,7 +43,7 @@
 
 @if ($isBar)
     {{-- Announcement bar: at the top in the page flow, or fixed to the bottom of the screen --}}
-    <div x-data="oaPopup({{ \Illuminate\Support\Js::from($config) }})" x-cloak x-show="open" {!! $transition !!}
+    <div x-data="oaPopup({{ \Illuminate\Support\Js::from($config) }})" @unless ($config['initial']) x-cloak @endunless x-show="open" {!! $transition !!}
          x-on:mouseenter="hovering = true" x-on:mouseleave="hovering = false"
          id="{{ $id }}" role="region" aria-label="{{ $popup->title ?: 'Announcement' }}" data-popup-type="bar"
          @if ($popup->position === 'bottom') data-floating-bottom @endif

@@ -4,6 +4,8 @@ namespace App\Services\Pwa;
 
 use App\Services\Branding\BrandingService;
 use App\Support\Settings;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
@@ -124,7 +126,9 @@ class PwaService
     /** Files stored when the app is installed so the app shell and the offline page work without a connection. */
     public function precache(): array
     {
-        $files = [route('pwa.offline', [], false), '/favicon.svg', '/icons/icon-192.png', '/icons/favicon-32.png'];
+        // The icons in use (generated set or the bundled defaults); the worker adds each file separately, so one missing file never blocks installation.
+        $icons = array_map(fn ($name) => (string) (parse_url($this->brand->iconUrl($name), PHP_URL_PATH) ?: ''), ['icon-192', 'favicon-32']);
+        $files = array_values(array_filter([route('pwa.offline', [], false), '/favicon.svg', ...$icons]));
         $vite = public_path('build/manifest.json');
         if (is_file($vite)) {
             $manifest = json_decode((string) file_get_contents($vite), true) ?: [];
@@ -188,21 +192,44 @@ class PwaService
         $disk = Storage::disk('public');
 
         if (! $disk->exists($relative)) {
-            $manager = extension_loaded('imagick') && class_exists(\Imagick::class) ? new ImageManager(new ImagickDriver) : new ImageManager(new GdDriver);
-            $canvas = $manager->create($width, $height)->fill($background);
-            $icon = $manager->read($iconPath);
-            $size = (int) round(min($width, $height) * 0.28);
-            $icon->contain($size, $size, 'transparent');
-            $canvas->place($icon, 'center');
-            $disk->put($relative, (string) $canvas->toPng());
-            // Keep only the current set.
-            foreach ($disk->directories('pwa') as $dir) {
-                if ($dir !== "pwa/splash-{$key}") {
-                    $disk->deleteDirectory($dir);
+            if (! is_file($iconPath)) {
+                return null; // nothing to draw: do no work (the route answers 404)
+            }
+            // One request builds a launch screen; parallel first visits wait instead of all building it.
+            $lock = Cache::lock('pwa-splash:'.$key.':'.$width.'x'.$height, 30);
+            try {
+                $lock->block(15);
+            } catch (LockTimeoutException) {
+                return null;
+            }
+            try {
+                if ($disk->exists($relative)) {
+                    return $disk->path($relative);
                 }
+                $this->buildSplash($relative, $key, $iconPath, $background, $width, $height);
+            } finally {
+                $lock->release();
             }
         }
 
         return $disk->path($relative);
+    }
+
+    protected function buildSplash(string $relative, string $key, string $iconPath, string $background, int $width, int $height): void
+    {
+        $disk = Storage::disk('public');
+        $manager = extension_loaded('imagick') && class_exists(\Imagick::class) ? new ImageManager(new ImagickDriver, decodeAnimation: false) : new ImageManager(new GdDriver, decodeAnimation: false);
+        $icon = $manager->read($iconPath);
+        $canvas = $manager->create($width, $height)->fill($background);
+        $size = (int) round(min($width, $height) * 0.28);
+        $icon->contain($size, $size, 'transparent');
+        $canvas->place($icon, 'center');
+        $disk->put($relative, (string) $canvas->toPng());
+        // Keep only the current set.
+        foreach ($disk->directories('pwa') as $dir) {
+            if ($dir !== "pwa/splash-{$key}") {
+                $disk->deleteDirectory($dir);
+            }
+        }
     }
 }

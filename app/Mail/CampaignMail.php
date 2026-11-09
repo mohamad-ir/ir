@@ -15,6 +15,9 @@ use Illuminate\Mail\Mailables\Headers;
 
 class CampaignMail extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable;
 
     public function __construct(public Campaign $campaign, public Subscriber $subscriber, public bool $test = false) {}

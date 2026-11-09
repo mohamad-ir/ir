@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(prepend: [EnsureInstalled::class], append: [SecurityHeaders::class, \App\Http\Middleware\MarkOfflineCacheable::class]);
-        $middleware->trustProxies(at: '*');
+        // Trusted proxies: config/trustedproxy.php (TRUSTED_PROXIES in .env).
         // Written by the Light/Dark/System switcher in the browser, so it cannot be encrypted.
         $middleware->encryptCookies(except: [\App\Support\ColorMode::COOKIE]);
         $middleware->preventRequestForgery(except: ['_a', '_e', '_p', 'newsletter/open/*', 'stripe/webhook', 'banner-click/*']);

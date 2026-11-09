@@ -11,6 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 class WebinarReminder extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable, SerializesModels;
 
     /** @param 'day'|'hour' $when */

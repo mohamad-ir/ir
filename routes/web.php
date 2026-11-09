@@ -109,12 +109,14 @@ Route::post('/_e', [Controllers\AnalyticsController::class, 'event'])->name('ana
 Route::get('/sitemap.xml', [Controllers\SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-{type}.xml', [Controllers\SitemapController::class, 'type'])->name('sitemap.type')->where('type', '[a-z_]+');
 // Installable app (PWA)
-Route::get('/manifest.webmanifest', [Controllers\PwaController::class, 'manifest'])->name('pwa.manifest');
-Route::get('/sw.js', [Controllers\PwaController::class, 'worker'])->name('pwa.worker');
+// Requested by browsers very often: no session, cookies or CSRF work needed.
+$stateless = [\Illuminate\Session\Middleware\StartSession::class, \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class, \Illuminate\View\Middleware\ShareErrorsFromSession::class, \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, \App\Http\Middleware\MarkOfflineCacheable::class];
+Route::get('/manifest.webmanifest', [Controllers\PwaController::class, 'manifest'])->name('pwa.manifest')->withoutMiddleware($stateless);
+Route::get('/sw.js', [Controllers\PwaController::class, 'worker'])->name('pwa.worker')->withoutMiddleware($stateless);
 Route::get('/offline', [Controllers\PwaController::class, 'offline'])->name('pwa.offline');
-Route::get('/pwa/splash/{size}.png', [Controllers\PwaController::class, 'splash'])->name('pwa.splash')->where('size', '[0-9]{3,4}x[0-9]{3,4}');
+Route::get('/pwa/splash/{size}.png', [Controllers\PwaController::class, 'splash'])->name('pwa.splash')->middleware('throttle:60,1')->where('size', '[0-9]{3,4}x[0-9]{3,4}');
 
-Route::get('/favicon.ico', fn () => redirect(app(\App\Services\Branding\BrandingService::class)->iconUrl('favicon-48'), 301)->header('Cache-Control', 'public, max-age=86400'))->name('favicon');
+Route::get('/favicon.ico', fn () => redirect(app(\App\Services\Branding\BrandingService::class)->iconUrl('favicon-48'), 302)->header('Cache-Control', 'public, max-age=86400'))->name('favicon');
 Route::get('/robots.txt', [Controllers\SitemapController::class, 'robots'])->name('robots');
 Route::get('/feed', [Controllers\SitemapController::class, 'feed'])->name('feed');
 
@@ -172,6 +174,8 @@ Route::middleware('auth')->group(function () {
     // Dashboard language (the public website always stays in English)
     Route::get('/'.config('cms.admin_path').'/locale/{locale}', function (\Illuminate\Http\Request $request, string $locale) {
         $locale = \App\Support\AdminLocale::valid($locale) ?? abort(404);
+        // A link on another website must not change the dashboard language.
+        abort_if($request->headers->get('Sec-Fetch-Site') === 'cross-site', 403);
         $request->user()->forceFill(['admin_locale' => $locale])->saveQuietly();
         $back = url()->previous();
 

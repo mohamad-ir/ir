@@ -13,6 +13,9 @@ use Illuminate\Queue\SerializesModels;
 
 class CertificateIssued extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable, SerializesModels;
 
     public function __construct(public Certificate $certificate) {}

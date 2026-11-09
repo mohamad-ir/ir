@@ -42,16 +42,12 @@ class PopupService
     /** @return Collection<int, Popup> */
     public function published(): Collection
     {
-        // Plain attribute arrays are cached (the cache never stores PHP objects); images are loaded in one query.
+        // Plain attribute arrays are cached (the cache never stores PHP objects). Images are loaded
+        // later, only for the popups a page actually shows.
         $rows = Cache::rememberForever('popups.published', fn () => Popup::published()
             ->orderByDesc('priority')->orderByDesc('id')->get()->map->getAttributes()->all());
 
-        $popups = Popup::hydrate($rows);
-        if ($popups->whereNotNull('media_id')->isNotEmpty()) {
-            $popups->load('media');
-        }
-
-        return $popups->toBase();
+        return Popup::hydrate($rows)->toBase();
     }
 
     public function excludedPath(string $path): bool
@@ -95,7 +91,14 @@ class PopupService
 
         return $this->published()
             ->filter(fn (Popup $p) => $p->isLive() && $p->matchesPath($path) && $p->matchesAudience($user))
-            ->values();
+            ->values()
+            ->pipe(function ($popups) {
+                if ($popups->whereNotNull('media_id')->isNotEmpty()) {
+                    (new \Illuminate\Database\Eloquent\Collection($popups->all()))->load('media');
+                }
+
+                return $popups;
+            });
     }
 
     /** A draft from the dashboard editor (staff only), shown immediately and never counted. */
@@ -156,6 +159,8 @@ class PopupService
             'overlayClose' => (bool) $popup->close_on_overlay,
             'form' => $popup->form,
             'preview' => $preview,
+            // Top bars shown on page load are rendered visible by the server, so the page does not jump.
+            'initial' => ! $preview && $popup->isBar() && $popup->position === 'top' && $popup->trigger === 'load',
         ];
     }
 
@@ -188,8 +193,10 @@ class PopupService
             );
         });
 
-        // A campaign that just used its last impression disappears for everyone.
-        if ($column === 'views' && $popup->max_impressions && $popup->views_count + 1 >= $popup->max_impressions) {
+        // A campaign that just used its last impression disappears for everyone (the cached copy
+        // of the counter may be old, so the current value is read from the database).
+        if ($column === 'views' && $popup->max_impressions
+            && (int) Popup::whereKey($popup->id)->value('views_count') >= $popup->max_impressions) {
             self::flush();
         }
     }

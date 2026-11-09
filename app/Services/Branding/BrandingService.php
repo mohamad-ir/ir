@@ -169,7 +169,7 @@ class BrandingService
     {
         try {
             $disk = Storage::disk($icon->disk);
-            $manager = extension_loaded('imagick') && class_exists(\Imagick::class) ? new ImageManager(new ImagickDriver) : new ImageManager(new GdDriver);
+            $manager = extension_loaded('imagick') && class_exists(\Imagick::class) ? new ImageManager(new ImagickDriver, decodeAnimation: false) : new ImageManager(new GdDriver, decodeAnimation: false);
             $source = $manager->read($disk->path($icon->path));
             $background = Settings::get('branding.icon_background') ?: '#ffffff';
             $dir = 'branding/icons-'.substr($fingerprint, 0, 12);

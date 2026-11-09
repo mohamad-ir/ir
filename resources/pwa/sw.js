@@ -30,7 +30,13 @@ self.addEventListener('install', (event) => {
         return;
     }
     event.waitUntil(
-        caches.open(CACHE.shell).then((cache) => cache.addAll(CONFIG.precache.map((url) => new Request(url, { cache: 'reload', credentials: 'same-origin' })))),
+        caches.open(CACHE.shell).then(async (cache) => {
+            const request = (url) => new Request(url, { cache: 'reload', credentials: 'same-origin' });
+            // The offline page is required; every other file is added on its own, so one missing
+            // file (e.g. an icon folder not uploaded) never stops the app from installing.
+            await cache.add(request(CONFIG.offlineUrl));
+            await Promise.allSettled(CONFIG.precache.filter((url) => url !== CONFIG.offlineUrl).map((url) => cache.add(request(url))));
+        }),
     );
     // The new version waits until the visitor accepts the update prompt (see resources/js/pwa.js),
     // except on the very first install where nothing is controlled yet.
@@ -91,7 +97,14 @@ self.addEventListener('fetch', (event) => {
     if (isPrivate(url.pathname)) {
         // Straight to the network and never stored. Offline, a private page shows the generic offline page.
         if (request.mode === 'navigate') {
-            event.respondWith(fetch(request).catch(async () => (await caches.match(CONFIG.offlineUrl)) || Response.error()));
+            // Use the navigation-preload response when there is one, so the page is requested only once.
+            event.respondWith((async () => {
+                try {
+                    return (await event.preloadResponse) || (await fetch(request));
+                } catch (e) {
+                    return (await caches.match(CONFIG.offlineUrl)) || Response.error();
+                }
+            })());
         }
         return;
     }

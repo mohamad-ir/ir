@@ -15,7 +15,13 @@ class PopupController extends Controller
 {
     public function track(Request $request, PopupService $popups, VisitorHash $hash)
     {
-        $data = $request->json()->all() ?: (json_decode((string) $request->getContent(), true) ?: []);
+        // Only this website's own pages may report: browsers send these headers with sendBeacon/fetch,
+        // and other websites cannot send a JSON body without a (refused) CORS preflight.
+        if (! $this->fromThisSite($request)) {
+            return response()->noContent();
+        }
+
+        $data = $request->json()->all();
         $event = (string) ($data['e'] ?? '');
         $id = (int) ($data['id'] ?? 0);
 
@@ -32,5 +38,19 @@ class PopupController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    protected function fromThisSite(Request $request): bool
+    {
+        if (! $request->isJson()) {
+            return false;
+        }
+        $site = $request->headers->get('Sec-Fetch-Site');
+        if ($site !== null && ! in_array($site, ['same-origin', 'none'], true)) {
+            return false;
+        }
+        $origin = $request->headers->get('Origin');
+
+        return $origin === null || $origin === 'null' ? $site !== 'cross-site' : strcasecmp((string) parse_url($origin, PHP_URL_HOST), $request->getHost()) === 0;
     }
 }

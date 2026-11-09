@@ -117,7 +117,7 @@ class AvatarService
     protected function manager(): ImageManager
     {
         return extension_loaded('imagick') && class_exists(\Imagick::class)
-            ? new ImageManager(new ImagickDriver)
-            : new ImageManager(new GdDriver);
+            ? new ImageManager(new ImagickDriver, decodeAnimation: false)
+            : new ImageManager(new GdDriver, decodeAnimation: false);
     }
 }

@@ -11,7 +11,13 @@ class Installer
 
     public static function isInstalled(): bool
     {
-        return filter_var(env('APP_INSTALLED', false), FILTER_VALIDATE_BOOL) || is_file(static::lockFile());
+        // With a cached configuration (php artisan optimize) env() is empty, so fall back to config().
+        $flag = env('APP_INSTALLED');
+        if ($flag === null && app()->bound('config')) {
+            $flag = config('app.installed');
+        }
+
+        return filter_var($flag, FILTER_VALIDATE_BOOL) || is_file(static::lockFile());
     }
 
     public static function markInstalled(): void

@@ -11,6 +11,9 @@ use Illuminate\Queue\SerializesModels;
 
 class WebinarRecordingAvailable extends Mailable
 {
+    /** Emails are always English, whatever language the dashboard is shown in. */
+    public $locale = 'en';
+
     use Queueable, SerializesModels;
 
     public function __construct(public WebinarRegistration $registration) {}
