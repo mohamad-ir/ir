@@ -130,8 +130,12 @@ it('serves the live builder preview only to its owner', function () {
 it('saves settings and keeps secrets encrypted', function () {
     $this->actingAsStaff();
 
-    Livewire::test(GeneralSettings::class)->set('data.site.name', 'Retina Teaching')->call('save')->assertHasNoErrors();
-    expect(Settings::get('site.name'))->toBe('Retina Teaching');
+    Livewire::test(GeneralSettings::class)->set('data.site.contact_email', 'hello@example.org')->call('save')->assertHasNoErrors();
+    expect(Settings::get('site.contact_email'))->toBe('hello@example.org');
+
+    // The site name lives in Theme & branding › Site identity, and saving there leaves other site settings alone.
+    Livewire::test(ThemeSettings::class)->set('data.site.name', 'Retina Teaching')->call('save')->assertHasNoErrors();
+    expect(Settings::get('site.name'))->toBe('Retina Teaching')->and(Settings::get('site.contact_email'))->toBe('hello@example.org');
 
     Settings::setMany(['mail.password' => 'super-secret'], ['mail.password']);
     expect(\App\Models\Setting::where('key', 'mail.password')->value('value'))->not->toContain('super-secret');

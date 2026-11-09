@@ -23,7 +23,7 @@ class ContentFeedBlock extends PageBlock
 
     public static function key(): string { return 'content_feed'; }
 
-    public static function label(): string { return 'Content feed'; }
+    public static function label(): string { return __('Content feed'); }
 
     public static function icon(): string { return 'heroicon-o-squares-2x2'; }
 
@@ -37,19 +37,19 @@ class ContentFeedBlock extends PageBlock
             Textarea::make('intro')->rows(2)->maxLength(400),
             Grid::make(3)->schema([
                 Select::make('source')->options(self::SOURCES)->default('cases')->required()->live()->selectablePlaceholder(false),
-                Select::make('mode')->label('Show')->options(['latest' => 'Latest', 'featured' => 'Featured first', 'popular' => 'Most viewed'])->default('latest')->selectablePlaceholder(false),
-                Select::make('limit')->label('Number of items')->options([2 => 2, 3 => 3, 4 => 4, 6 => 6, 8 => 8, 9 => 9, 12 => 12])->default(3)->selectablePlaceholder(false),
+                Select::make('mode')->label(__('Show'))->options(\App\Support\Ui::options(['latest' => 'Latest', 'featured' => 'Featured first', 'popular' => 'Most viewed']))->default('latest')->selectablePlaceholder(false),
+                Select::make('limit')->label(__('Number of items'))->options([2 => 2, 3 => 3, 4 => 4, 6 => 6, 8 => 8, 9 => 9, 12 => 12])->default(3)->selectablePlaceholder(false),
             ]),
             Grid::make(2)->schema([
-                Select::make('topic_id')->label('Only this topic')->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))->searchable()->placeholder('All topics'),
-                Select::make('category_id')->label('Only this category')
+                Select::make('topic_id')->label(__('Only this topic'))->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))->searchable()->placeholder(__('All topics')),
+                Select::make('category_id')->label(__('Only this category'))
                     ->options(fn (Get $get) => Category::ofType($get('source') === 'videos' ? 'video' : 'article')->pluck('name', 'id'))
-                    ->visible(fn (Get $get) => in_array($get('source'), ['articles', 'videos']))->placeholder('All categories'),
+                    ->visible(fn (Get $get) => in_array($get('source'), ['articles', 'videos']))->placeholder(__('All categories')),
             ]),
-            ToggleButtons::make('layout')->inline()->options(['cards' => 'Cards', 'list' => 'List', 'feature' => 'Large first item'])->default('cards'),
+            ToggleButtons::make('layout')->inline()->options(\App\Support\Ui::options(['cards' => 'Cards', 'list' => 'List', 'feature' => 'Large first item']))->default('cards'),
             Grid::make(2)->schema([
-                TextInput::make('view_all_label')->label('“View all” label')->placeholder('Browse all cases'),
-                TextInput::make('view_all_url')->label('“View all” link')->placeholder('/cases'),
+                TextInput::make('view_all_label')->label(__('“View all” label'))->placeholder(__('Browse all cases')),
+                TextInput::make('view_all_url')->label(__('“View all” link'))->placeholder('/cases'),
             ]),
         ];
     }

@@ -13,6 +13,8 @@ use Throwable;
 
 class EditMedia extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = MediaResource::class;
 
     public function getTitle(): string
@@ -23,37 +25,37 @@ class EditMedia extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('replace')->label('Replace file')->icon('heroicon-o-arrow-path')->color('gray')
-                ->modalDescription('Upload a new version. Every page using this item updates automatically and its URL is preserved where possible.')
+            Action::make('replace')->label(__('Replace file'))->icon('heroicon-o-arrow-path')->color('gray')
+                ->modalDescription(__('Upload a new version. Every page using this item updates automatically and its URL is preserved where possible.'))
                 ->schema([FileUpload::make('file')->required()->storeFiles(false)->acceptedFileTypes(MediaService::acceptedMimeTypes())->maxSize(204800)])
                 ->action(function (array $data) {
                     try {
                         app(MediaService::class)->replace($this->record, $data['file']);
-                        Notification::make()->success()->title('File replaced')->send();
+                        Notification::make()->success()->title(__('File replaced'))->send();
                     } catch (Throwable $e) {
-                        Notification::make()->danger()->title('Could not replace the file')->body($e->getMessage())->send();
+                        Notification::make()->danger()->title(__('Could not replace the file'))->body($e->getMessage())->send();
                     }
                     $this->refreshFormData(['width', 'height']);
                 }),
-            Action::make('regenerate')->label('Regenerate sizes')->icon('heroicon-o-arrows-pointing-out')->color('gray')
+            Action::make('regenerate')->label(__('Regenerate sizes'))->icon('heroicon-o-arrows-pointing-out')->color('gray')
                 ->visible(fn () => $this->record->isImage())
                 ->action(function () {
                     app(MediaService::class)->regenerate($this->record);
-                    Notification::make()->success()->title('Responsive sizes regenerated')->send();
+                    Notification::make()->success()->title(__('Responsive sizes regenerated'))->send();
                 }),
-            Action::make('download')->label('Download')->icon('heroicon-o-arrow-down-tray')->color('gray')
+            Action::make('download')->label(__('Download'))->icon('heroicon-o-arrow-down-tray')->color('gray')
                 ->url(fn () => $this->record->url(), shouldOpenInNewTab: true),
-            Action::make('delete')->label('Delete')->icon('heroicon-o-trash')->color('danger')
+            Action::make('delete')->label(__('Delete'))->icon('heroicon-o-trash')->color('danger')
                 ->visible(fn () => auth()->user()->can('media.delete'))
                 ->requiresConfirmation()
                 ->modalDescription(function () {
                     $uses = app(MediaUsage::class)->find($this->record);
 
-                    return $uses ? 'Warning: this file is used in '.count($uses).' place(s): '.collect($uses)->take(5)->map(fn ($u) => $u['type'].' “'.$u['title'].'”')->implode(', ').'. Deleting it will leave gaps on those pages.' : 'This file is not used anywhere on the website.';
+                    return $uses ? __('Warning: this file is used in :count place(s): :places. Deleting it will leave gaps on those pages.', ['count' => count($uses), 'places' => collect($uses)->take(5)->map(fn ($u) => __($u['type']).' “'.$u['title'].'”')->implode(', ')]) : __('This file is not used anywhere on the website.');
                 })
                 ->action(function () {
                     app(MediaService::class)->delete($this->record);
-                    Notification::make()->success()->title('File deleted')->send();
+                    Notification::make()->success()->title(__('File deleted'))->send();
                     $this->redirect(MediaResource::getUrl('index'));
                 }),
         ];

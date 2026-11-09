@@ -160,6 +160,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/billing', [Controllers\AccountController::class, 'billing'])->name('account.billing');
     Route::post('/account/billing/portal', [Controllers\CheckoutController::class, 'portal'])->name('account.billing.portal')->middleware('throttle:10,1');
 
+    // Dashboard language (the public website always stays in English)
+    Route::get('/'.config('cms.admin_path').'/locale/{locale}', function (\Illuminate\Http\Request $request, string $locale) {
+        $locale = \App\Support\AdminLocale::valid($locale) ?? abort(404);
+        $request->user()->forceFill(['admin_locale' => $locale])->saveQuietly();
+        $back = url()->previous();
+
+        return redirect(str_starts_with($back, url(config('cms.admin_path'))) ? $back : url(config('cms.admin_path')))
+            ->withCookie(cookie()->forever(\App\Support\AdminLocale::COOKIE, $locale));
+    })->middleware('staff')->name('admin.locale');
+
     // Staff previews of drafts and the live page-builder canvas
     Route::middleware('staff')->prefix('_preview')->name('preview.')->controller(Controllers\PreviewController::class)->group(function () {
         Route::get('/builder/{token}', 'builder')->name('builder');

@@ -21,16 +21,16 @@ enum ProfileEntryType: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Education => 'Education',
-            self::Fellowship => 'Fellowship & training',
-            self::Appointment => 'Clinical appointment',
-            self::Surgical => 'Surgical expertise',
-            self::Publication => 'Publication',
-            self::Book => 'Book & chapter',
-            self::Lecture => 'Lecture & presentation',
-            self::Teaching => 'Teaching role',
-            self::Award => 'Award & honour',
-            self::Membership => 'Professional membership',
+            self::Education => __('Education'),
+            self::Fellowship => __('Fellowship & training'),
+            self::Appointment => __('Clinical appointment'),
+            self::Surgical => __('Surgical expertise'),
+            self::Publication => __('Publication'),
+            self::Book => __('Book & chapter'),
+            self::Lecture => __('Lecture & presentation'),
+            self::Teaching => __('Teaching role'),
+            self::Award => __('Award & honour'),
+            self::Membership => __('Professional membership'),
         };
     }
 

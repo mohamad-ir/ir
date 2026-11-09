@@ -19,6 +19,8 @@ use Illuminate\Validation\Rules\Unique;
 
 class CategoryResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Category::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-folder';
@@ -30,7 +32,7 @@ class CategoryResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([Section::make()->columns(2)->schema([
-            Select::make('type')->options(Category::TYPES)->required()->default('article'),
+            Select::make('type')->options(\App\Support\Ui::options(Category::TYPES))->required()->default('article'),
             TextInput::make('name')->required()->maxLength(100)->live(onBlur: true)->afterStateUpdated(fn ($state, $set, $record) => ! $record ? $set('slug', str($state)->slug()->toString()) : null),
             TextInput::make('slug')->required()->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                 ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, $get) => $rule->where('type', $get('type'))),
@@ -43,9 +45,9 @@ class CategoryResource extends Resource
     {
         return $table->defaultSort('sort_order')->reorderable('sort_order')->columns([
             TextColumn::make('name')->searchable()->weight('medium'),
-            TextColumn::make('type')->formatStateUsing(fn ($state) => Category::TYPES[$state] ?? $state)->badge(),
-            TextColumn::make('items')->label('Items')->getStateUsing(fn (Category $record) => $record->type === 'video' ? $record->videos()->count() : $record->articles()->count()),
-        ])->filters([SelectFilter::make('type')->options(Category::TYPES)])->recordActions([EditAction::make(), DeleteAction::make()]);
+            TextColumn::make('type')->formatStateUsing(fn ($state) => __(Category::TYPES[$state] ?? $state))->badge(),
+            TextColumn::make('items')->label(__('Items'))->getStateUsing(fn (Category $record) => $record->type === 'video' ? $record->videos()->count() : $record->articles()->count()),
+        ])->filters([SelectFilter::make('type')->options(\App\Support\Ui::options(Category::TYPES))])->recordActions([EditAction::make(), DeleteAction::make()]);
     }
 
     public static function getPages(): array

@@ -7,6 +7,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateReusableBlock extends CreateRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use \App\Filament\Concerns\HasBuilderPreview;
 
     protected \Filament\Support\Enums\Width|string|null $maxContentWidth = \Filament\Support\Enums\Width::Full;

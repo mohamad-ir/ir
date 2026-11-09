@@ -8,10 +8,12 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListCategories extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = CategoryResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New category')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New category'))->icon('heroicon-m-plus')];
     }
 }

@@ -10,9 +10,15 @@ class SubscribersChart extends ChartWidget
 {
     protected static bool $isDiscovered = false;
 
-    protected ?string $heading = 'Newsletter subscribers';
+    public function getHeading(): ?string
+    {
+        return __('Newsletter subscribers');
+    }
 
-    protected ?string $description = 'Confirmed subscribers over time';
+    public function getDescription(): ?string
+    {
+        return __('Confirmed subscribers over time');
+    }
 
     protected ?string $maxHeight = '240px';
 

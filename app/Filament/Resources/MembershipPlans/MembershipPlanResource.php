@@ -26,6 +26,8 @@ use Illuminate\Support\Str;
 
 class MembershipPlanResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = MembershipPlan::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
@@ -45,12 +47,12 @@ class MembershipPlanResource extends Resource
                         ->afterStateUpdated(fn (Set $set, ?string $state, $record) => $record ? null : $set('slug', Str::slug((string) $state))),
                     TextInput::make('slug')->required()->maxLength(80)->alphaDash()->unique(ignoreRecord: true),
                 ]),
-                TextInput::make('tagline')->maxLength(160)->placeholder('Best value for exam preparation'),
-                Repeater::make('features')->label('Benefits listed on the pricing card')->schema([TextInput::make('text')->hiddenLabel()->required()->maxLength(160)])
-                    ->defaultItems(0)->reorderable()->addActionLabel('Add benefit'),
-                Textarea::make('description')->label('Internal notes')->rows(2),
+                TextInput::make('tagline')->maxLength(160)->placeholder(__('Best value for exam preparation')),
+                Repeater::make('features')->label(__('Benefits listed on the pricing card'))->schema([TextInput::make('text')->hiddenLabel()->required()->maxLength(160)])
+                    ->defaultItems(0)->reorderable()->addActionLabel(__('Add benefit')),
+                Textarea::make('description')->label(__('Internal notes'))->rows(2),
             ]),
-            Section::make('Price')->columnSpan(['lg' => 1])->schema([
+            Section::make('Price')->heading(__('Price'))->columnSpan(['lg' => 1])->schema([
                 Grid::make(2)->schema([
                     TextInput::make('price')->numeric()->minValue(0.5)->step('0.01')->required()
                         ->formatStateUsing(fn ($state) => Money::toMajor($state))
@@ -59,11 +61,11 @@ class MembershipPlanResource extends Resource
                         ->default(fn () => Settings::get('payments.currency', 'EUR'))->selectablePlaceholder(false)->required(),
                 ]),
                 \App\Filament\Support\Fields::otherPrices(),
-                ToggleButtons::make('interval')->label('Billed')->options(['month' => 'Monthly', 'year' => 'Yearly'])->inline()->default('month')->required(),
-                TextInput::make('trial_days')->label('Free trial (days)')->numeric()->minValue(0)->maxValue(90)->default(0),
-                Toggle::make('is_featured')->label('Highlight as “Most popular”'),
-                Toggle::make('is_active')->label('Available for new members')->default(true)
-                    ->helperText('Turning a plan off hides it; existing members keep their subscription.'),
+                ToggleButtons::make('interval')->label(__('Billed'))->options(\App\Support\Ui::options(['month' => 'Monthly', 'year' => 'Yearly']))->inline()->default('month')->required(),
+                TextInput::make('trial_days')->label(__('Free trial (days)'))->numeric()->minValue(0)->maxValue(90)->default(0),
+                Toggle::make('is_featured')->label(__('Highlight as “Most popular”')),
+                Toggle::make('is_active')->label(__('Available for new members'))->default(true)
+                    ->helperText(__('Turning a plan off hides it; existing members keep their subscription.')),
                 TextInput::make('sort_order')->numeric()->default(0),
             ]),
             Section::make()->columnSpanFull()->schema([
@@ -81,13 +83,13 @@ class MembershipPlanResource extends Resource
             ->columns([
                 TextColumn::make('name')->weight('medium')->description(fn (MembershipPlan $record) => $record->tagline),
                 TextColumn::make('price')->formatStateUsing(fn (MembershipPlan $record) => $record->priceLabel().' / '.$record->intervalLabel()),
-                TextColumn::make('trial_days')->label('Trial')->formatStateUsing(fn ($state) => $state ? $state.' days' : '—'),
-                TextColumn::make('members_count')->label('Active members')->alignEnd(),
-                IconColumn::make('is_active')->label('Available')->boolean(),
+                TextColumn::make('trial_days')->label(__('Trial'))->formatStateUsing(fn ($state) => $state ? $state.' days' : '—'),
+                TextColumn::make('members_count')->label(__('Active members'))->alignEnd(),
+                IconColumn::make('is_active')->label(__('Available'))->boolean(),
             ])
             ->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()])
-            ->emptyStateHeading('No membership plans yet')
-            ->emptyStateDescription('Create a monthly and/or yearly plan. Plans appear on /membership and in the “Membership plans” page section.');
+            ->emptyStateHeading(__('No membership plans yet'))
+            ->emptyStateDescription(__('Create a monthly and/or yearly plan. Plans appear on /membership and in the “Membership plans” page section.'));
     }
 
     public static function getPages(): array

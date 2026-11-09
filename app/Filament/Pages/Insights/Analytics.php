@@ -14,6 +14,8 @@ use Livewire\Attributes\Url;
 
 class Analytics extends Page
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static ?string $slug = 'insights/analytics';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar-square';
@@ -38,13 +40,13 @@ class Analytics extends Page
 
     public function getSubheading(): ?string
     {
-        return 'First-party, cookieless statistics. '.number_format(AnalyticsQuery::for(1)->realtime()).' visitors in the last 30 minutes.';
+        return __('First-party, cookieless statistics. :count visitors in the last 30 minutes.', ['count' => number_format(AnalyticsQuery::for(1)->realtime())]);
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('export')->label('Export CSV')->icon('heroicon-o-arrow-down-tray')->color('gray')
+            Action::make('export')->label(__('Export CSV'))->icon('heroicon-o-arrow-down-tray')->color('gray')
                 ->action(fn () => response()->streamDownload(function () {
                     $q = AnalyticsQuery::for($this->days);
                     $out = fopen('php://output', 'w');

@@ -30,7 +30,7 @@ class Fields
     public static function richEditor(string $name, ?string $label = null): RichEditor
     {
         return RichEditor::make($name)
-            ->label($label)
+            ->label(__($label))
             ->customBlocks(RichText::customBlocks())
             ->fileAttachmentsDisk('public')
             ->fileAttachmentsDirectory('editor')
@@ -51,29 +51,29 @@ class Fields
     /** Optional prices in further currencies, stored as [['currency' => 'GBP', 'amount' => 8500]]. */
     public static function otherPrices(): Repeater
     {
-        return Repeater::make('prices')->label('Prices in other currencies')
+        return Repeater::make('prices')->label(__('Prices in other currencies'))
             ->schema([
                 Select::make('currency')->options(array_combine(array_keys(\App\Support\Money::CURRENCIES), array_keys(\App\Support\Money::CURRENCIES)))
                     ->required()->selectablePlaceholder(false)->distinct(),
-                TextInput::make('amount')->label('Price')->numeric()->minValue(0.5)->step('0.01')->required()
+                TextInput::make('amount')->label(__('Price'))->numeric()->minValue(0.5)->step('0.01')->required()
                     ->formatStateUsing(fn ($state) => \App\Support\Money::toMajor($state === null ? null : (int) $state))
                     ->dehydrateStateUsing(fn ($state) => \App\Support\Money::toMinor($state)),
             ])
-            ->columns(2)->defaultItems(0)->addActionLabel('Add a price in another currency')
-            ->helperText('Visitors see and pay the price in their currency (chosen by them, or detected from their country). Without one, they pay the main price.');
+            ->columns(2)->defaultItems(0)->addActionLabel(__('Add a price in another currency'))
+            ->helperText(__('Visitors see and pay the price in their currency (chosen by them, or detected from their country). Without one, they pay the main price.'));
     }
 
     /** A list of videos (YouTube/Vimeo link, uploaded file or library video) with title and caption. */
     public static function videoList(string $name = 'videos'): Repeater
     {
-        return Repeater::make($name)->label('Videos')
+        return Repeater::make($name)->label(__('Videos'))
             ->schema([
-                ToggleButtons::make('source')->label('Video from')->options(\App\Support\VideoEmbed::SOURCES)->default('url')->inline()->live()->columnSpanFull(),
-                TextInput::make('url')->label('YouTube or Vimeo link')->url()->columnSpanFull()
+                ToggleButtons::make('source')->label(__('Video from'))->options(\App\Support\VideoEmbed::SOURCES)->default('url')->inline()->live()->columnSpanFull(),
+                TextInput::make('url')->label(__('YouTube or Vimeo link'))->url()->columnSpanFull()
                     ->visible(fn ($get) => ($get('source') ?? 'url') === 'url')->required(fn ($get) => ($get('source') ?? 'url') === 'url'),
-                MediaPicker::make('media_id')->label('Video file')->videosOnly()->columnSpanFull()
+                MediaPicker::make('media_id')->label(__('Video file'))->videosOnly()->columnSpanFull()
                     ->visible(fn ($get) => $get('source') === 'upload')->required(fn ($get) => $get('source') === 'upload'),
-                Select::make('video_id')->label('Video')->searchable()->columnSpanFull()
+                Select::make('video_id')->label(__('Video'))->searchable()->columnSpanFull()
                     ->options(fn () => \App\Models\Video::latest()->limit(50)->pluck('title', 'id'))
                     ->getSearchResultsUsing(fn (string $search) => \App\Models\Video::where('title', 'like', "%{$search}%")->limit(30)->pluck('title', 'id'))
                     ->visible(fn ($get) => $get('source') === 'library')->required(fn ($get) => $get('source') === 'library'),
@@ -82,7 +82,7 @@ class Fields
             ])
             ->columns(2)->defaultItems(0)->reorderable()->collapsible()
             ->itemLabel(fn (array $state) => $state['title'] ?? null)
-            ->addActionLabel('Add video');
+            ->addActionLabel(__('Add video'));
     }
 
     public static function title(string $prefix): TextInput
@@ -102,20 +102,20 @@ class Fields
     public static function slug(string $prefix, string $table): TextInput
     {
         return TextInput::make('slug')
-            ->label('URL')
+            ->label(__('URL'))
             ->prefix(rtrim(url($prefix), '/').'/')
             ->required()
             ->maxLength(200)
             ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
-            ->validationMessages(['regex' => 'Use lowercase letters, numbers and hyphens only.'])
+            ->validationMessages(\App\Support\Ui::options(['regex' => 'Use lowercase letters, numbers and hyphens only.']))
             ->unique($table, 'slug', ignoreRecord: true)
-            ->helperText('Changing the URL of a published item automatically creates a 301 redirect from the old address.');
+            ->helperText(__('Changing the URL of a published item automatically creates a 301 redirect from the old address.'));
     }
 
     /** Status, schedule, visibility and author — shown in the sidebar of every content editor. */
     public static function publishing(string $permissionPrefix, bool $hasAuthor = true, bool $hasAccess = true, bool $hasFeatured = true, bool $hasComments = false): Section
     {
-        return Section::make('Publishing')
+        return Section::make('Publishing')->heading(__('Publishing'))
             ->icon('heroicon-o-paper-airplane')
             ->schema(array_values(array_filter([
                 ToggleButtons::make('status')
@@ -134,24 +134,24 @@ class Fields
                     ->required()
                     ->live()
                     ->columns(2)
-                    ->helperText(fn () => auth()->user()?->can($permissionPrefix.'.publish') ? null : 'An editor will review and publish your work.'),
+                    ->helperText(fn () => auth()->user()?->can($permissionPrefix.'.publish') ? null : __('An editor will review and publish your work.')),
                 DateTimePicker::make('published_at')
-                    ->label('Publish date')
+                    ->label(__('Publish date'))
                     ->seconds(false)
                     ->native(false)
                     ->displayFormat('j M Y, H:i')
-                    ->helperText(fn (Get $get) => $get('status') === 'published' ? 'Choose a future date to schedule publication. Leave empty to publish now.' : 'Used when the item is published.'),
+                    ->helperText(fn (Get $get) => $get('status') === 'published' ? __('Choose a future date to schedule publication. Leave empty to publish now.') : __('Used when the item is published.')),
                 $hasAccess ? Select::make('access_level')
-                    ->label('Who can see this')
+                    ->label(__('Who can see this'))
                     ->options(AccessLevel::options())
                     ->default('public')
                     ->selectablePlaceholder(false)
-                    ->helperText('Members-only content shows a teaser and a free sign-up prompt.') : null,
-                $hasFeatured ? Toggle::make('is_featured')->label('Feature this item')->helperText('Featured items are highlighted on the homepage and in listings.') : null,
-                $hasComments ? Toggle::make('comments_enabled')->label('Allow comments')->default(true)
-                    ->helperText(fn (?Model $record) => ($record?->comments_count ? number_format($record->comments_count).' published comments. ' : '').'Signed-in members can discuss this item. Turn off to close the discussion (existing comments stay visible).') : null,
+                    ->helperText(__('Members-only content shows a teaser and a free sign-up prompt.')) : null,
+                $hasFeatured ? Toggle::make('is_featured')->label(__('Feature this item'))->helperText(__('Featured items are highlighted on the homepage and in listings.')) : null,
+                $hasComments ? Toggle::make('comments_enabled')->label(__('Allow comments'))->default(true)
+                    ->helperText(fn (?Model $record) => ($record?->comments_count ? __(':count published comments.', ['count' => number_format($record->comments_count)]).' ' : '').__('Signed-in members can discuss this item. Turn off to close the discussion (existing comments stay visible).')) : null,
                 $hasAuthor ? Select::make('author_id')
-                    ->label('Author')
+                    ->label(__('Author'))
                     ->options(fn () => User::role(User::STAFF_ROLES)->orderBy('name')->pluck('name', 'id'))
                     ->default(fn () => auth()->id())
                     ->searchable()
@@ -160,7 +160,7 @@ class Fields
                 Placeholder::make('meta')
                     ->hiddenLabel()
                     ->content(fn (?Model $record) => $record?->exists
-                        ? new \Illuminate\Support\HtmlString('<div class="text-xs text-gray-500 space-y-1"><div>Created '.e($record->created_at?->diffForHumans()).'</div><div>Last saved '.e($record->updated_at?->diffForHumans()).'</div>'.(isset($record->views_count) ? '<div>'.number_format($record->views_count).' views</div>' : '').'</div>')
+                        ? new \Illuminate\Support\HtmlString('<div class="text-xs text-gray-500 space-y-1"><div>'.e(__('Created :ago', ['ago' => $record->created_at?->diffForHumans()])).'</div><div>'.e(__('Last saved :ago', ['ago' => $record->updated_at?->diffForHumans()])).'</div>'.(isset($record->views_count) ? '<div>'.e(__(':count views', ['count' => number_format($record->views_count)])).'</div>' : '').'</div>')
                         : null)
                     ->visible(fn (?Model $record) => (bool) $record?->exists),
             ])));
@@ -168,29 +168,29 @@ class Fields
 
     public static function seo(string $titleField = 'title', string $descriptionField = 'summary'): Section
     {
-        return Section::make('Search engine & social sharing')
-            ->description('How this page appears on Google, LinkedIn and other networks.')
+        return Section::make('Search engine & social sharing')->heading(__('Search engine & social sharing'))
+            ->description(__('How this page appears on Google, LinkedIn and other networks.'))
             ->icon('heroicon-o-magnifying-glass-circle')
             ->collapsible()
             ->collapsed()
             ->schema([
                 Group::make()->relationship('seo')->schema([
                     TextInput::make('meta_title')
-                        ->label('SEO title')
+                        ->label(__('SEO title'))
                         ->maxLength(70)
                         ->live(debounce: 500)
-                        ->helperText(fn (?string $state) => 'Leave empty to use the page title. '.mb_strlen((string) $state).'/60 characters recommended.'),
+                        ->helperText(fn (?string $state) => __('Leave empty to use the page title.').' '.__(':count/:max characters recommended.', ['count' => mb_strlen((string) $state), 'max' => 60])),
                     Textarea::make('meta_description')
-                        ->label('Meta description')
+                        ->label(__('Meta description'))
                         ->rows(3)
                         ->maxLength(320)
                         ->live(debounce: 500)
-                        ->helperText(fn (?string $state) => 'Leave empty to use the summary. '.mb_strlen((string) $state).'/155 characters recommended.'),
-                    TextInput::make('focus_keyword')->label('Focus keyword')->helperText('The main phrase people search for, e.g. “central serous chorioretinopathy OCT”.'),
-                    MediaPicker::make('og_image_id')->label('Social sharing image')->helperText('1200×630 px works best. Defaults to the featured image.'),
-                    TextInput::make('canonical_url')->label('Canonical URL')->url()->placeholder('Leave empty unless this content is published elsewhere first'),
-                    Toggle::make('noindex')->label('Hide from search engines (noindex)'),
-                    Toggle::make('nofollow')->label('Ask search engines not to follow links (nofollow)'),
+                        ->helperText(fn (?string $state) => __('Leave empty to use the summary.').' '.__(':count/:max characters recommended.', ['count' => mb_strlen((string) $state), 'max' => 155])),
+                    TextInput::make('focus_keyword')->label(__('Focus keyword'))->helperText(__('The main phrase people search for, e.g. “central serous chorioretinopathy OCT”.')),
+                    MediaPicker::make('og_image_id')->label(__('Social sharing image'))->helperText(__('1200×630 px works best. Defaults to the featured image.')),
+                    TextInput::make('canonical_url')->label(__('Canonical URL'))->url()->placeholder(__('Leave empty unless this content is published elsewhere first')),
+                    Toggle::make('noindex')->label(__('Hide from search engines (noindex)')),
+                    Toggle::make('nofollow')->label(__('Ask search engines not to follow links (nofollow)')),
                 ]),
                 View::make('filament.forms.serp-preview')
                     ->viewData(['titleField' => $titleField, 'descriptionField' => $descriptionField]),
@@ -200,32 +200,32 @@ class Fields
     public static function references(string $name = 'references'): Repeater
     {
         return Repeater::make($name)
-            ->label('References')
+            ->label(__('References'))
             ->schema([
-                Textarea::make('citation')->required()->rows(2)->columnSpanFull()->placeholder('Author A, Author B. Title. Journal. Year;Vol(Issue):pages.'),
-                TextInput::make('doi')->label('DOI')->placeholder('10.1016/…'),
-                TextInput::make('pmid')->label('PubMed ID'),
-                TextInput::make('url')->label('Other link')->url(),
+                Textarea::make('citation')->required()->rows(2)->columnSpanFull()->placeholder(__('Author A, Author B. Title. Journal. Year;Vol(Issue):pages.')),
+                TextInput::make('doi')->label(__('DOI'))->placeholder('10.1016/…'),
+                TextInput::make('pmid')->label(__('PubMed ID')),
+                TextInput::make('url')->label(__('Other link'))->url(),
             ])
             ->columns(3)
             ->reorderable()
             ->collapsible()
             ->itemLabel(fn (array $state) => isset($state['citation']) ? Str::limit($state['citation'], 80) : null)
             ->defaultItems(0)
-            ->addActionLabel('Add reference')
-            ->helperText('Cite references in the text as [1], [2] — they become links to this list automatically.');
+            ->addActionLabel(__('Add reference'))
+            ->helperText(__('Cite references in the text as [1], [2] — they become links to this list automatically.'));
     }
 
     public static function topics(): Select
     {
         return Select::make('topics')
-            ->label('Topics / diseases')
+            ->label(__('Topics / diseases'))
             ->relationship('topics', 'name')
             ->multiple()
             ->preload()
             ->searchable()
             ->getOptionLabelFromRecordUsing(fn ($record) => $record->parent ? $record->parent->name.' › '.$record->label() : $record->label())
-            ->helperText('Links this item to topic pages, filters and related content.');
+            ->helperText(__('Links this item to topic pages, filters and related content.'));
     }
 
     public static function tags(): Select
@@ -241,6 +241,6 @@ class Fields
 
     public static function featuredImage(string $name = 'featured_media_id', string $label = 'Featured image'): MediaPicker
     {
-        return MediaPicker::make($name)->label($label);
+        return MediaPicker::make($name)->label(__($label));
     }
 }

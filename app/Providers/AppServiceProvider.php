@@ -32,6 +32,21 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Developer aid: TRANSLATION_AUDIT=true logs dashboard text that has no Persian translation yet.
+        if (env('TRANSLATION_AUDIT')) {
+            app('translator')->handleMissingKeysUsing(function (string $key, array $replace, ?string $locale) {
+                if ($locale === 'fa' && ! str_contains($key, '::')) {
+                    file_put_contents(storage_path('logs/missing-fa.log'), $key."\n", FILE_APPEND | LOCK_EX);
+                }
+
+                return $key;
+            });
+        }
+
+        // Dashboard labels that Filament derives from field names (e.g. "Port") follow the dashboard language too.
+        foreach ([\Filament\Forms\Components\Field::class, \Filament\Tables\Columns\Column::class, \Filament\Tables\Filters\BaseFilter::class, \Filament\Infolists\Components\Entry::class, \Filament\Actions\Action::class] as $component) {
+            $component::configureUsing(fn ($instance) => $instance->translateLabel());
+        }
 
         Relation::enforceMorphMap([
             'user' => Models\User::class,

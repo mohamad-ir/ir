@@ -9,10 +9,10 @@
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
             <template x-for="(px, key) in widths" :key="key">
-                <button type="button" x-on:click="device = key; $nextTick(() => fit())" class="rounded-md px-3 py-1.5 text-xs font-semibold capitalize" :class="device === key ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-500'" x-text="key"></button>
+                <button type="button" x-on:click="device = key; $nextTick(() => fit())" class="rounded-md px-3 py-1.5 text-xs font-semibold capitalize" :class="device === key ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-500'" x-text="{ desktop: @js(__('Desktop')), tablet: @js(__('Tablet')), mobile: @js(__('Mobile')) }[key]"></button>
             </template>
         </div>
-        <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5" role="group" aria-label="Preview colour mode">
+        <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5" role="group" aria-label="{{ __('Preview colour mode') }}">
             @foreach (['light' => 'Light', 'dark' => 'Dark'] as $key => $label)
                 <button type="button" x-on:click="mode = '{{ $key }}'; reload()" class="rounded-md px-3 py-1.5 text-xs font-semibold" :class="mode === '{{ $key }}' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-500'">{{ $label }}</button>
             @endforeach
@@ -23,8 +23,8 @@
     </div>
     <div x-ref="wrap" class="oa-preview-frame-wrap" :style="`height:${height}px`">
         <div class="mx-auto h-full" :style="`width:${w * scale}px`">
-            <iframe :src="src" title="Theme preview" class="oa-preview-frame" :style="`width:${w}px;height:${height / scale}px;transform:scale(${scale})`"></iframe>
+            <iframe :src="src" title="{{ __('Theme preview') }}" class="oa-preview-frame" :style="`width:${w}px;height:${height / scale}px;transform:scale(${scale})`"></iframe>
         </div>
     </div>
-    <p class="mt-2 text-center text-xs text-gray-500">Preview of unsaved changes — click “Save changes” to publish them.</p>
+    <p class="mt-2 text-center text-xs text-gray-500">{{ __('Preview of unsaved changes — click “Save changes” to publish them.') }}</p>
 </div>

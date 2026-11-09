@@ -8,10 +8,12 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListTopics extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = TopicResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New topic')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New topic'))->icon('heroicon-m-plus')];
     }
 }

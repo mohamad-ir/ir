@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListArticles extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = ArticleResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New article')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New article'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array

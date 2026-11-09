@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListWebinars extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = WebinarResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New webinar')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New webinar'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array

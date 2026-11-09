@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSearchSynonym extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = SearchSynonymResource::class;
 
     protected function getHeaderActions(): array

@@ -15,10 +15,10 @@ enum QuestionType: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Sba => 'Single best answer (MCQ)',
-            self::Image => 'Image-based question',
-            self::Viva => 'Viva question',
-            self::Clinical => 'Clinical case question',
+            self::Sba => __('Single best answer (MCQ)'),
+            self::Image => __('Image-based question'),
+            self::Viva => __('Viva question'),
+            self::Clinical => __('Clinical case question'),
         };
     }
 

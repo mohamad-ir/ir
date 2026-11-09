@@ -16,13 +16,13 @@
     $fallback = fn ($onDark) => '<span style="display:inline-flex;align-items:center;gap:.55rem"><img src="'.asset('favicon.svg').'" alt="" style="height:28px;width:28px"><span style="font-family:Georgia,serif;font-size:1.1rem;font-weight:600;color:'.($onDark ? '#fff' : e($primary)).'">'.e($title).'</span></span>';
 @endphp
 <div class="space-y-4">
-    <p class="text-sm font-medium text-gray-950 dark:text-white">Preview</p>
+    <p class="text-sm font-medium text-gray-950 dark:text-white">{{ __('Preview') }}</p>
     <div class="grid gap-3 sm:grid-cols-2">
         <figure>
             <div class="flex h-16 items-center rounded-lg px-4 ring-1 ring-gray-950/10" style="background:#fbfaf7">
                 @if ($light)<img src="{{ $light->url() }}" alt="" style="height:{{ $height }};width:auto;max-width:100%;object-fit:contain">@else{!! $fallback(false) !!}@endif
             </div>
-            <figcaption class="mt-1 text-xs text-gray-500">Light header</figcaption>
+            <figcaption class="mt-1 text-xs text-gray-500">{{ __('Light header') }}</figcaption>
         </figure>
         <figure>
             <div class="flex h-16 items-center rounded-lg px-4" style="background:#0c151e">
@@ -31,7 +31,7 @@
                 @else{!! $fallback(true) !!}@endif
             </div>
             <figcaption class="mt-1 text-xs {{ $light && ! $dark ? 'text-warning-600' : 'text-gray-500' }}">
-                Dark mode, dark header and sign-in page{{ $light && ! $dark ? ' — add a logo for dark backgrounds if this is hard to read' : '' }}
+                {{ __('Dark mode, dark header and sign-in page') }}{{ $light && ! $dark ? ' — '.__('add a logo for dark backgrounds if this is hard to read') : '' }}
             </figcaption>
         </figure>
     </div>
@@ -43,7 +43,7 @@
                     <span class="truncate">{{ $name }}</span>
                 </div>
             </div>
-            <figcaption class="mt-1 text-xs text-gray-500">Browser tab</figcaption>
+            <figcaption class="mt-1 text-xs text-gray-500">{{ __('Browser tab') }}</figcaption>
         </figure>
         <figure class="text-center">
             <span class="mx-auto grid size-16 place-items-center overflow-hidden rounded-2xl shadow ring-1 ring-black/5" style="background:{{ $iconBg }}"><img src="{{ $iconUrl }}" alt="" class="size-full object-contain"></span>
@@ -51,7 +51,7 @@
         </figure>
         <figure class="text-center">
             <span class="mx-auto grid size-16 place-items-center overflow-hidden rounded-full shadow ring-1 ring-black/5" style="background:{{ $iconBg }}"><img src="{{ $iconUrl }}" alt="" class="size-[80%] object-contain"></span>
-            <figcaption class="mt-1 text-xs text-gray-500">Android</figcaption>
+            <figcaption class="mt-1 text-xs text-gray-500">{{ __('Android') }}</figcaption>
         </figure>
     </div>
 </div>

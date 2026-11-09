@@ -13,7 +13,7 @@ class PublicationsBlock extends PageBlock
 {
     public static function key(): string { return 'publications'; }
 
-    public static function label(): string { return 'Publications'; }
+    public static function label(): string { return __('Publications'); }
 
     public static function icon(): string { return 'heroicon-o-book-open'; }
 
@@ -22,10 +22,10 @@ class PublicationsBlock extends PageBlock
         return [
             TextInput::make('heading')->default('Selected publications')->maxLength(160),
             Textarea::make('intro')->rows(2),
-            Select::make('types')->multiple()->options(['publication' => 'Journal publications', 'book' => 'Books & chapters'])->default(['publication', 'book']),
-            Toggle::make('highlighted_only')->label('Only entries marked as highlighted'),
-            Toggle::make('searchable')->label('Allow visitors to filter by year and type')->default(true),
-            Select::make('limit')->options([0 => 'All', 5 => 5, 10 => 10, 20 => 20])->default(0)->selectablePlaceholder(false),
+            Select::make('types')->multiple()->options(\App\Support\Ui::options(['publication' => 'Journal publications', 'book' => 'Books & chapters']))->default(['publication', 'book']),
+            Toggle::make('highlighted_only')->label(__('Only entries marked as highlighted')),
+            Toggle::make('searchable')->label(__('Allow visitors to filter by year and type'))->default(true),
+            Select::make('limit')->options(\App\Support\Ui::options([0 => 'All', 5 => 5, 10 => 10, 20 => 20]))->default(0)->selectablePlaceholder(false),
         ];
     }
 

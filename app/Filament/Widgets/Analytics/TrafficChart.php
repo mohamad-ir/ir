@@ -10,9 +10,15 @@ class TrafficChart extends ChartWidget
 {
     protected static bool $isDiscovered = false;
 
-    protected ?string $heading = 'Traffic';
+    public function getHeading(): ?string
+    {
+        return __('Traffic');
+    }
 
-    protected ?string $description = 'Page views and visits per day';
+    public function getDescription(): ?string
+    {
+        return __('Page views and visits per day');
+    }
 
     protected ?string $maxHeight = '280px';
 

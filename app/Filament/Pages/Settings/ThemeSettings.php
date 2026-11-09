@@ -108,7 +108,7 @@ class ThemeSettings extends SettingsPage
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('preset')->label('Apply a colour preset')->icon('heroicon-o-sparkles')->color('gray')
+            Action::make('preset')->label(__('Apply a colour preset'))->icon('heroicon-o-sparkles')->color('gray')
                 ->schema([ToggleButtons::make('preset')->options(collect(ThemeService::PRESETS)->map(fn ($p) => $p['label']))->required()->columns(1)])
                 ->action(function (array $data) {
                     $preset = ThemeService::PRESETS[$data['preset']];
@@ -128,7 +128,7 @@ class ThemeSettings extends SettingsPage
             Grid::make(['default' => 1, 'xl' => 12])->schema([
                 Group::make()->columnSpan(['xl' => 5])->schema([
                     Tabs::make()->persistTabInQueryString()->tabs([
-                        Tab::make('Colours')->icon('heroicon-o-swatch')->schema([
+                        Tab::make('Colours')->label(__('Colours'))->icon('heroicon-o-swatch')->schema([
                             Grid::make(2)->schema([
                                 $color('primary', 'Primary', 'Headings, buttons, dark sections'),
                                 $color('accent', 'Accent', 'Links, highlights, active states'),
@@ -145,69 +145,69 @@ class ThemeSettings extends SettingsPage
                                     : '<div class="rounded-lg bg-success-50 p-3 text-sm text-success-800 dark:bg-success-500/10 dark:text-success-300">Colour contrast meets WCAG AA for readable text.</div>');
                             }),
                         ]),
-                        Tab::make('Typography & shape')->icon('heroicon-o-language')->schema([
-                            Select::make('theme.heading_font')->label('Heading font')->options(collect(ThemeService::HEADING_FONTS)->map(fn ($f) => $f[0]))->required()->live(),
-                            Select::make('theme.body_font')->label('Body font')->options(collect(ThemeService::BODY_FONTS)->map(fn ($f) => $f[0]))->required()->live(),
-                            Slider::make('theme.base_size')->label('Base text size (px)')->range(15, 20)->step(1)->live(onBlur: true)->tooltips(),
-                            ToggleButtons::make('theme.radius')->label('Corner rounding')->options(['none' => 'Square', 'sm' => 'Subtle', 'md' => 'Rounded', 'lg' => 'Soft'])->inline()->live(),
-                            ToggleButtons::make('theme.button_style')->label('Buttons')->options(['square' => 'Square', 'rounded' => 'Rounded', 'pill' => 'Pill'])->inline()->live(),
-                            ToggleButtons::make('theme.density')->label('Section spacing')->options(['compact' => 'Compact', 'comfortable' => 'Comfortable', 'spacious' => 'Spacious'])->inline()->live(),
-                            ToggleButtons::make('theme.container')->label('Content width')->options(['narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide'])->inline()->live(),
+                        Tab::make('Typography & shape')->label(__('Typography & shape'))->icon('heroicon-o-language')->schema([
+                            Select::make('theme.heading_font')->label(__('Heading font'))->options(collect(ThemeService::HEADING_FONTS)->map(fn ($f) => $f[0]))->required()->live(),
+                            Select::make('theme.body_font')->label(__('Body font'))->options(collect(ThemeService::BODY_FONTS)->map(fn ($f) => $f[0]))->required()->live(),
+                            Slider::make('theme.base_size')->label(__('Base text size (px)'))->range(15, 20)->step(1)->live(onBlur: true)->tooltips(),
+                            ToggleButtons::make('theme.radius')->label(__('Corner rounding'))->options(\App\Support\Ui::options(['none' => 'Square', 'sm' => 'Subtle', 'md' => 'Rounded', 'lg' => 'Soft']))->inline()->live(),
+                            ToggleButtons::make('theme.button_style')->label(__('Buttons'))->options(\App\Support\Ui::options(['square' => 'Square', 'rounded' => 'Rounded', 'pill' => 'Pill']))->inline()->live(),
+                            ToggleButtons::make('theme.density')->label(__('Section spacing'))->options(\App\Support\Ui::options(['compact' => 'Compact', 'comfortable' => 'Comfortable', 'spacious' => 'Spacious']))->inline()->live(),
+                            ToggleButtons::make('theme.container')->label(__('Content width'))->options(\App\Support\Ui::options(['narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide']))->inline()->live(),
                         ]),
-                        Tab::make('Light & dark mode')->icon('heroicon-o-moon')->schema([
-                            ToggleButtons::make('theme.color_mode')->label('Default for visitors')->inline()
+                        Tab::make('Light & dark mode')->label(__('Light & dark mode'))->icon('heroicon-o-moon')->schema([
+                            ToggleButtons::make('theme.color_mode')->label(__('Default for visitors'))->inline()
                                 ->options(\App\Support\ColorMode::MODES)
                                 ->icons(['light' => 'heroicon-o-sun', 'dark' => 'heroicon-o-moon', 'system' => 'heroicon-o-computer-desktop'])
-                                ->helperText('“System” follows the light or dark setting of each visitor’s phone or computer (recommended).'),
-                            Toggle::make('theme.color_mode_switch')->label('Let visitors choose (sun/moon button in the header)')
-                                ->helperText('Their choice is remembered on their device and, for members, on their account.'),
+                                ->helperText(__('“System” follows the light or dark setting of each visitor’s phone or computer (recommended).')),
+                            Toggle::make('theme.color_mode_switch')->label(__('Let visitors choose (sun/moon button in the header)'))
+                                ->helperText(__('Their choice is remembered on their device and, for members, on their account.')),
                             Placeholder::make('dark_help')->hiddenLabel()->content(new HtmlString('<p class="text-sm text-gray-500">Dark colours are created automatically from your brand colours. Change them below only if you want a different look — leave empty for automatic. Use the <strong>Light / Dark</strong> buttons above the preview to check both. Upload a <em>Logo (dark backgrounds)</em> under “Logo &amp; icons” so an image logo stays readable in dark mode.</p>')),
                             Grid::make(3)->schema([
-                                ColorPicker::make('theme.dark_background')->label('Dark background')->placeholder('Automatic')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
-                                ColorPicker::make('theme.dark_surface')->label('Dark cards')->placeholder('Automatic')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
-                                ColorPicker::make('theme.dark_text')->label('Dark-mode text')->placeholder('Automatic')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
+                                ColorPicker::make('theme.dark_background')->label(__('Dark background'))->placeholder(__('Automatic'))->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
+                                ColorPicker::make('theme.dark_surface')->label(__('Dark cards'))->placeholder(__('Automatic'))->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
+                                ColorPicker::make('theme.dark_text')->label(__('Dark-mode text'))->placeholder(__('Automatic'))->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
                             ]),
                         ]),
-                        Tab::make('Header & footer')->icon('heroicon-o-window')->schema([
-                            ToggleButtons::make('theme.header_style')->label('Header')->options(['light' => 'Light', 'dark' => 'Dark'])->inline()->live(),
-                            Toggle::make('theme.header_sticky')->label('Keep header visible while scrolling')->live(),
-                            ToggleButtons::make('theme.footer_style')->label('Footer')->options(['dark' => 'Dark', 'light' => 'Light'])->inline()->live(),
+                        Tab::make('Header & footer')->label(__('Header & footer'))->icon('heroicon-o-window')->schema([
+                            ToggleButtons::make('theme.header_style')->label(__('Header'))->options(\App\Support\Ui::options(['light' => 'Light', 'dark' => 'Dark']))->inline()->live(),
+                            Toggle::make('theme.header_sticky')->label(__('Keep header visible while scrolling'))->live(),
+                            ToggleButtons::make('theme.footer_style')->label(__('Footer'))->options(\App\Support\Ui::options(['dark' => 'Dark', 'light' => 'Light']))->inline()->live(),
                         ]),
-                        Tab::make('Site identity')->icon('heroicon-o-identification')->schema([
-                            Section::make('Name')->compact()->columns(2)->schema([
-                                TextInput::make('site.name')->label('Site name')->required()->maxLength(80)->live(onBlur: true)
-                                    ->helperText('Used in page titles, search results, emails and certificates.'),
-                                TextInput::make('branding.short_name')->label('Short name')->maxLength(30)->placeholder('Defaults to the site name')->live(onBlur: true)
-                                    ->helperText('Under the icon on phone home screens — up to 12 characters fit best.'),
-                                TextInput::make('site.tagline')->label('Tagline')->maxLength(140)->columnSpanFull(),
-                                TextInput::make('branding.logo_text')->label('Display title')->maxLength(60)->placeholder('Defaults to the site name')->live(onBlur: true)
-                                    ->helperText('Shown next to the built-in symbol when no logo image is uploaded.'),
-                                TextInput::make('branding.logo_alt')->label('Logo text alternative')->maxLength(120)->placeholder('Defaults to the site name')
-                                    ->helperText('Read by screen readers and search engines — usually just the site name.'),
+                        Tab::make('Site identity')->label(__('Site identity'))->icon('heroicon-o-identification')->schema([
+                            Section::make('Name')->heading(__('Name'))->compact()->columns(2)->schema([
+                                TextInput::make('site.name')->label(__('Site name'))->required()->maxLength(80)->live(onBlur: true)
+                                    ->helperText(__('Used in page titles, search results, emails and certificates.')),
+                                TextInput::make('branding.short_name')->label(__('Short name'))->maxLength(30)->placeholder(__('Defaults to the site name'))->live(onBlur: true)
+                                    ->helperText(__('Under the icon on phone home screens — up to 12 characters fit best.')),
+                                TextInput::make('site.tagline')->label(__('Tagline'))->maxLength(140)->columnSpanFull(),
+                                TextInput::make('branding.logo_text')->label(__('Display title'))->maxLength(60)->placeholder(__('Defaults to the site name'))->live(onBlur: true)
+                                    ->helperText(__('Shown next to the built-in symbol when no logo image is uploaded.')),
+                                TextInput::make('branding.logo_alt')->label(__('Logo text alternative'))->maxLength(120)->placeholder(__('Defaults to the site name'))
+                                    ->helperText(__('Read by screen readers and search engines — usually just the site name.')),
                             ]),
-                            Section::make('Logo')->compact()->schema([
+                            Section::make('Logo')->heading(__('Logo'))->compact()->schema([
                                 Grid::make(1)->schema([
-                                    MediaPicker::make('branding.logo_id')->label('Logo for light backgrounds')->live()
-                                        ->helperText('Horizontal logo, PNG or WebP with a transparent background, at least 120 px tall (about 480 × 120).'),
-                                    MediaPicker::make('branding.logo_dark_id')->label('Logo for dark backgrounds')->live()
-                                        ->helperText('Light-coloured version. Used in dark mode, on a dark header/footer and on the sign-in page.'),
+                                    MediaPicker::make('branding.logo_id')->label(__('Logo for light backgrounds'))->live()
+                                        ->helperText(__('Horizontal logo, PNG or WebP with a transparent background, at least 120 px tall (about 480 × 120).')),
+                                    MediaPicker::make('branding.logo_dark_id')->label(__('Logo for dark backgrounds'))->live()
+                                        ->helperText(__('Light-coloured version. Used in dark mode, on a dark header/footer and on the sign-in page.')),
                                 ]),
-                                ToggleButtons::make('branding.logo_height')->label('Logo size in the header')->inline()->options(\App\Services\Branding\BrandingService::LOGO_HEIGHTS)->live(),
+                                ToggleButtons::make('branding.logo_height')->label(__('Logo size in the header'))->inline()->options(\App\Services\Branding\BrandingService::LOGO_HEIGHTS)->live(),
                             ]),
-                            Section::make('Site icon')->compact()->schema([
-                                MediaPicker::make('branding.favicon_id')->label('Square site icon')->live()
-                                    ->helperText('Square PNG, at least 512 × 512 px, ideally with a transparent background. Browser tabs, bookmarks, phone home screens and the future app icon are created from it automatically.'),
-                                ColorPicker::make('branding.icon_background')->label('Icon background')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600)
-                                    ->helperText('Fills the space around the icon on iPhone and Android home screens.'),
+                            Section::make('Site icon')->heading(__('Site icon'))->compact()->schema([
+                                MediaPicker::make('branding.favicon_id')->label(__('Square site icon'))->live()
+                                    ->helperText(__('Square PNG, at least 512 × 512 px, ideally with a transparent background. Browser tabs, bookmarks, phone home screens and the future app icon are created from it automatically.')),
+                                ColorPicker::make('branding.icon_background')->label(__('Icon background'))->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600)
+                                    ->helperText(__('Fills the space around the icon on iPhone and Android home screens.')),
                             ]),
                             View::make('filament.branding-preview'),
-                            Section::make('Sharing')->compact()->schema([
-                                MediaPicker::make('branding.og_image_id')->label('Default social sharing image')->helperText('1200×630 px, used when a page has no image.'),
+                            Section::make('Sharing')->heading(__('Sharing'))->compact()->schema([
+                                MediaPicker::make('branding.og_image_id')->label(__('Default social sharing image'))->helperText(__('1200×630 px, used when a page has no image.')),
                             ]),
                         ]),
-                        Tab::make('Advanced')->icon('heroicon-o-code-bracket')->schema([
-                            Textarea::make('theme.custom_css')->label('Custom CSS')->rows(10)->extraInputAttributes(['class' => 'font-mono text-xs'])
-                                ->helperText('For small adjustments only. Design tokens are available as CSS variables, e.g. var(--color-accent).'),
+                        Tab::make('Advanced')->label(__('Advanced'))->icon('heroicon-o-code-bracket')->schema([
+                            Textarea::make('theme.custom_css')->label(__('Custom CSS'))->rows(10)->extraInputAttributes(['class' => 'font-mono text-xs'])
+                                ->helperText(__('For small adjustments only. Design tokens are available as CSS variables, e.g. var(--color-accent).')),
                         ]),
                     ]),
                 ]),

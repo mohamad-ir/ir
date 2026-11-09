@@ -26,12 +26,12 @@ class EditPage extends ContentEditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('saveAsReusable')->label('Save sections as reusable block')->icon('heroicon-o-arrow-path-rounded-square')->color('gray')
+            Action::make('saveAsReusable')->label(__('Save sections as reusable block'))->icon('heroicon-o-arrow-path-rounded-square')->color('gray')
                 ->visible(fn () => auth()->user()->can('reusable_blocks.manage'))
                 ->schema([TextInput::make('name')->required()->default(fn () => $this->record->title.' sections')])
                 ->action(function (array $data) {
                     ReusableBlock::create(['name' => $data['name'], 'blocks' => array_values($this->record->blocks ?? [])]);
-                    Notification::make()->success()->title('Reusable block created')->body('Place it on any page with the “Reusable block” section.')->send();
+                    Notification::make()->success()->title(__('Reusable block created'))->body(__('Place it on any page with the “Reusable block” section.'))->send();
                 }),
             ...parent::getHeaderActions(),
         ];

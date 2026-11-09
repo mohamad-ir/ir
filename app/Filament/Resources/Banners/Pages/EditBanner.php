@@ -10,6 +10,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditBanner extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = BannerResource::class;
 
     public function getContentTabLabel(): ?string
@@ -27,7 +29,7 @@ class EditBanner extends EditRecord
         $urls = ['home' => '/', 'cases' => '/cases', 'videos' => '/videos', 'articles' => '/articles', 'courses' => '/courses', 'webinars' => '/webinars', 'galleries' => '/galleries', 'membership' => '/membership'];
 
         return [
-            Action::make('view')->label('View on website')->icon('heroicon-o-arrow-top-right-on-square')->color('gray')
+            Action::make('view')->label(__('View on website'))->icon('heroicon-o-arrow-top-right-on-square')->color('gray')
                 ->visible(fn () => isset($urls[$this->record->placement]))
                 ->url(fn () => url($urls[$this->record->placement] ?? '/'), shouldOpenInNewTab: true),
             DeleteAction::make(),

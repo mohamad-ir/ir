@@ -166,6 +166,9 @@ class SettingDefaults
                 'notify_staff' => true,
                 'guidelines' => 'Keep discussions professional and evidence-based. Never post information that could identify a patient.',
             ],
+            'admin' => [
+                'fa_direction' => 'ltr',
+            ],
             'backup' => [
                 'schedule' => 'weekly',
                 'keep' => 6,

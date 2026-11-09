@@ -13,7 +13,7 @@ class TestimonialsBlock extends PageBlock
 {
     public static function key(): string { return 'testimonials'; }
 
-    public static function label(): string { return 'Testimonials'; }
+    public static function label(): string { return __('Testimonials'); }
 
     public static function icon(): string { return 'heroicon-o-chat-bubble-bottom-center-text'; }
 
@@ -25,9 +25,9 @@ class TestimonialsBlock extends PageBlock
             Repeater::make('items')->schema([
                 Textarea::make('quote')->required()->rows(3)->columnSpanFull(),
                 TextInput::make('name')->required(),
-                TextInput::make('role')->placeholder('ST5 Ophthalmology, London'),
-                MediaPicker::make('photo_id')->label('Photo (optional)')->columnSpanFull(),
-            ])->columns(2)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['name'] ?? null)->addActionLabel('Add testimonial'),
+                TextInput::make('role')->placeholder(__('ST5 Ophthalmology, London')),
+                MediaPicker::make('photo_id')->label(__('Photo (optional)'))->columnSpanFull(),
+            ])->columns(2)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['name'] ?? null)->addActionLabel(__('Add testimonial')),
         ];
     }
 

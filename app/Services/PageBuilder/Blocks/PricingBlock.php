@@ -12,11 +12,11 @@ class PricingBlock extends PageBlock
 {
     public static function key(): string { return 'pricing'; }
 
-    public static function label(): string { return 'Membership plans'; }
+    public static function label(): string { return __('Membership plans'); }
 
     public static function icon(): string { return 'heroicon-o-sparkles'; }
 
-    public static function description(): string { return 'Membership plans with prices and a monthly / yearly switch.'; }
+    public static function description(): string { return __('Membership plans with prices and a monthly / yearly switch.'); }
 
     public static function schema(): array
     {

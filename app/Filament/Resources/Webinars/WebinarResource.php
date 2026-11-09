@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class WebinarResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Webinar::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-video-camera';
@@ -49,42 +51,42 @@ class WebinarResource extends Resource
                     Fields::slug('/webinars', 'webinars'),
                     Textarea::make('summary')->rows(2)->maxLength(500),
                 ]),
-                Section::make('Date & online room')->icon('heroicon-o-calendar-days')->schema([
+                Section::make('Date & online room')->heading(__('Date & online room'))->icon('heroicon-o-calendar-days')->schema([
                     Grid::make(3)->schema([
-                        DateTimePicker::make('starts_at')->label('Starts')->required()->seconds(false)->native(false)
-                            ->timezone($tz)->displayFormat('j M Y, H:i')->helperText('Time zone: '.$tz.' (Settings › Site).')->columnSpan(2),
-                        TextInput::make('duration_minutes')->label('Duration (min)')->numeric()->minValue(10)->maxValue(600)->default(60)->required(),
+                        DateTimePicker::make('starts_at')->label(__('Starts'))->required()->seconds(false)->native(false)
+                            ->timezone($tz)->displayFormat('j M Y, H:i')->helperText(__('Time zone: :tz (Settings › Site).', ['tz' => $tz]))->columnSpan(2),
+                        TextInput::make('duration_minutes')->label(__('Duration (min)'))->numeric()->minValue(10)->maxValue(600)->default(60)->required(),
                     ]),
                     ToggleButtons::make('platform')->options(WebinarPlatform::options())->default('zoom')->inline()->required(),
-                    TextInput::make('join_url')->label('Join link (Zoom / YouTube Live / Teams)')->url()->maxLength(1000)
-                        ->helperText('Kept private and encrypted. Registrants receive a personal link that checks their registration and then forwards to this address, from '.Webinar::JOIN_OPENS_MINUTES.' minutes before the start.'),
-                    Textarea::make('join_details')->label('Joining details for registrants')->rows(2)->placeholder('Meeting ID 123 456 789 · Passcode 1234')
-                        ->helperText('Included in the one-hour reminder email.'),
-                    TextInput::make('recording_url')->label('Recording (YouTube or Vimeo link, after the event)')->url()->maxLength(500)
-                        ->helperText('Shown on the webinar page to registrants'.' and, if “free for members”, to members. Use an unlisted/private link.'),
+                    TextInput::make('join_url')->label(__('Join link (Zoom / YouTube Live / Teams)'))->url()->maxLength(1000)
+                        ->helperText(__('Kept private and encrypted. Registrants receive a personal link that checks their registration and then forwards to this address, from :minutes minutes before the start.', ['minutes' => Webinar::JOIN_OPENS_MINUTES])),
+                    Textarea::make('join_details')->label(__('Joining details for registrants'))->rows(2)->placeholder(__('Meeting ID 123 456 789 · Passcode 1234'))
+                        ->helperText(__('Included in the one-hour reminder email.')),
+                    TextInput::make('recording_url')->label(__('Recording (YouTube or Vimeo link, after the event)'))->url()->maxLength(500)
+                        ->helperText(__('Shown on the webinar page to registrants and, if “free for members”, to members. Use an unlisted/private link.')),
                 ]),
-                Section::make('Description')->icon('heroicon-o-document-text')->schema([
+                Section::make('Description')->heading(__('Description'))->icon('heroicon-o-document-text')->schema([
                     Fields::richEditor('description', 'About this session'),
                 ]),
                 Fields::seo('title', 'summary'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
                 Fields::publishing('webinars', hasAccess: false),
-                Section::make('Tickets')->icon('heroicon-o-ticket')->schema([
+                Section::make('Tickets')->heading(__('Tickets'))->icon('heroicon-o-ticket')->schema([
                     Grid::make(2)->schema([
-                        TextInput::make('price')->numeric()->minValue(0)->step('0.01')->default(0)->required()->helperText('0 = free (account required).')
+                        TextInput::make('price')->numeric()->minValue(0)->step('0.01')->default(0)->required()->helperText(__('0 = free (account required).'))
                             ->formatStateUsing(fn ($state) => Money::toMajor($state ?? 0))
                             ->dehydrateStateUsing(fn ($state) => Money::toMinor($state)),
                         Select::make('currency')->options(array_combine(array_keys(Money::CURRENCIES), array_keys(Money::CURRENCIES)))
                             ->default(fn () => Settings::get('payments.currency', 'EUR'))->selectablePlaceholder(false)->required(),
                     ]),
                     Fields::otherPrices()->visible(fn ($get) => (float) $get('price') > 0),
-                    Toggle::make('free_for_members')->label('Free for members')->default(true),
-                    TextInput::make('capacity')->label('Maximum participants')->numeric()->minValue(1)->helperText('Leave empty for no limit.'),
-                    Toggle::make('registration_open')->label('Registration open')->default(true),
+                    Toggle::make('free_for_members')->label(__('Free for members'))->default(true),
+                    TextInput::make('capacity')->label(__('Maximum participants'))->numeric()->minValue(1)->helperText(__('Leave empty for no limit.')),
+                    Toggle::make('registration_open')->label(__('Registration open'))->default(true),
                 ]),
-                Section::make('Details')->icon('heroicon-o-tag')->schema([
-                    MediaPicker::make('featured_media_id')->label('Cover image'),
+                Section::make('Details')->heading(__('Details'))->icon('heroicon-o-tag')->schema([
+                    MediaPicker::make('featured_media_id')->label(__('Cover image')),
                     Fields::topics(),
                     Fields::tags(),
                 ]),
@@ -100,17 +102,17 @@ class WebinarResource extends Resource
             ->defaultSort('starts_at', 'desc')
             ->columns([
                 TextColumn::make('title')->searchable()->sortable()->weight('medium')->wrap()
-                    ->description(fn (Webinar $record) => $record->platform?->getLabel().' · '.$record->duration_minutes.' min'),
-                TextColumn::make('starts_at')->label('Date')->dateTime('D j M Y, H:i', $tz)->sortable()
+                    ->description(fn (Webinar $record) => $record->platform?->getLabel().' · '.__(':count min', ['count' => $record->duration_minutes])),
+                TextColumn::make('starts_at')->label(__('Date'))->dateTime('D j M Y, H:i', $tz)->sortable()
                     ->description(fn (Webinar $record) => $record->isLive() ? 'Live now' : ($record->hasEnded() ? 'Ended' : $record->starts_at->diffForHumans())),
                 TextColumn::make('price')->formatStateUsing(fn (Webinar $record) => $record->priceLabel()),
-                TextColumn::make('registrations_count')->label('Registered')->numeric()->sortable()->alignEnd()
+                TextColumn::make('registrations_count')->label(__('Registered'))->numeric()->sortable()->alignEnd()
                     ->description(fn (Webinar $record) => $record->capacity ? 'of '.$record->capacity : null),
                 ContentTable::status(),
             ])
             ->filters([
                 ...ContentTable::filters(),
-                TernaryFilter::make('upcoming')->label('When')->trueLabel('Upcoming')->falseLabel('Past')
+                TernaryFilter::make('upcoming')->label(__('When'))->trueLabel(__('Upcoming'))->falseLabel(__('Past'))
                     ->queries(true: fn (Builder $query) => $query->where('starts_at', '>=', now()), false: fn (Builder $query) => $query->where('starts_at', '<', now())),
             ])
             ->recordActions(ContentTable::recordActions('webinar', 'webinars'))

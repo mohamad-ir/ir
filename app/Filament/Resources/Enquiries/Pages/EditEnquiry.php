@@ -17,11 +17,13 @@ use Throwable;
 
 class EditEnquiry extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = EnquiryResource::class;
 
     public function getTitle(): string
     {
-        return 'Enquiry from '.$this->record->name;
+        return __('Enquiry from :name', ['name' => $this->record->name]);
     }
 
     public function mount(int|string $record): void
@@ -36,11 +38,11 @@ class EditEnquiry extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('reply')->label('Reply')->icon('heroicon-o-arrow-uturn-left')
+            Action::make('reply')->label(__('Reply'))->icon('heroicon-o-arrow-uturn-left')
                 ->modalWidth('2xl')
                 ->schema([
                     TextInput::make('subject')->required()->default(fn () => 'Re: '.$this->record->subject),
-                    Textarea::make('body')->label('Message')->required()->rows(10),
+                    Textarea::make('body')->label(__('Message'))->required()->rows(10),
                 ])
                 ->action(function (array $data) {
                     try {
@@ -48,12 +50,12 @@ class EditEnquiry extends EditRecord
                         $this->record->update(['status' => EnquiryStatus::Replied, 'replied_at' => now(), 'admin_notes' => trim(($this->record->admin_notes ? $this->record->admin_notes."\n\n" : '').'Reply sent '.now()->format('j M Y H:i').":\n".$data['body'])]);
                         ActivityLog::record('enquiry_replied', 'Replied to enquiry from '.$this->record->email);
                         $this->refreshFormData(['status', 'admin_notes']);
-                        Notification::make()->success()->title('Reply sent')->send();
+                        Notification::make()->success()->title(__('Reply sent'))->send();
                     } catch (Throwable $e) {
-                        Notification::make()->danger()->title('The reply could not be sent')->body($e->getMessage().' — check Settings › Email.')->persistent()->send();
+                        Notification::make()->danger()->title(__('The reply could not be sent'))->body($e->getMessage().' — check Settings › Email.')->persistent()->send();
                     }
                 }),
-            Action::make('mail')->label('Open in mail app')->icon('heroicon-o-envelope')->color('gray')
+            Action::make('mail')->label(__('Open in mail app'))->icon('heroicon-o-envelope')->color('gray')
                 ->url(fn () => 'mailto:'.$this->record->email.'?subject='.rawurlencode('Re: '.$this->record->subject)),
             DeleteAction::make(),
         ];

@@ -26,7 +26,7 @@ class CalloutBlock extends RichContentCustomBlock
 
     public static function getLabel(): string
     {
-        return 'Callout (pearl, pitfall, exam tip)';
+        return __('Callout (pearl, pitfall, exam tip)');
     }
 
     public static function getIcon(): string
@@ -37,10 +37,10 @@ class CalloutBlock extends RichContentCustomBlock
     public static function configureEditorAction(Action $action): Action
     {
         return $action
-            ->modalDescription('A highlighted box that draws attention to a teaching point.')
+            ->modalDescription(__('A highlighted box that draws attention to a teaching point.'))
             ->schema([
                 Select::make('tone')->options(self::TONES)->default('pearl')->required(),
-                TextInput::make('title')->placeholder('Defaults to the callout type'),
+                TextInput::make('title')->placeholder(__('Defaults to the callout type')),
                 Textarea::make('text')->rows(4)->required(),
             ]);
     }

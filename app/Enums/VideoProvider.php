@@ -15,10 +15,10 @@ enum VideoProvider: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Youtube => 'YouTube',
-            self::Vimeo => 'Vimeo',
-            self::File => 'Uploaded file',
-            self::Url => 'External video URL',
+            self::Youtube => __('YouTube'),
+            self::Vimeo => __('Vimeo'),
+            self::File => __('Uploaded file'),
+            self::Url => __('External video URL'),
         };
     }
 

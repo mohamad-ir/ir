@@ -12,13 +12,14 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, HasLocalePreference, MustVerifyEmail
 {
     use HasFactory, HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, LogsActivity, Notifiable;
 
@@ -27,7 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     protected $fillable = [
         'name', 'email', 'password', 'title', 'career_stage', 'specialty', 'institution',
-        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id', 'notify_replies', 'color_mode',
+        'country', 'bio', 'avatar_path', 'is_active', 'last_login_at', 'stripe_customer_id', 'notify_replies', 'color_mode', 'admin_locale',
     ];
 
     protected $hidden = ['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'];
@@ -44,6 +45,12 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    /** Emails and notifications to people are always English, whatever language the dashboard is shown in. */
+    public function preferredLocale(): string
+    {
+        return 'en';
     }
 
     protected static function booted(): void

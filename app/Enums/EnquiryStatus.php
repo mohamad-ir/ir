@@ -15,10 +15,10 @@ enum EnquiryStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::New => 'New',
-            self::Read => 'Read',
-            self::Replied => 'Replied',
-            self::Archived => 'Archived',
+            self::New => __('New'),
+            self::Read => __('Read'),
+            self::Replied => __('Replied'),
+            self::Archived => __('Archived'),
         };
     }
 

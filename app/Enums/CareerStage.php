@@ -17,12 +17,12 @@ enum CareerStage: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Student => 'Medical student',
-            self::Resident => 'Resident / trainee',
-            self::Fellow => 'Fellow',
-            self::Ophthalmologist => 'Ophthalmologist',
-            self::Optometrist => 'Optometrist / allied professional',
-            self::Other => 'Other',
+            self::Student => __('Medical student'),
+            self::Resident => __('Resident / trainee'),
+            self::Fellow => __('Fellow'),
+            self::Ophthalmologist => __('Ophthalmologist'),
+            self::Optometrist => __('Optometrist / allied professional'),
+            self::Other => __('Other'),
         };
     }
 

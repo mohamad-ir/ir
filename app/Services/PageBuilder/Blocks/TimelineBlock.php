@@ -11,7 +11,7 @@ class TimelineBlock extends PageBlock
 {
     public static function key(): string { return 'timeline'; }
 
-    public static function label(): string { return 'Timeline'; }
+    public static function label(): string { return __('Timeline'); }
 
     public static function icon(): string { return 'heroicon-o-clock'; }
 
@@ -25,7 +25,7 @@ class TimelineBlock extends PageBlock
                 TextInput::make('title')->required()->maxLength(160),
                 TextInput::make('subtitle')->maxLength(160),
                 Textarea::make('text')->rows(2)->columnSpanFull(),
-            ])->columns(3)->reorderable()->collapsible()->cloneable()->itemLabel(fn (array $state) => trim(($state['period'] ?? '').' '.($state['title'] ?? '')) ?: null)->addActionLabel('Add milestone'),
+            ])->columns(3)->reorderable()->collapsible()->cloneable()->itemLabel(fn (array $state) => trim(($state['period'] ?? '').' '.($state['title'] ?? '')) ?: null)->addActionLabel(__('Add milestone')),
         ];
     }
 }

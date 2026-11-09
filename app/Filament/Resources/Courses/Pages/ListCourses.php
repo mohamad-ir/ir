@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListCourses extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = CourseResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New course')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New course'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array

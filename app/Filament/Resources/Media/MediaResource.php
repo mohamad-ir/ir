@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 class MediaResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Media::class;
 
     protected static ?string $modelLabel = 'media item';
@@ -50,11 +52,11 @@ class MediaResource extends Resource
 
     public static function folderSelect(): Select
     {
-        return Select::make('folder_id')->label('Folder')
+        return Select::make('folder_id')->label(__('Folder'))
             ->options(fn () => MediaFolder::orderBy('name')->pluck('name', 'id'))
             ->createOptionForm([TextInput::make('name')->required()->maxLength(80)])
             ->createOptionUsing(fn (array $data) => MediaFolder::create($data)->id)
-            ->placeholder('No folder')->searchable();
+            ->placeholder(__('No folder'))->searchable();
     }
 
     public static function form(Schema $schema): Schema
@@ -64,15 +66,15 @@ class MediaResource extends Resource
                 View::make('filament.media.preview'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Section::make('Details')->schema([
+                Section::make('Details')->heading(__('Details'))->schema([
                     TextInput::make('title')->maxLength(250),
-                    TextInput::make('alt')->label('Alternative text')->maxLength(250)
-                        ->helperText('Describe the image for screen readers and Google Images, e.g. “OCT B-scan showing subretinal fluid”.'),
+                    TextInput::make('alt')->label(__('Alternative text'))->maxLength(250)
+                        ->helperText(__('Describe the image for screen readers and Google Images, e.g. “OCT B-scan showing subretinal fluid”.')),
                     Textarea::make('caption')->rows(3),
-                    TextInput::make('credit')->maxLength(250)->placeholder('Courtesy of…'),
-                    Textarea::make('description')->label('Internal notes')->rows(2),
+                    TextInput::make('credit')->maxLength(250)->placeholder(__('Courtesy of…')),
+                    Textarea::make('description')->label(__('Internal notes'))->rows(2),
                     static::folderSelect(),
-                    Toggle::make('is_deidentified')->label('Checked: contains no patient-identifiable information'),
+                    Toggle::make('is_deidentified')->label(__('Checked: contains no patient-identifiable information')),
                 ]),
             ]),
         ]);
@@ -95,22 +97,22 @@ class MediaResource extends Resource
                 ])->space(1),
             ])
             ->filters([
-                SelectFilter::make('type')->options(['image' => 'Images', 'video' => 'Videos', 'application' => 'Documents'])
+                SelectFilter::make('type')->options(\App\Support\Ui::options(['image' => 'Images', 'video' => 'Videos', 'application' => 'Documents']))
                     ->query(fn (Builder $query, array $data) => $data['value'] ? $query->where('mime_type', 'like', $data['value'].'/%') : $query),
-                SelectFilter::make('folder_id')->label('Folder')->options(fn () => MediaFolder::orderBy('name')->pluck('name', 'id')),
-                TernaryFilter::make('missing_alt')->label('Alt text')->trueLabel('Missing alt text')->falseLabel('Has alt text')
+                SelectFilter::make('folder_id')->label(__('Folder'))->options(fn () => MediaFolder::orderBy('name')->pluck('name', 'id')),
+                TernaryFilter::make('missing_alt')->label(__('Alt text'))->trueLabel(__('Missing alt text'))->falseLabel(__('Has alt text'))
                     ->queries(true: fn (Builder $query) => $query->where('mime_type', 'like', 'image/%')->where(fn ($w) => $w->whereNull('alt')->orWhere('alt', '')), false: fn (Builder $query) => $query->whereNotNull('alt')->where('alt', '!=', '')),
-                TernaryFilter::make('is_deidentified')->label('De-identification checked'),
+                TernaryFilter::make('is_deidentified')->label(__('De-identification checked')),
             ])
-            ->recordActions([EditAction::make()->label('Details')])
+            ->recordActions([EditAction::make()->label(__('Details'))])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    BulkAction::make('move')->label('Move to folder')->icon('heroicon-o-folder')
+                    BulkAction::make('move')->label(__('Move to folder'))->icon('heroicon-o-folder')
                         ->schema([static::folderSelect()])
                         ->action(fn (Collection $records, array $data) => $records->each->update(['folder_id' => $data['folder_id']]))
                         ->deselectRecordsAfterCompletion(),
-                    BulkAction::make('delete')->label('Delete')->icon('heroicon-o-trash')->color('danger')->requiresConfirmation()
-                        ->modalDescription('Files that are still used on the website will be skipped.')
+                    BulkAction::make('delete')->label(__('Delete'))->icon('heroicon-o-trash')->color('danger')->requiresConfirmation()
+                        ->modalDescription(__('Files that are still used on the website will be skipped.'))
                         ->visible(fn () => auth()->user()->can('media.delete'))
                         ->action(function (Collection $records) {
                             $deleted = 0;

@@ -14,7 +14,7 @@ class TopicsGridBlock extends PageBlock
 {
     public static function key(): string { return 'topics_grid'; }
 
-    public static function label(): string { return 'Topics / diseases'; }
+    public static function label(): string { return __('Topics / diseases'); }
 
     public static function icon(): string { return 'heroicon-o-tag'; }
 
@@ -26,8 +26,8 @@ class TopicsGridBlock extends PageBlock
                 TextInput::make('heading')->maxLength(160),
             ]),
             Textarea::make('intro')->rows(2),
-            Select::make('topic_ids')->label('Topics')->multiple()->searchable()->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))->helperText('Leave empty to show featured topics.'),
-            Toggle::make('show_counts')->label('Show number of cases')->default(true),
+            Select::make('topic_ids')->label(__('Topics'))->multiple()->searchable()->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))->helperText(__('Leave empty to show featured topics.')),
+            Toggle::make('show_counts')->label(__('Show number of cases'))->default(true),
         ];
     }
 

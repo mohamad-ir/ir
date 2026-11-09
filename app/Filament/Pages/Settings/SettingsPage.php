@@ -17,6 +17,8 @@ use Filament\Schemas\Schema;
  */
 abstract class SettingsPage extends Page implements HasSchemas
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use InteractsWithSchemas;
 
     protected string $view = 'filament.pages.settings';
@@ -91,13 +93,13 @@ abstract class SettingsPage extends Page implements HasSchemas
         ActivityLog::record('settings', static::getNavigationLabel().' updated', null, ['keys' => array_keys($values)]);
         $this->afterSave();
 
-        Notification::make()->success()->title('Settings saved')->send();
+        Notification::make()->success()->title(__('Settings saved'))->send();
     }
 
     protected function afterSave(): void {}
 
     public function getFormActionsLabel(): string
     {
-        return 'Save changes';
+        return __('Save changes');
     }
 }

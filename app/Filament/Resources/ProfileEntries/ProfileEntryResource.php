@@ -24,6 +24,8 @@ use Filament\Tables\Table;
 
 class ProfileEntryResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = ProfileEntry::class;
 
     protected static ?string $modelLabel = 'CV entry';
@@ -46,13 +48,13 @@ class ProfileEntryResource extends Resource
             TextInput::make('subtitle')->label(fn (Get $get) => $isPub($get) ? 'Journal / publisher' : 'Institution / organisation')->maxLength(250),
             TextInput::make('location')->maxLength(250),
             TextInput::make('start_year')->label(fn (Get $get) => $isPub($get) ? 'Year' : 'From')->maxLength(10),
-            TextInput::make('end_year')->label('To')->maxLength(10)->placeholder('Present')->hidden($isPub),
+            TextInput::make('end_year')->label(__('To'))->maxLength(10)->placeholder(__('Present'))->hidden($isPub),
             TextInput::make('authors')->maxLength(1000)->columnSpanFull()->visible($isPub),
-            TextInput::make('doi')->label('DOI')->visible($isPub),
-            TextInput::make('pmid')->label('PubMed ID')->visible($isPub),
-            TextInput::make('url')->label('Link')->url()->columnSpanFull(),
+            TextInput::make('doi')->label(__('DOI'))->visible($isPub),
+            TextInput::make('pmid')->label(__('PubMed ID'))->visible($isPub),
+            TextInput::make('url')->label(__('Link'))->url()->columnSpanFull(),
             Textarea::make('description')->rows(3)->columnSpanFull(),
-            Toggle::make('is_highlighted')->label('Highlight (e.g. key publication)'),
+            Toggle::make('is_highlighted')->label(__('Highlight (e.g. key publication)')),
         ])]);
     }
 
@@ -65,7 +67,7 @@ class ProfileEntryResource extends Resource
             ->columns([
                 TextColumn::make('title')->searchable(['title', 'subtitle', 'authors'])->weight('medium')->wrap()->description(fn (ProfileEntry $record) => $record->subtitle),
                 TextColumn::make('period')->getStateUsing(fn (ProfileEntry $record) => $record->period()),
-                IconColumn::make('is_highlighted')->label('Highlight')->boolean(),
+                IconColumn::make('is_highlighted')->label(__('Highlight'))->boolean(),
             ])
             ->filters([SelectFilter::make('type')->options(ProfileEntryType::options())])
             ->recordActions([EditAction::make(), DeleteAction::make()])

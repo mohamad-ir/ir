@@ -17,7 +17,7 @@ class InterestBlock extends PageBlock
 {
     public static function key(): string { return 'interest'; }
 
-    public static function label(): string { return 'Coming soon / register interest'; }
+    public static function label(): string { return __('Coming soon / register interest'); }
 
     public static function icon(): string { return 'heroicon-o-bell-alert'; }
 
@@ -27,12 +27,12 @@ class InterestBlock extends PageBlock
             TextInput::make('eyebrow')->default('Coming soon')->maxLength(80),
             TextInput::make('heading')->default('Structured courses')->maxLength(160),
             Textarea::make('intro')->rows(2),
-            Select::make('interest')->label('Interest list')->options(Subscriber::INTERESTS)->default('courses')->selectablePlaceholder(false),
-            Repeater::make('items')->label('Programmes')->schema([
+            Select::make('interest')->label(__('Interest list'))->options(\App\Support\Ui::options(Subscriber::INTERESTS))->default('courses')->selectablePlaceholder(false),
+            Repeater::make('items')->label(__('Programmes'))->schema([
                 TextInput::make('title')->required(),
-                TextInput::make('meta')->placeholder('e.g. 8 modules · Self-paced'),
+                TextInput::make('meta')->placeholder(__('e.g. 8 modules · Self-paced')),
                 Textarea::make('text')->rows(2)->columnSpanFull(),
-            ])->columns(2)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['title'] ?? null)->addActionLabel('Add programme'),
+            ])->columns(2)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['title'] ?? null)->addActionLabel(__('Add programme')),
         ];
     }
 }

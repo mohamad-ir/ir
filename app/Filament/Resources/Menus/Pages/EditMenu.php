@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditMenu extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = MenuResource::class;
 
     protected function getHeaderActions(): array

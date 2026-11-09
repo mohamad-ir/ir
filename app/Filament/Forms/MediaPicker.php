@@ -27,7 +27,7 @@ class MediaPicker extends Select
         $this->searchable()
             ->allowHtml()
             ->native(false)
-            ->placeholder('Choose from the media library or upload')
+            ->placeholder(__('Choose from the media library or upload'))
             ->options(fn () => $this->baseQuery()->latest('id')->limit(30)->get()->mapWithKeys(fn (Media $m) => [$m->id => $m->pickerLabel()])->all())
             ->getSearchResultsUsing(fn (string $search) => $this->baseQuery()
                 ->where(fn ($query) => $query->where('title', 'like', "%{$search}%")->orWhere('original_name', 'like', "%{$search}%")->orWhere('alt', 'like', "%{$search}%"))
@@ -35,17 +35,17 @@ class MediaPicker extends Select
             ->getOptionLabelUsing(fn ($value) => Media::find($value)?->pickerLabel())
             ->createOptionForm(fn () => [
                 FileUpload::make('file')
-                    ->label('File')
+                    ->label(__('File'))
                     ->required()
                     ->storeFiles(false)
                     ->acceptedFileTypes($this->imagesOnly ? ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] : MediaService::acceptedMimeTypes())
                     ->maxSize(51200),
                 Grid::make(2)->schema([
                     TextInput::make('title'),
-                    TextInput::make('alt')->label('Alternative text')->helperText('Describe the image for screen readers and Google Images.'),
+                    TextInput::make('alt')->label(__('Alternative text'))->helperText(__('Describe the image for screen readers and Google Images.')),
                 ]),
                 Textarea::make('caption')->rows(2),
-                Toggle::make('is_deidentified')->label('I confirm this image contains no patient-identifiable information')->accepted(fn () => $this->imagesOnly)->default(false),
+                Toggle::make('is_deidentified')->label(__('I confirm this image contains no patient-identifiable information'))->accepted(fn () => $this->imagesOnly)->default(false),
             ])
             ->createOptionUsing(function (array $data) {
                 $file = $data['file'];
@@ -57,7 +57,7 @@ class MediaPicker extends Select
 
                 return $media->id;
             })
-            ->createOptionModalHeading('Upload to media library');
+            ->createOptionModalHeading(__('Upload to media library'));
     }
 
     public function anyFile(bool $condition = true): static

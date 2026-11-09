@@ -38,6 +38,8 @@ use Illuminate\Support\Str;
 
 class CaseResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = ClinicalCase::class;
 
     protected static ?string $modelLabel = 'OCT case';
@@ -83,67 +85,67 @@ class CaseResource extends Resource
                 Section::make()->schema([
                     Fields::title('/cases'),
                     Fields::slug('/cases', 'clinical_cases'),
-                    Textarea::make('summary')->rows(2)->maxLength(400)->helperText('One or two sentences shown on case cards and in Google results. Avoid giving away the diagnosis.'),
+                    Textarea::make('summary')->rows(2)->maxLength(400)->helperText(__('One or two sentences shown on case cards and in Google results. Avoid giving away the diagnosis.')),
                 ]),
                 Tabs::make('case')->persistTabInQueryString()->tabs([
-                    Tab::make('Presentation')->icon('heroicon-o-user')->schema([
+                    Tab::make('Presentation')->label(__('Presentation'))->icon('heroicon-o-user')->schema([
                         Grid::make(3)->schema([
-                            TextInput::make('patient_age')->label('Age')->placeholder('e.g. 38 years'),
-                            Select::make('patient_sex')->label('Sex')->options(['Female' => 'Female', 'Male' => 'Male', 'Other' => 'Other / not stated']),
-                            ToggleButtons::make('eye')->inline()->options(['OD' => 'Right (OD)', 'OS' => 'Left (OS)', 'OU' => 'Both (OU)']),
+                            TextInput::make('patient_age')->label(__('Age'))->placeholder(__('e.g. 38 years')),
+                            Select::make('patient_sex')->label(__('Sex'))->options(\App\Support\Ui::options(['Female' => 'Female', 'Male' => 'Male', 'Other' => 'Other / not stated'])),
+                            ToggleButtons::make('eye')->inline()->options(\App\Support\Ui::options(['OD' => 'Right (OD)', 'OS' => 'Left (OS)', 'OU' => 'Both (OU)'])),
                         ]),
-                        TextInput::make('presenting_complaint')->maxLength(250)->placeholder('Two weeks of blurred central vision…'),
+                        TextInput::make('presenting_complaint')->maxLength(250)->placeholder(__('Two weeks of blurred central vision…')),
                         Fields::richEditor('history', 'Short history & examination'),
                     ]),
-                    Tab::make('Imaging')->icon('heroicon-o-photo')->badge(fn (Get $get) => count($get('images') ?? []) ?: null)->schema([
-                        Repeater::make('images')->label('Case images')
+                    Tab::make('Imaging')->label(__('Imaging'))->icon('heroicon-o-photo')->badge(fn (Get $get) => count($get('images') ?? []) ?: null)->schema([
+                        Repeater::make('images')->label(__('Case images'))
                             ->schema([
-                                MediaPicker::make('media_id')->label('Image')->required()->columnSpan(2),
-                                TextInput::make('label')->placeholder('OCT B-scan, OCT-A, FAF…')->maxLength(60),
+                                MediaPicker::make('media_id')->label(__('Image'))->required()->columnSpan(2),
+                                TextInput::make('label')->placeholder(__('OCT B-scan, OCT-A, FAF…'))->maxLength(60),
                                 Textarea::make('caption')->rows(2)->columnSpanFull(),
                             ])
                             ->columns(3)->reorderableWithDragAndDrop()->collapsible()->cloneable()
                             ->itemLabel(fn (array $state) => $state['label'] ?? null)
                             ->defaultItems(0)
-                            ->addActionLabel('Add image')
-                            ->helperText('Upload de-identified images only. EXIF and location metadata are removed automatically.'),
-                        Section::make('Before / after comparison')->description('Optional slider comparing two scans, e.g. before and after treatment.')->collapsible()->collapsed()
+                            ->addActionLabel(__('Add image'))
+                            ->helperText(__('Upload de-identified images only. EXIF and location metadata are removed automatically.')),
+                        Section::make('Before / after comparison')->heading(__('Before / after comparison'))->description(__('Optional slider comparing two scans, e.g. before and after treatment.'))->collapsible()->collapsed()
                             ->statePath('comparison')->columns(2)->schema([
-                                MediaPicker::make('before_media_id')->label('Before'),
-                                MediaPicker::make('after_media_id')->label('After'),
+                                MediaPicker::make('before_media_id')->label(__('Before')),
+                                MediaPicker::make('after_media_id')->label(__('After')),
                                 TextInput::make('before_label')->default('Before'),
                                 TextInput::make('after_label')->default('After'),
                                 TextInput::make('caption')->columnSpanFull(),
                             ]),
-                        Section::make('Videos')->description('OCT cine scans, angiography or examination videos shown with the case images. To place a video inside a text, use the “Video” block in the editor.')
+                        Section::make('Videos')->heading(__('Videos'))->description(__('OCT cine scans, angiography or examination videos shown with the case images. To place a video inside a text, use the “Video” block in the editor.'))
                             ->collapsible()->collapsed(fn (?\App\Models\ClinicalCase $record) => empty($record?->videos))
                             ->schema([Fields::videoList('videos')]),
-                        CheckboxList::make('modalities')->label('Imaging modalities')->relationship('modalities', 'name')->columns(3),
+                        CheckboxList::make('modalities')->label(__('Imaging modalities'))->relationship('modalities', 'name')->columns(3),
                     ]),
-                    Tab::make('Diagnostic challenge')->icon('heroicon-o-question-mark-circle')->schema([
-                        TextInput::make('quiz_prompt')->label('Question')->placeholder('What is the most likely diagnosis?'),
-                        Repeater::make('quiz_options')->label('Answer options')
+                    Tab::make('Diagnostic challenge')->label(__('Diagnostic challenge'))->icon('heroicon-o-question-mark-circle')->schema([
+                        TextInput::make('quiz_prompt')->label(__('Question'))->placeholder(__('What is the most likely diagnosis?')),
+                        Repeater::make('quiz_options')->label(__('Answer options'))
                             ->schema([
                                 TextInput::make('text')->required()->columnSpan(3),
-                                Toggle::make('is_correct')->label('Correct')->inline(false),
-                            ])->columns(4)->reorderable()->maxItems(6)->defaultItems(0)->addActionLabel('Add option')
-                            ->helperText('Add 2–6 options and mark the correct one. Leave empty to show a simple “Reveal the answer” button instead.'),
+                                Toggle::make('is_correct')->label(__('Correct'))->inline(false),
+                            ])->columns(4)->reorderable()->maxItems(6)->defaultItems(0)->addActionLabel(__('Add option'))
+                            ->helperText(__('Add 2–6 options and mark the correct one. Leave empty to show a simple “Reveal the answer” button instead.')),
                     ]),
-                    Tab::make('Answer & discussion')->icon('heroicon-o-light-bulb')->schema([
+                    Tab::make('Answer & discussion')->label(__('Answer & discussion'))->icon('heroicon-o-light-bulb')->schema([
                         TextInput::make('diagnosis')->required()->maxLength(250),
                         Fields::richEditor('diagnosis_explanation', 'Why this diagnosis'),
                         Fields::richEditor('findings', 'Imaging findings'),
-                        Repeater::make('differentials')->label('Differential diagnosis')->schema([
+                        Repeater::make('differentials')->label(__('Differential diagnosis'))->schema([
                             TextInput::make('name')->required(),
-                            Textarea::make('features')->label('Distinguishing features')->rows(2),
-                        ])->columns(2)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['name'] ?? null)->addActionLabel('Add differential')->defaultItems(0),
+                            Textarea::make('features')->label(__('Distinguishing features'))->rows(2),
+                        ])->columns(2)->reorderable()->collapsible()->itemLabel(fn (array $state) => $state['name'] ?? null)->addActionLabel(__('Add differential'))->defaultItems(0),
                         Fields::richEditor('discussion', 'Discussion'),
                         Fields::richEditor('management', 'Management & outcome'),
                     ]),
-                    Tab::make('Teaching points & references')->icon('heroicon-o-academic-cap')->schema([
-                        Repeater::make('teaching_points')->label('Teaching points / clinical pearls')
+                    Tab::make('Teaching points & references')->label(__('Teaching points & references'))->icon('heroicon-o-academic-cap')->schema([
+                        Repeater::make('teaching_points')->label(__('Teaching points / clinical pearls'))
                             ->schema([Textarea::make('point')->hiddenLabel()->required()->rows(2)])
-                            ->reorderable()->addActionLabel('Add teaching point')->defaultItems(0),
+                            ->reorderable()->addActionLabel(__('Add teaching point'))->defaultItems(0),
                         Fields::references(),
                     ]),
                 ]),
@@ -151,19 +153,19 @@ class CaseResource extends Resource
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
                 Fields::publishing('cases', hasComments: true),
-                Section::make('Case of the Week')->icon('heroicon-o-sparkles')->schema([
-                    Toggle::make('is_case_of_week')->label('Feature as Case of the Week')->live(),
-                    DatePicker::make('case_of_week_date')->label('Week starting')->native(false)->displayFormat('j M Y')
+                Section::make('Case of the Week')->heading(__('Case of the Week'))->icon('heroicon-o-sparkles')->schema([
+                    Toggle::make('is_case_of_week')->label(__('Feature as Case of the Week'))->live(),
+                    DatePicker::make('case_of_week_date')->label(__('Week starting'))->native(false)->displayFormat('j M Y')
                         ->visible(fn (Get $get) => $get('is_case_of_week'))
-                        ->helperText('The most recent date that has arrived becomes the current Case of the Week — schedule several weeks ahead.'),
+                        ->helperText(__('The most recent date that has arrived becomes the current Case of the Week — schedule several weeks ahead.')),
                 ]),
-                Section::make('Classification')->icon('heroicon-o-tag')->schema([
+                Section::make('Classification')->heading(__('Classification'))->icon('heroicon-o-tag')->schema([
                     Fields::topics(),
                     ToggleButtons::make('difficulty')->options(Difficulty::options())->colors(['beginner' => 'success', 'intermediate' => 'warning', 'advanced' => 'danger'])->default('intermediate')->inline(),
                     Fields::tags(),
                 ]),
-                Section::make('Cover image')->icon('heroicon-o-photo')->schema([
-                    Fields::featuredImage()->hiddenLabel()->helperText('Defaults to the first case image.'),
+                Section::make('Cover image')->heading(__('Cover image'))->icon('heroicon-o-photo')->schema([
+                    Fields::featuredImage()->hiddenLabel()->helperText(__('Defaults to the first case image.')),
                 ]),
             ]),
         ]);
@@ -178,27 +180,27 @@ class CaseResource extends Resource
                 ImageColumn::make('cover')->label('')->getStateUsing(fn (ClinicalCase $record) => $record->coverImage()?->thumbUrl())->imageWidth(72)->imageHeight(48)->extraImgAttributes(['class' => 'rounded-md object-cover']),
                 TextColumn::make('title')->searchable(['title', 'diagnosis'])->sortable()->weight('medium')->wrap()->extraHeaderAttributes(['style' => 'min-width: 20rem'])
                     ->description(fn (ClinicalCase $record) => $record->diagnosis),
-                TextColumn::make('topics.name')->label('Topics')->badge()->color('gray')->limitList(2)->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('topics.name')->label(__('Topics'))->badge()->color('gray')->limitList(2)->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('difficulty')->badge()->toggleable(),
-                IconColumn::make('is_case_of_week')->label('CotW')->boolean()->trueIcon('heroicon-s-sparkles')->falseIcon('')->trueColor('warning')->tooltip(fn (ClinicalCase $record) => $record->case_of_week_date?->format('j M Y'))->toggleable(),
+                IconColumn::make('is_case_of_week')->label(__('CotW'))->boolean()->trueIcon('heroicon-s-sparkles')->falseIcon('')->trueColor('warning')->tooltip(fn (ClinicalCase $record) => $record->case_of_week_date?->format('j M Y'))->toggleable(),
                 ContentTable::status(),
                 ContentTable::published(),
                 ContentTable::views(),
-                TextColumn::make('reveals_count')->label('Reveals')->numeric()->sortable()->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('success')->label('Correct')->getStateUsing(fn (ClinicalCase $record) => $record->guesses_count ? round($record->correct_guesses_count / $record->guesses_count * 100).'%' : '—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('reveals_count')->label(__('Reveals'))->numeric()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('success')->label(__('Correct'))->getStateUsing(fn (ClinicalCase $record) => $record->guesses_count ? round($record->correct_guesses_count / $record->guesses_count * 100).'%' : '—')->toggleable(isToggledHiddenByDefault: true),
                 ContentTable::author(),
-                TextColumn::make('updated_at')->label('Updated')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')->label(__('Updated'))->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 ...ContentTable::filters(),
                 SelectFilter::make('difficulty')->options(Difficulty::options()),
                 SelectFilter::make('modality')->options(fn () => Modality::pluck('name', 'id'))->query(fn (Builder $query, array $data) => $data['value'] ? $query->whereHas('modalities', fn ($m) => $m->whereKey($data['value'])) : $query),
-                TernaryFilter::make('is_case_of_week')->label('Case of the Week'),
+                TernaryFilter::make('is_case_of_week')->label(__('Case of the Week')),
             ])
             ->recordActions(ContentTable::recordActions('case', 'cases'))
             ->toolbarActions(ContentTable::bulkActions('cases'))
-            ->emptyStateHeading('No cases yet')
-            ->emptyStateDescription('Create your first OCT teaching case.')
+            ->emptyStateHeading(__('No cases yet'))
+            ->emptyStateDescription(__('Create your first OCT teaching case.'))
             ->emptyStateIcon('heroicon-o-eye');
     }
 

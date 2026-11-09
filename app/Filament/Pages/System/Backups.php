@@ -14,6 +14,8 @@ use Throwable;
 
 class Backups extends Page
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static ?string $slug = 'system/backups';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-circle-stack';
@@ -32,26 +34,26 @@ class Backups extends Page
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('create')->label('Create backup now')->icon('heroicon-o-plus')
-                ->schema([Toggle::make('media')->label('Include media library')->default(fn () => (bool) Settings::get('backup.include_media', true))])
+            Action::make('create')->label(__('Create backup now'))->icon('heroicon-o-plus')
+                ->schema([Toggle::make('media')->label(__('Include media library'))->default(fn () => (bool) Settings::get('backup.include_media', true))])
                 ->action(function (array $data) {
                     try {
                         $name = app(BackupService::class)->create($data['media']);
-                        Notification::make()->success()->title('Backup created')->body($name)->send();
+                        Notification::make()->success()->title(__('Backup created'))->body($name)->send();
                     } catch (Throwable $e) {
-                        Notification::make()->danger()->title('Backup failed')->body($e->getMessage())->persistent()->send();
+                        Notification::make()->danger()->title(__('Backup failed'))->body($e->getMessage())->persistent()->send();
                     }
                 }),
-            Action::make('schedule')->label('Schedule')->icon('heroicon-o-clock')->color('gray')
+            Action::make('schedule')->label(__('Schedule'))->icon('heroicon-o-clock')->color('gray')
                 ->fillForm(fn () => ['schedule' => Settings::get('backup.schedule'), 'keep' => Settings::get('backup.keep'), 'include_media' => Settings::get('backup.include_media')])
                 ->schema([
-                    Select::make('schedule')->options(['off' => 'Off', 'daily' => 'Daily (03:10)', 'weekly' => 'Weekly (Sunday 03:10)'])->required(),
-                    TextInput::make('keep')->label('Number of backups to keep')->numeric()->minValue(1)->maxValue(30)->required(),
-                    Toggle::make('include_media')->label('Include media library in scheduled backups'),
+                    Select::make('schedule')->options(\App\Support\Ui::options(['off' => 'Off', 'daily' => 'Daily (03:10)', 'weekly' => 'Weekly (Sunday 03:10)']))->required(),
+                    TextInput::make('keep')->label(__('Number of backups to keep'))->numeric()->minValue(1)->maxValue(30)->required(),
+                    Toggle::make('include_media')->label(__('Include media library in scheduled backups')),
                 ])
                 ->action(function (array $data) {
                     Settings::setMany(['backup.schedule' => $data['schedule'], 'backup.keep' => (int) $data['keep'], 'backup.include_media' => (bool) $data['include_media']]);
-                    Notification::make()->success()->title('Backup schedule saved')->body('Scheduled backups need the cron job from the installation guide.')->send();
+                    Notification::make()->success()->title(__('Backup schedule saved'))->body(__('Scheduled backups need the cron job from the installation guide.'))->send();
                 }),
         ];
     }
@@ -67,25 +69,25 @@ class Backups extends Page
     {
         abort_unless(static::canAccess(), 403);
         app(BackupService::class)->delete($name);
-        Notification::make()->success()->title('Backup deleted')->send();
+        Notification::make()->success()->title(__('Backup deleted'))->send();
     }
 
     public function restoreAction(): Action
     {
-        return Action::make('restore')->label('Restore')->color('danger')->icon('heroicon-o-arrow-uturn-left')
+        return Action::make('restore')->label(__('Restore'))->color('danger')->icon('heroicon-o-arrow-uturn-left')
             ->visible(fn () => auth()->user()->isSuperAdmin())
-            ->modalHeading('Restore this backup?')
-            ->modalDescription('The current database will be replaced. A safety backup of the current state is created first. Visitors may see errors for a minute.')
+            ->modalHeading(__('Restore this backup?'))
+            ->modalDescription(__('The current database will be replaced. A safety backup of the current state is created first. Visitors may see errors for a minute.'))
             ->schema([
-                Toggle::make('media')->label('Also restore media files')->default(true),
-                TextInput::make('confirm')->label('Type RESTORE to confirm')->required()->in(['RESTORE']),
+                Toggle::make('media')->label(__('Also restore media files'))->default(true),
+                TextInput::make('confirm')->label(__('Type RESTORE to confirm'))->required()->in(['RESTORE']),
             ])
             ->action(function (array $data, array $arguments) {
                 try {
                     app(BackupService::class)->restore($arguments['name'], $data['media']);
-                    Notification::make()->success()->title('Restore complete')->body('You may need to sign in again.')->persistent()->send();
+                    Notification::make()->success()->title(__('Restore complete'))->body(__('You may need to sign in again.'))->persistent()->send();
                 } catch (Throwable $e) {
-                    Notification::make()->danger()->title('Restore failed')->body($e->getMessage())->persistent()->send();
+                    Notification::make()->danger()->title(__('Restore failed'))->body($e->getMessage())->persistent()->send();
                 }
             });
     }

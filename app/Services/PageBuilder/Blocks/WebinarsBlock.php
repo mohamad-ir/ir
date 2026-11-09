@@ -11,11 +11,11 @@ class WebinarsBlock extends PageBlock
 {
     public static function key(): string { return 'webinars'; }
 
-    public static function label(): string { return 'Upcoming webinars'; }
+    public static function label(): string { return __('Upcoming webinars'); }
 
     public static function icon(): string { return 'heroicon-o-video-camera'; }
 
-    public static function description(): string { return 'Next live sessions with date, time and registration. Hidden when none are scheduled.'; }
+    public static function description(): string { return __('Next live sessions with date, time and registration. Hidden when none are scheduled.'); }
 
     public static function schema(): array
     {

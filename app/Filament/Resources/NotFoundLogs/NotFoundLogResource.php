@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 class NotFoundLogResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = NotFoundLog::class;
 
     protected static ?string $navigationLabel = '404 monitor';
@@ -44,26 +46,26 @@ class NotFoundLogResource extends Resource
             ->columns([
                 TextColumn::make('path')->searchable()->fontFamily('mono')->size('sm')->wrap(),
                 TextColumn::make('hits')->numeric()->sortable(),
-                TextColumn::make('referrer')->limit(40)->placeholder('Direct / unknown')->toggleable(),
-                TextColumn::make('last_seen_at')->label('Last seen')->since()->sortable(),
+                TextColumn::make('referrer')->limit(40)->placeholder(__('Direct / unknown'))->toggleable(),
+                TextColumn::make('last_seen_at')->label(__('Last seen'))->since()->sortable(),
             ])
-            ->filters([TernaryFilter::make('is_ignored')->label('Ignored')->queries(true: fn ($query) => $query->withoutGlobalScopes()->where('is_ignored', true), false: fn ($query) => $query)])
+            ->filters([TernaryFilter::make('is_ignored')->label(__('Ignored'))->queries(true: fn ($query) => $query->withoutGlobalScopes()->where('is_ignored', true), false: fn ($query) => $query)])
             ->recordActions([
-                Action::make('redirect')->label('Create redirect')->icon('heroicon-o-arrow-uturn-right')
+                Action::make('redirect')->label(__('Create redirect'))->icon('heroicon-o-arrow-uturn-right')
                     ->schema(fn (NotFoundLog $record) => [
-                        TextInput::make('target_url')->label('Redirect '.$record->path.' to')->required()->placeholder('/cases/…'),
-                        Select::make('status_code')->options([301 => '301 — permanent', 302 => '302 — temporary', 410 => '410 — removed'])->default(301),
+                        TextInput::make('target_url')->label(__('Redirect :path to', ['path' => $record->path]))->required()->placeholder(__('/cases/…')),
+                        Select::make('status_code')->options(\App\Support\Ui::options([301 => '301 — permanent', 302 => '302 — temporary', 410 => '410 — removed']))->default(301),
                     ])
                     ->action(function (NotFoundLog $record, array $data) {
                         Redirect::updateOrCreate(['source_path' => Redirect::normalizePath($record->path)], ['target_url' => $data['target_url'], 'status_code' => $data['status_code'], 'is_active' => true]);
                         $record->delete();
-                        Notification::make()->success()->title('Redirect created')->send();
+                        Notification::make()->success()->title(__('Redirect created'))->send();
                     }),
-                Action::make('ignore')->icon('heroicon-o-eye-slash')->iconButton()->tooltip('Ignore')->action(fn (NotFoundLog $record) => $record->update(['is_ignored' => true])),
+                Action::make('ignore')->icon('heroicon-o-eye-slash')->iconButton()->tooltip(__('Ignore'))->action(fn (NotFoundLog $record) => $record->update(['is_ignored' => true])),
             ])
             ->toolbarActions([BulkActionGroup::make([
-                BulkAction::make('ignore')->label('Ignore')->icon('heroicon-o-eye-slash')->action(fn (Collection $records) => $records->each->update(['is_ignored' => true])),
-                DeleteBulkAction::make()->label('Clear'),
+                BulkAction::make('ignore')->label(__('Ignore'))->icon('heroicon-o-eye-slash')->action(fn (Collection $records) => $records->each->update(['is_ignored' => true])),
+                DeleteBulkAction::make()->label(__('Clear')),
             ])]);
     }
 

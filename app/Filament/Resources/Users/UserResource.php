@@ -35,6 +35,8 @@ use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationLabel = 'Users & members';
@@ -56,8 +58,8 @@ class UserResource extends Resource
     {
         return $schema->columns(3)->components([
             Group::make()->columnSpan(['lg' => 2])->schema([
-                Section::make('Account')->columns(2)->schema([
-                    TextInput::make('title')->maxLength(40)->placeholder('Dr'),
+                Section::make('Account')->heading(__('Account'))->columns(2)->schema([
+                    TextInput::make('title')->maxLength(40)->placeholder(__('Dr')),
                     TextInput::make('name')->required()->maxLength(120),
                     TextInput::make('email')->email()->required()->unique(ignoreRecord: true)->columnSpanFull(),
                     TextInput::make('password')->password()->revealable()
@@ -65,23 +67,23 @@ class UserResource extends Resource
                         ->required(fn (string $operation) => $operation === 'create')
                         ->dehydrated(fn (?string $state) => filled($state))
                         ->helperText(fn (string $operation) => $operation === 'edit' ? 'Leave empty to keep the current password.' : 'At least 10 characters with letters and numbers.'),
-                    DateTimePicker::make('email_verified_at')->label('Email verified')->native(false),
+                    DateTimePicker::make('email_verified_at')->label(__('Email verified'))->native(false),
                 ]),
-                Section::make('Professional profile')->columns(2)->schema([
+                Section::make('Professional profile')->heading(__('Professional profile'))->columns(2)->schema([
                     Select::make('career_stage')->options(CareerStage::options()),
                     TextInput::make('specialty'),
                     TextInput::make('institution'),
                     Select::make('country')->options(Countries::all())->searchable(),
-                    Textarea::make('bio')->rows(3)->columnSpanFull()->helperText('Shown as the author biography on articles.'),
+                    Textarea::make('bio')->rows(3)->columnSpanFull()->helperText(__('Shown as the author biography on articles.')),
                 ]),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
-                Section::make('Access')->schema([
+                Section::make('Access')->heading(__('Access'))->schema([
                     Select::make('roles')->relationship('roles', 'name')->multiple()->preload()
-                        ->getOptionLabelFromRecordUsing(fn ($record) => Permissions::ROLES[$record->name] ?? $record->name)
-                        ->disableOptionWhen(fn (string $value, $label) => $label === Permissions::ROLES['super_admin'] && ! auth()->user()->isSuperAdmin())
-                        ->helperText('Staff roles can sign in to this dashboard. Members can only use the public account area.'),
-                    Toggle::make('is_active')->label('Account active')->default(true)->helperText('Inactive users cannot sign in.'),
+                        ->getOptionLabelFromRecordUsing(fn ($record) => __(Permissions::ROLES[$record->name] ?? $record->name))
+                        ->disableOptionWhen(fn (string $value, $label) => $label === __(Permissions::ROLES['super_admin']) && ! auth()->user()->isSuperAdmin())
+                        ->helperText(__('Staff roles can sign in to this dashboard. Members can only use the public account area.')),
+                    Toggle::make('is_active')->label(__('Account active'))->default(true)->helperText(__('Inactive users cannot sign in.')),
                 ]),
             ]),
         ]);
@@ -97,44 +99,44 @@ class UserResource extends Resource
                     ->getStateUsing(fn (User $record) => $record->avatarUrl('sm'))
                     ->defaultImageUrl(fn (User $record) => (new \App\Filament\Support\InitialsAvatarProvider)->get($record)),
                 TextColumn::make('name')->searchable(['name', 'email'])->sortable()->weight('medium')->description(fn (User $record) => $record->email),
-                TextColumn::make('roles.name')->label('Role')->badge()->formatStateUsing(fn ($state) => Permissions::ROLES[$state] ?? $state)
+                TextColumn::make('roles.name')->label(__('Role'))->badge()->formatStateUsing(fn ($state) => __(Permissions::ROLES[$state] ?? $state))
                     ->color(fn ($state) => match ($state) { 'super_admin', 'administrator' => 'danger', 'editor' => 'warning', 'author', 'contributor' => 'info', default => 'gray' }),
                 TextColumn::make('career_stage')->badge()->color('gray')->toggleable(),
                 TextColumn::make('country')->formatStateUsing(fn ($state) => Countries::name($state))->toggleable(),
-                IconColumn::make('two_factor')->label('2FA')->getStateUsing(fn (User $record) => filled($record->app_authentication_secret))->boolean()->toggleable(),
-                IconColumn::make('email_verified_at')->label('Verified')->getStateUsing(fn (User $record) => $record->email_verified_at !== null)->boolean(),
-                IconColumn::make('is_active')->label('Active')->boolean(),
-                TextColumn::make('last_login_at')->label('Last sign-in')->since()->sortable()->placeholder('Never'),
-                TextColumn::make('created_at')->label('Joined')->date('j M Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
+                IconColumn::make('two_factor')->label(__('2FA'))->getStateUsing(fn (User $record) => filled($record->app_authentication_secret))->boolean()->toggleable(),
+                IconColumn::make('email_verified_at')->label(__('Verified'))->getStateUsing(fn (User $record) => $record->email_verified_at !== null)->boolean(),
+                IconColumn::make('is_active')->label(__('Active'))->boolean(),
+                TextColumn::make('last_login_at')->label(__('Last sign-in'))->since()->sortable()->placeholder(__('Never')),
+                TextColumn::make('created_at')->label(__('Joined'))->date('j M Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('roles')->relationship('roles', 'name')->getOptionLabelFromRecordUsing(fn ($record) => Permissions::ROLES[$record->name] ?? $record->name),
+                SelectFilter::make('roles')->relationship('roles', 'name')->getOptionLabelFromRecordUsing(fn ($record) => __(Permissions::ROLES[$record->name] ?? $record->name)),
                 SelectFilter::make('career_stage')->options(CareerStage::options()),
-                TernaryFilter::make('staff')->label('Account type')->trueLabel('Staff')->falseLabel('Members')
+                TernaryFilter::make('staff')->label(__('Account type'))->trueLabel(__('Staff'))->falseLabel(__('Members'))
                     ->queries(true: fn (Builder $query) => $query->role(User::STAFF_ROLES), false: fn (Builder $query) => $query->withoutRole(User::STAFF_ROLES)),
-                TernaryFilter::make('is_active')->label('Active'),
+                TernaryFilter::make('is_active')->label(__('Active')),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
                 ActionGroup::make([
-                    Action::make('reset')->label('Send password reset link')->icon('heroicon-o-key')->requiresConfirmation()
+                    Action::make('reset')->label(__('Send password reset link'))->icon('heroicon-o-key')->requiresConfirmation()
                         ->action(function (User $record) {
                             PasswordBroker::sendResetLink(['email' => $record->email]);
-                            Notification::make()->success()->title('Reset link sent to '.$record->email)->send();
+                            Notification::make()->success()->title(__('Reset link sent to :email', ['email' => $record->email]))->send();
                         }),
-                    Action::make('reset2fa')->label('Reset two-factor authentication')->icon('heroicon-o-shield-exclamation')->color('warning')
+                    Action::make('reset2fa')->label(__('Reset two-factor authentication'))->icon('heroicon-o-shield-exclamation')->color('warning')
                         ->visible(fn (User $record) => filled($record->app_authentication_secret) && auth()->user()->isSuperAdmin())
-                        ->requiresConfirmation()->modalDescription('Use this if the user lost their authenticator device. They will be asked to set it up again at next sign-in.')
+                        ->requiresConfirmation()->modalDescription(__('Use this if the user lost their authenticator device. They will be asked to set it up again at next sign-in.'))
                         ->action(function (User $record) {
                             $record->forceFill(['app_authentication_secret' => null, 'app_authentication_recovery_codes' => null])->save();
-                            Notification::make()->success()->title('Two-factor authentication reset')->send();
+                            Notification::make()->success()->title(__('Two-factor authentication reset'))->send();
                         }),
-                    Action::make('removePhoto')->label('Remove profile photo')->icon('heroicon-o-user-minus')->color('warning')
+                    Action::make('removePhoto')->label(__('Remove profile photo'))->icon('heroicon-o-user-minus')->color('warning')
                         ->visible(fn (User $record) => filled($record->avatar_path))
-                        ->requiresConfirmation()->modalDescription('Use this for an unsuitable photo. The member can upload a new one.')
+                        ->requiresConfirmation()->modalDescription(__('Use this for an unsuitable photo. The member can upload a new one.'))
                         ->action(function (User $record) {
                             app(\App\Services\Users\AvatarService::class)->remove($record);
-                            Notification::make()->success()->title('Profile photo removed')->send();
+                            Notification::make()->success()->title(__('Profile photo removed'))->send();
                         }),
                     DeleteAction::make(),
                 ]),

@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListGalleries extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = GalleryResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New gallery')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New gallery'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array

@@ -14,9 +14,9 @@ enum Difficulty: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Beginner => 'Beginner',
-            self::Intermediate => 'Intermediate',
-            self::Advanced => 'Advanced',
+            self::Beginner => __('Beginner'),
+            self::Intermediate => __('Intermediate'),
+            self::Advanced => __('Advanced'),
         };
     }
 

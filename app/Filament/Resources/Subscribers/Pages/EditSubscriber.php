@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSubscriber extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = SubscriberResource::class;
 
     protected function getHeaderActions(): array

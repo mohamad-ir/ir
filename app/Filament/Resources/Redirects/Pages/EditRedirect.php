@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditRedirect extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = RedirectResource::class;
 
     protected function getHeaderActions(): array

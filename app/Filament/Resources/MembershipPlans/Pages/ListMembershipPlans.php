@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListMembershipPlans extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = MembershipPlanResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('view')->label('View pricing page')->icon('heroicon-o-arrow-top-right-on-square')->color('gray')->url(route('membership'), shouldOpenInNewTab: true),
-            CreateAction::make()->label('New plan')->icon('heroicon-m-plus'),
+            Action::make('view')->label(__('View pricing page'))->icon('heroicon-o-arrow-top-right-on-square')->color('gray')->url(route('membership'), shouldOpenInNewTab: true),
+            CreateAction::make()->label(__('New plan'))->icon('heroicon-m-plus'),
         ];
     }
 }

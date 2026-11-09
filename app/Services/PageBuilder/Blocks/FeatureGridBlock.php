@@ -22,7 +22,7 @@ class FeatureGridBlock extends PageBlock
 
     public static function key(): string { return 'feature_grid'; }
 
-    public static function label(): string { return 'Features / services'; }
+    public static function label(): string { return __('Features / services'); }
 
     public static function icon(): string { return 'heroicon-o-view-columns'; }
 
@@ -34,13 +34,13 @@ class FeatureGridBlock extends PageBlock
                 TextInput::make('heading')->maxLength(160),
             ]),
             Textarea::make('intro')->rows(2),
-            Select::make('columns')->options([2 => '2 columns', 3 => '3 columns', 4 => '4 columns'])->default(3)->selectablePlaceholder(false),
+            Select::make('columns')->options(\App\Support\Ui::options([2 => '2 columns', 3 => '3 columns', 4 => '4 columns']))->default(3)->selectablePlaceholder(false),
             Repeater::make('items')->schema([
                 Select::make('icon')->options(self::ICONS)->searchable()->default('eye'),
                 TextInput::make('title')->required()->maxLength(100),
                 Textarea::make('text')->rows(2)->maxLength(400)->columnSpanFull(),
-                TextInput::make('url')->label('Link (optional)')->columnSpanFull(),
-            ])->columns(2)->collapsible()->reorderable()->cloneable()->itemLabel(fn (array $state) => $state['title'] ?? null)->defaultItems(3)->addActionLabel('Add item'),
+                TextInput::make('url')->label(__('Link (optional)'))->columnSpanFull(),
+            ])->columns(2)->collapsible()->reorderable()->cloneable()->itemLabel(fn (array $state) => $state['title'] ?? null)->defaultItems(3)->addActionLabel(__('Add item')),
         ];
     }
 

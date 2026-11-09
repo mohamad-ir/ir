@@ -15,6 +15,8 @@ use Filament\Tables\Table;
 
 class ModalityResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Modality::class;
 
     protected static ?string $navigationLabel = 'Imaging modalities';
@@ -40,7 +42,7 @@ class ModalityResource extends Resource
         return $table->defaultSort('sort_order')->reorderable('sort_order')->columns([
             TextColumn::make('name')->weight('medium'),
             TextColumn::make('abbreviation')->badge()->color('gray'),
-            TextColumn::make('cases_count')->counts('cases')->label('Cases'),
+            TextColumn::make('cases_count')->counts('cases')->label(__('Cases')),
         ])->recordActions([EditAction::make(), DeleteAction::make()]);
     }
 

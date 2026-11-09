@@ -19,6 +19,8 @@ use Filament\Tables\Table;
 
 class BannerResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Banner::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-group';
@@ -33,20 +35,20 @@ class BannerResource extends Resource
     {
         return $schema->columns(3)->components([
             Section::make()->columnSpan(['lg' => 2])->columns(2)->schema([
-                TextInput::make('name')->required()->maxLength(120)->placeholder('Spring course launch')->columnSpanFull(),
-                Select::make('placement')->label('Show at')->options(Banner::PLACEMENTS)->placeholder('Only where I add it in the page builder')
-                    ->helperText('One slider per place is shown (the first active one). You can also place any banner in a page with the “Banner slider” section.')
+                TextInput::make('name')->required()->maxLength(120)->placeholder(__('Spring course launch'))->columnSpanFull(),
+                Select::make('placement')->label(__('Show at'))->options(\App\Support\Ui::options(Banner::PLACEMENTS))->placeholder(__('Only where I add it in the page builder'))
+                    ->helperText(__('One slider per place is shown (the first active one). You can also place any banner in a page with the “Banner slider” section.'))
                     ->columnSpanFull(),
-                ToggleButtons::make('height')->options(Banner::HEIGHTS)->default('standard')->inline(),
-                ToggleButtons::make('transition')->options(['slide' => 'Slide', 'fade' => 'Fade'])->default('slide')->inline(),
+                ToggleButtons::make('height')->options(\App\Support\Ui::options(Banner::HEIGHTS))->default('standard')->inline(),
+                ToggleButtons::make('transition')->options(\App\Support\Ui::options(['slide' => 'Slide', 'fade' => 'Fade']))->default('slide')->inline(),
             ]),
-            Section::make('Behaviour')->columnSpan(['lg' => 1])->schema([
-                Toggle::make('is_active')->label('Active')->default(true),
-                Toggle::make('autoplay')->label('Play automatically')->default(true)
-                    ->helperText('Pauses on hover and for visitors who prefer reduced motion.'),
-                TextInput::make('interval')->label('Seconds per slide')->numeric()->minValue(3)->maxValue(30)->default(6),
-                Toggle::make('show_arrows')->label('Arrows')->default(true),
-                Toggle::make('show_dots')->label('Dots')->default(true),
+            Section::make('Behaviour')->heading(__('Behaviour'))->columnSpan(['lg' => 1])->schema([
+                Toggle::make('is_active')->label(__('Active'))->default(true),
+                Toggle::make('autoplay')->label(__('Play automatically'))->default(true)
+                    ->helperText(__('Pauses on hover and for visitors who prefer reduced motion.')),
+                TextInput::make('interval')->label(__('Seconds per slide'))->numeric()->minValue(3)->maxValue(30)->default(6),
+                Toggle::make('show_arrows')->label(__('Arrows'))->default(true),
+                Toggle::make('show_dots')->label(__('Dots'))->default(true),
                 TextInput::make('sort_order')->numeric()->default(0),
             ]),
         ]);
@@ -58,14 +60,14 @@ class BannerResource extends Resource
             ->modifyQueryUsing(fn ($query) => $query->withCount('slides')->withSum('slides', 'clicks_count'))
             ->defaultSort('sort_order')
             ->columns([
-                TextColumn::make('name')->weight('medium')->searchable()->description(fn (Banner $record) => $record->slides_count.' slides'),
-                TextColumn::make('placement')->label('Show at')->formatStateUsing(fn ($state) => Banner::PLACEMENTS[$state] ?? $state)->placeholder('Page builder only')->badge(),
-                TextColumn::make('slides_sum_clicks_count')->label('Clicks')->numeric()->alignEnd()->placeholder('0'),
-                IconColumn::make('is_active')->label('Active')->boolean(),
+                TextColumn::make('name')->weight('medium')->searchable()->description(fn (Banner $record) => __(':count slides', ['count' => $record->slides_count])),
+                TextColumn::make('placement')->label(__('Show at'))->formatStateUsing(fn ($state) => Banner::PLACEMENTS[$state] ?? $state)->placeholder(__('Page builder only'))->badge(),
+                TextColumn::make('slides_sum_clicks_count')->label(__('Clicks'))->numeric()->alignEnd()->placeholder('0'),
+                IconColumn::make('is_active')->label(__('Active'))->boolean(),
             ])
             ->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()])
-            ->emptyStateHeading('No banners yet')
-            ->emptyStateDescription('Create a banner, add one or more image slides with links, and choose where it appears.');
+            ->emptyStateHeading(__('No banners yet'))
+            ->emptyStateDescription(__('Create a banner, add one or more image slides with links, and choose where it appears.'));
     }
 
     public static function getRelations(): array

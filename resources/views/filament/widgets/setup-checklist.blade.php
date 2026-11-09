@@ -8,10 +8,10 @@
                     <span class="absolute inset-0 grid place-items-center text-xs font-bold">{{ $done }}/{{ $total }}</span>
                 </div>
                 <div class="flex-1">
-                    <h2 class="text-base font-semibold">Welcome, {{ auth()->user()->name }} — let’s get your website ready</h2>
-                    <p class="text-sm text-gray-500">A few steps remain before launch.</p>
+                    <h2 class="text-base font-semibold">{{ __('Welcome, :name — let’s get your website ready', ['name' => auth()->user()->name]) }}</h2>
+                    <p class="text-sm text-gray-500">{{ __('A few steps remain before launch.') }}</p>
                 </div>
-                <x-filament::icon-button icon="heroicon-m-chevron-down" color="gray" x-on:click="open = !open" ::class="open && 'rotate-180'" label="Toggle" />
+                <x-filament::icon-button icon="heroicon-m-chevron-down" color="gray" x-on:click="open = !open" ::class="open && 'rotate-180'" :label="__('Toggle')" />
             </div>
             <ul x-show="open" x-collapse class="grid gap-px border-t border-gray-100 bg-gray-100 sm:grid-cols-2 dark:border-white/5 dark:bg-white/5">
                 @foreach ($items as [$label, $ok, $url])

@@ -8,10 +8,12 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListPages extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = PageResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New page')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New page'))->icon('heroicon-m-plus')];
     }
 }

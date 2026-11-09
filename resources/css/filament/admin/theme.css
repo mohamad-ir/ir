@@ -1,5 +1,7 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 @import '../../fonts.css';
+/* Persian dashboard text (Settings › My profile › Dashboard language). Loaded only in the dashboard. */
+@import '@fontsource-variable/vazirmatn';
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
@@ -10,9 +12,13 @@
  * softer surfaces and a focused navigation rail.
  */
 @theme {
-    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
-    --font-display: 'Newsreader Variable', Georgia, serif;
+    --font-sans: 'Inter Variable', 'Vazirmatn Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Newsreader Variable', 'Vazirmatn Variable', Georgia, serif;
 }
+
+/* Latin text keeps Inter; Persian characters fall back to Vazirmatn glyph by glyph. */
+html:root { --font-family: 'Inter Variable', 'Vazirmatn Variable', ui-sans-serif, system-ui, sans-serif; }
+html[lang='fa'] .fi-body { line-height: 1.6; }
 
 :root {
     --oa-paper: #f6f5f1;

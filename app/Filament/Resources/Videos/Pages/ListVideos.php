@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListVideos extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = VideoResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New video')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New video'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array

@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class QuestionResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Question::class;
 
     protected static ?string $modelLabel = 'exam question';
@@ -46,18 +48,18 @@ class QuestionResource extends Resource
     {
         return $schema->columns(3)->components([
             Group::make()->columnSpan(['lg' => 2])->schema([
-                Section::make('Question')->schema([
+                Section::make('Question')->heading(__('Question'))->schema([
                     ToggleButtons::make('type')->options(QuestionType::options())->default('sba')->inline()->live()->required(),
-                    TextInput::make('title')->label('Short title')->required()->maxLength(200)->helperText('Shown in lists and search results — avoid revealing the answer.'),
+                    TextInput::make('title')->label(__('Short title'))->required()->maxLength(200)->helperText(__('Shown in lists and search results — avoid revealing the answer.')),
                     Fields::richEditor('stem', 'Question stem')->required(),
-                    MediaPicker::make('media_id')->label('Image')->helperText('Required for image-based questions.')->required(fn (Get $get) => $get('type') === 'image'),
+                    MediaPicker::make('media_id')->label(__('Image'))->helperText(__('Required for image-based questions.'))->required(fn (Get $get) => $get('type') === 'image'),
                 ]),
-                Section::make('Answer options')->visible(fn (Get $get) => $get('type') !== 'viva')->schema([
+                Section::make('Answer options')->heading(__('Answer options'))->visible(fn (Get $get) => $get('type') !== 'viva')->schema([
                     Repeater::make('options')->hiddenLabel()->schema([
                         TextInput::make('text')->required()->columnSpan(4),
-                        Toggle::make('is_correct')->label('Correct')->inline(false),
+                        Toggle::make('is_correct')->label(__('Correct'))->inline(false),
                     ])->columns(5)->reorderable()->minItems(fn (Get $get) => in_array($get('type'), ['sba', 'image']) ? 2 : 0)->maxItems(8)
-                        ->defaultItems(fn (Get $get) => $get('type') === 'viva' ? 0 : 5)->addActionLabel('Add option')
+                        ->defaultItems(fn (Get $get) => $get('type') === 'viva' ? 0 : 5)->addActionLabel(__('Add option'))
                         ->rules([fn () => function (string $attribute, $value, \Closure $fail) {
                             $correct = collect($value)->where('is_correct', true)->count();
                             if (count($value ?? []) >= 2 && $correct !== 1) {
@@ -65,17 +67,17 @@ class QuestionResource extends Resource
                             }
                         }]),
                 ]),
-                Section::make('Answer')->schema([
+                Section::make('Answer')->heading(__('Answer'))->schema([
                     Fields::richEditor('model_answer', 'Model answer')->visible(fn (Get $get) => in_array($get('type'), ['viva', 'clinical'])),
                     Fields::richEditor('explanation', 'Explanation'),
-                    Repeater::make('key_points')->label('Key exam points')->schema([Textarea::make('point')->hiddenLabel()->rows(2)->required()])->defaultItems(0)->addActionLabel('Add key point'),
+                    Repeater::make('key_points')->label(__('Key exam points'))->schema([Textarea::make('point')->hiddenLabel()->rows(2)->required()])->defaultItems(0)->addActionLabel(__('Add key point')),
                     Fields::references(),
                 ]),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
                 Fields::publishing('questions', hasFeatured: false),
-                Section::make('Classification')->schema([
-                    Select::make('exam_topic_id')->label('Exam topic')->relationship('examTopic', 'title')->preload()->searchable(),
+                Section::make('Classification')->heading(__('Classification'))->schema([
+                    Select::make('exam_topic_id')->label(__('Exam topic'))->relationship('examTopic', 'title')->preload()->searchable(),
                     Select::make('exam')->options(Exam::options())->default('all')->required(),
                     ToggleButtons::make('difficulty')->options(Difficulty::options())->default('intermediate')->inline(),
                     Fields::topics(),
@@ -94,12 +96,12 @@ class QuestionResource extends Resource
                 TextColumn::make('type')->badge(),
                 TextColumn::make('exam')->badge()->color('gray')->toggleable(),
                 ContentTable::status(),
-                TextColumn::make('attempts_count')->label('Attempts')->numeric()->sortable()->alignEnd(),
-                TextColumn::make('success')->label('Correct')->getStateUsing(fn (Question $record) => $record->successRate() !== null ? $record->successRate().'%' : '—')->alignEnd(),
+                TextColumn::make('attempts_count')->label(__('Attempts'))->numeric()->sortable()->alignEnd(),
+                TextColumn::make('success')->label(__('Correct'))->getStateUsing(fn (Question $record) => $record->successRate() !== null ? $record->successRate().'%' : '—')->alignEnd(),
             ])
             ->filters([
                 SelectFilter::make('type')->options(QuestionType::options()),
-                SelectFilter::make('exam_topic_id')->label('Exam topic')->relationship('examTopic', 'title'),
+                SelectFilter::make('exam_topic_id')->label(__('Exam topic'))->relationship('examTopic', 'title'),
                 SelectFilter::make('exam')->options(Exam::options()),
                 ...ContentTable::filters(topics: true),
             ])

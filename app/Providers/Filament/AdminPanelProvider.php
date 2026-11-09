@@ -35,7 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->path(config('cms.admin_path'))
             ->login()
             ->passwordReset()
-            ->profile(isSimple: false)
+            ->profile(\App\Filament\Pages\Auth\EditProfile::class, isSimple: false)
             ->multiFactorAuthentication(
                 [AppAuthentication::make()->recoverable()],
                 isRequired: fn () => (bool) Settings::get('security.require_staff_mfa', true) && ! app()->runningUnitTests(),
@@ -62,20 +62,21 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->maxContentWidth(Width::Full)
             ->globalSearchKeyBindings(['mod+k'])
+            // Resources name their group in English (the key); the label is translated for the dashboard language.
             ->navigationGroups([
-                NavigationGroup::make('Content'),
-                NavigationGroup::make('Exam preparation'),
-                NavigationGroup::make('Learning'),
-                NavigationGroup::make('Library'),
-                NavigationGroup::make('Design'),
-                NavigationGroup::make('Audience'),
-                NavigationGroup::make('Sales'),
-                NavigationGroup::make('Insights'),
-                NavigationGroup::make('SEO'),
-                NavigationGroup::make('System')->collapsed(),
+                'Content' => NavigationGroup::make()->label(fn () => __('Content')),
+                'Exam preparation' => NavigationGroup::make()->label(fn () => __('Exam preparation')),
+                'Learning' => NavigationGroup::make()->label(fn () => __('Learning')),
+                'Library' => NavigationGroup::make()->label(fn () => __('Library')),
+                'Design' => NavigationGroup::make()->label(fn () => __('Design')),
+                'Audience' => NavigationGroup::make()->label(fn () => __('Audience')),
+                'Sales' => NavigationGroup::make()->label(fn () => __('Sales')),
+                'Insights' => NavigationGroup::make()->label(fn () => __('Insights')),
+                'SEO' => NavigationGroup::make()->label(fn () => __('SEO')),
+                'System' => NavigationGroup::make()->label(fn () => __('System'))->collapsed(),
             ])
             ->navigationItems([
-                NavigationItem::make('View website')
+                NavigationItem::make('View website')->label(fn () => __('View website'))
                     ->url(fn () => url('/'), shouldOpenInNewTab: true)
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->sort(1000),
@@ -96,6 +97,13 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+            ])
+            ->middleware([\App\Http\Middleware\SetAdminLocale::class], isPersistent: true)
+            ->userMenuItems([
+                'admin-locale' => \Filament\Actions\Action::make('adminLocale')
+                    ->label(fn () => \App\Support\AdminLocale::current() === 'fa' ? 'English' : 'فارسی')
+                    ->icon('heroicon-o-language')
+                    ->url(fn () => route('admin.locale', ['locale' => \App\Support\AdminLocale::current() === 'fa' ? 'en' : 'fa'])),
             ])
             ->authMiddleware([
                 Authenticate::class,

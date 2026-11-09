@@ -17,12 +17,12 @@ enum EnquiryType: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Collaboration => 'Scientific collaboration',
-            self::Speaking => 'Speaking invitation',
-            self::Teaching => 'Teaching',
-            self::Research => 'Research collaboration',
-            self::Media => 'Media & press',
-            self::Other => 'Other enquiry',
+            self::Collaboration => __('Scientific collaboration'),
+            self::Speaking => __('Speaking invitation'),
+            self::Teaching => __('Teaching'),
+            self::Research => __('Research collaboration'),
+            self::Media => __('Media & press'),
+            self::Other => __('Other enquiry'),
         };
     }
 

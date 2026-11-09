@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditModality extends EditRecord
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     protected static string $resource = ModalityResource::class;
 
     protected function getHeaderActions(): array

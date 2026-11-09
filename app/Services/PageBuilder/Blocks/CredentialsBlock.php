@@ -14,17 +14,17 @@ class CredentialsBlock extends PageBlock
 {
     public static function key(): string { return 'credentials'; }
 
-    public static function label(): string { return 'CV section'; }
+    public static function label(): string { return __('CV section'); }
 
     public static function icon(): string { return 'heroicon-o-identification'; }
 
     public static function schema(): array
     {
         return [
-            TextInput::make('heading')->maxLength(160)->placeholder('e.g. Education & training'),
-            Select::make('types')->label('Entry types')->multiple()->options(ProfileEntryType::options())->required()->default(['education', 'fellowship']),
-            ToggleButtons::make('layout')->inline()->options(['timeline' => 'Timeline', 'cards' => 'Cards', 'list' => 'Compact list'])->default('timeline'),
-            Select::make('limit')->options([0 => 'All', 3 => 3, 5 => 5, 8 => 8, 12 => 12])->default(0)->selectablePlaceholder(false),
+            TextInput::make('heading')->maxLength(160)->placeholder(__('e.g. Education & training')),
+            Select::make('types')->label(__('Entry types'))->multiple()->options(ProfileEntryType::options())->required()->default(['education', 'fellowship']),
+            ToggleButtons::make('layout')->inline()->options(\App\Support\Ui::options(['timeline' => 'Timeline', 'cards' => 'Cards', 'list' => 'Compact list']))->default('timeline'),
+            Select::make('limit')->options(\App\Support\Ui::options([0 => 'All', 3 => 3, 5 => 5, 8 => 8, 12 => 12]))->default(0)->selectablePlaceholder(false),
         ];
     }
 

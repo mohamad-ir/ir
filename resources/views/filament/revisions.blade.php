@@ -1,5 +1,5 @@
 @php
-    $labels = fn ($k) => \Illuminate\Support\Str::headline(str_replace('_id', '', $k));
+    $labels = fn ($k) => __(\Illuminate\Support\Str::headline(str_replace('_id', '', $k)));
     $text = function ($v) {
         if (is_array($v)) { $v = json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); }
         return \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags((string) $v))), 400) ?: '—';
@@ -21,25 +21,25 @@
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-medium text-gray-950 dark:text-white">{{ ucfirst($rev->event) }} by {{ $rev->user?->name ?? 'System' }}</p>
                     <p class="text-xs text-gray-500">{{ $rev->created_at?->format('j M Y, H:i') }} · {{ $rev->created_at?->diffForHumans() }}
-                        @if ($changed->isNotEmpty() && $rev->event !== 'created') · changed {{ $changed->take(4)->map($labels)->implode(', ') }}{{ $changed->count() > 4 ? '…' : '' }} @endif</p>
+                        @if ($changed->isNotEmpty() && $rev->event !== 'created') · {{ __('changed') }} {{ $changed->take(4)->map($labels)->implode(', ') }}{{ $changed->count() > 4 ? '…' : '' }} @endif</p>
                 </div>
-                <x-filament::link tag="button" size="sm" x-on:click="open = !open">Compare</x-filament::link>
+                <x-filament::link tag="button" size="sm" x-on:click="open = !open">{{ __('Compare') }}</x-filament::link>
                 @if ($i > 0)
-                    <x-filament::button size="xs" color="gray" wire:click="restoreRevision({{ $rev->id }})" wire:confirm="Restore this version? Your current version will be kept in the history.">Restore</x-filament::button>
+                    <x-filament::button size="xs" color="gray" wire:click="restoreRevision({{ $rev->id }})" wire:confirm="Restore this version? Your current version will be kept in the history.">{{ __('Restore') }}</x-filament::button>
                 @endif
             </div>
             <div x-show="open" x-collapse class="border-t border-gray-100 p-3 text-xs dark:border-white/10">
                 @if ($diffCurrent->isEmpty())
-                    <p class="text-gray-500">Identical to the current version.</p>
+                    <p class="text-gray-500">{{ __('Identical to the current version.') }}</p>
                 @else
-                    <p class="mb-2 font-semibold text-gray-600 dark:text-gray-300">Differences from the current version</p>
+                    <p class="mb-2 font-semibold text-gray-600 dark:text-gray-300">{{ __('Differences from the current version') }}</p>
                     <dl class="space-y-3">
                         @foreach ($diffCurrent as $key)
                             <div>
                                 <dt class="font-semibold text-gray-700 dark:text-gray-200">{{ $labels($key) }}</dt>
                                 <dd class="mt-1 grid gap-2 sm:grid-cols-2">
-                                    <div class="rounded-lg bg-danger-50 p-2 text-danger-900 dark:bg-danger-500/10 dark:text-danger-200"><span class="block text-[10px] font-bold uppercase opacity-60">This revision</span>{{ $text($rev->data[$key] ?? null) }}</div>
-                                    <div class="rounded-lg bg-success-50 p-2 text-success-900 dark:bg-success-500/10 dark:text-success-200"><span class="block text-[10px] font-bold uppercase opacity-60">Current</span>{{ $text($current[$key] ?? null) }}</div>
+                                    <div class="rounded-lg bg-danger-50 p-2 text-danger-900 dark:bg-danger-500/10 dark:text-danger-200"><span class="block text-[10px] font-bold uppercase opacity-60">{{ __('This revision') }}</span>{{ $text($rev->data[$key] ?? null) }}</div>
+                                    <div class="rounded-lg bg-success-50 p-2 text-success-900 dark:bg-success-500/10 dark:text-success-200"><span class="block text-[10px] font-bold uppercase opacity-60">{{ __('Current') }}</span>{{ $text($current[$key] ?? null) }}</div>
                                 </dd>
                             </div>
                         @endforeach
@@ -48,6 +48,6 @@
             </div>
         </div>
     @empty
-        <p class="text-sm text-gray-500">No revisions yet — they appear after the first save.</p>
+        <p class="text-sm text-gray-500">{{ __('No revisions yet — they appear after the first save.') }}</p>
     @endforelse
 </div>

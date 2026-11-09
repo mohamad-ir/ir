@@ -39,7 +39,7 @@ class CertificateSettings extends SettingsPage
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('preview')->label('Preview sample PDF')->icon('heroicon-o-eye')->color('gray')
+            Action::make('preview')->label(__('Preview sample PDF'))->icon('heroicon-o-eye')->color('gray')
                 ->action(function (CertificateService $service) {
                     $sample = new Certificate([
                         'code' => 'XX-SAMP-LE42', 'recipient_name' => auth()->user()->displayName(),
@@ -54,16 +54,16 @@ class CertificateSettings extends SettingsPage
     protected function components(): array
     {
         return [
-            Section::make('Certificates')->description('Issued automatically when a learner completes every lesson of a course (and passes any lesson quizzes). Each certificate has an ID that anyone can verify on your website.')
+            Section::make('Certificates')->heading(__('Certificates'))->description(__('Issued automatically when a learner completes every lesson of a course (and passes any lesson quizzes). Each certificate has an ID that anyone can verify on your website.'))
                 ->columns(2)->schema([
-                    Toggle::make('certificates.enabled')->label('Issue certificates')->columnSpanFull()
-                        ->helperText('Can also be switched off per course.'),
-                    TextInput::make('certificates.signatory_name')->label('Signed by')->placeholder(setting('doctor.name')),
-                    TextInput::make('certificates.signatory_title')->label('Signatory title')->placeholder(setting('doctor.credentials')),
-                    MediaPicker::make('certificates.signature_id')->label('Signature image (PNG with transparent background)')
-                        ->helperText('Optional. PNG or JPEG.'),
-                    TextInput::make('certificates.statement')->label('Wording')->maxLength(160)
-                        ->helperText('Appears between the name and the course title.'),
+                    Toggle::make('certificates.enabled')->label(__('Issue certificates'))->columnSpanFull()
+                        ->helperText(__('Can also be switched off per course.')),
+                    TextInput::make('certificates.signatory_name')->label(__('Signed by'))->placeholder(setting('doctor.name')),
+                    TextInput::make('certificates.signatory_title')->label(__('Signatory title'))->placeholder(setting('doctor.credentials')),
+                    MediaPicker::make('certificates.signature_id')->label(__('Signature image (PNG with transparent background)'))
+                        ->helperText(__('Optional. PNG or JPEG.')),
+                    TextInput::make('certificates.statement')->label(__('Wording'))->maxLength(160)
+                        ->helperText(__('Appears between the name and the course title.')),
                 ]),
         ];
     }

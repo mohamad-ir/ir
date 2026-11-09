@@ -9,13 +9,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListQuestions extends ListRecords
 {
+    use \App\Filament\Concerns\TranslatesPageLabels;
+
     use StatusTabs;
 
     protected static string $resource = QuestionResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New question')->icon('heroicon-m-plus')];
+        return [CreateAction::make()->label(__('New question'))->icon('heroicon-m-plus')];
     }
 
     public function getTabs(): array

@@ -20,6 +20,8 @@ use Filament\Tables\Table;
 
 class MenuResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Menu::class;
 
     protected static ?string $navigationLabel = 'Navigation menus';
@@ -38,7 +40,7 @@ class MenuResource extends Resource
             '/videos' => 'Video library', '/articles' => 'Articles', '/exam-prep' => 'Exam preparation', '/exam-prep/practice' => 'Question bank',
             '/search' => 'Search', '/newsletter' => 'Newsletter signup', '/contact' => 'Contact', '/login' => 'Sign in', '/register' => 'Create account',
         ];
-        $pages = Page::published()->orderBy('title')->get()->mapWithKeys(fn (Page $p) => [$p->urlPath() => 'Page: '.$p->title])->all();
+        $pages = Page::published()->orderBy('title')->get()->mapWithKeys(fn (Page $p) => [$p->urlPath() => __('Page').': '.$p->title])->all();
 
         return $fixed + $pages;
     }
@@ -47,13 +49,13 @@ class MenuResource extends Resource
     {
         return array_values(array_filter([
             TextInput::make('label')->required()->maxLength(60),
-            Select::make('quick')->label('Link to')->options(fn () => static::destinations())->searchable()->dehydrated(false)
-                ->placeholder('Choose a page…')->live()->afterStateUpdated(fn (?string $state, Set $set) => $state ? $set('url', $state) : null),
-            TextInput::make('url')->label('URL')->required()->maxLength(500)->placeholder('/cases or https://…'),
-            TextInput::make('description')->maxLength(120)->placeholder('Optional — shown in dropdowns')->visible(! $withChildren),
-            Toggle::make('new_tab')->label('Open in a new tab')->inline(false),
-            $withChildren ? Repeater::make('children')->label('Dropdown items')->schema(static::itemSchema(false))->columns(2)
-                ->collapsible()->collapsed()->reorderableWithDragAndDrop()->defaultItems(0)->addActionLabel('Add dropdown item')
+            Select::make('quick')->label(__('Link to'))->options(fn () => static::destinations())->searchable()->dehydrated(false)
+                ->placeholder(__('Choose a page…'))->live()->afterStateUpdated(fn (?string $state, Set $set) => $state ? $set('url', $state) : null),
+            TextInput::make('url')->label(__('URL'))->required()->maxLength(500)->placeholder(__('/cases or https://…')),
+            TextInput::make('description')->maxLength(120)->placeholder(__('Optional — shown in dropdowns'))->visible(! $withChildren),
+            Toggle::make('new_tab')->label(__('Open in a new tab'))->inline(false),
+            $withChildren ? Repeater::make('children')->label(__('Dropdown items'))->schema(static::itemSchema(false))->columns(2)
+                ->collapsible()->collapsed()->reorderableWithDragAndDrop()->defaultItems(0)->addActionLabel(__('Add dropdown item'))
                 ->itemLabel(fn (array $state) => $state['label'] ?? null)->columnSpanFull() : null,
         ]));
     }
@@ -62,12 +64,12 @@ class MenuResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(2)->schema([
-                TextInput::make('name')->required()->maxLength(80)->helperText('Shown as the column heading for footer menus.'),
-                Select::make('location')->options(Menu::LOCATIONS)->unique(ignoreRecord: true)->placeholder('Not displayed')
-                    ->helperText('Where this menu appears on the website.'),
+                TextInput::make('name')->required()->maxLength(80)->helperText(__('Shown as the column heading for footer menus.')),
+                Select::make('location')->options(\App\Support\Ui::options(Menu::LOCATIONS))->unique(ignoreRecord: true)->placeholder(__('Not displayed'))
+                    ->helperText(__('Where this menu appears on the website.')),
             ]),
-            Repeater::make('items')->label('Menu items')->schema(static::itemSchema(true))->columns(2)
-                ->reorderableWithDragAndDrop()->collapsible()->cloneable()->defaultItems(0)->addActionLabel('Add menu item')
+            Repeater::make('items')->label(__('Menu items'))->schema(static::itemSchema(true))->columns(2)
+                ->reorderableWithDragAndDrop()->collapsible()->cloneable()->defaultItems(0)->addActionLabel(__('Add menu item'))
                 ->itemLabel(fn (array $state) => ($state['label'] ?? '').(! empty($state['children']) ? '  ▾ '.count($state['children']) : '')),
         ]);
     }
@@ -76,8 +78,8 @@ class MenuResource extends Resource
     {
         return $table->columns([
             TextColumn::make('name')->weight('medium'),
-            TextColumn::make('location')->formatStateUsing(fn (?string $state) => Menu::LOCATIONS[$state] ?? '—')->badge()->color('gray'),
-            TextColumn::make('items')->label('Items')->getStateUsing(fn (Menu $record) => count($record->items ?? [])),
+            TextColumn::make('location')->formatStateUsing(fn (?string $state) => __(Menu::LOCATIONS[$state] ?? '—'))->badge()->color('gray'),
+            TextColumn::make('items')->label(__('Items'))->getStateUsing(fn (Menu $record) => count($record->items ?? [])),
             TextColumn::make('updated_at')->since(),
         ])->recordActions([EditAction::make(), DeleteAction::make()]);
     }

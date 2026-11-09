@@ -73,12 +73,26 @@ Header, header buttons, three footer columns and legal links. Drag to reorder; h
 ### Theme & branding / Header & footer
 Colours (with an accessibility contrast check and ready-made presets), heading and body fonts, text size, corner rounding, button shape, spacing, header and footer styles, logo, favicon and default social image — all with a live preview before saving.
 
+**Site identity** (Theme & branding › *Site identity*) — everything that identifies the website, in one place:
+- **Site name** (page titles, Google, emails, certificates), **short name** (under the icon on phone home screens, ≤ 12 characters), **tagline**, **display title** (shown next to the built-in symbol when no logo image is used) and the **logo text alternative** read by screen readers and search engines.
+- **Logo for light backgrounds** (horizontal, PNG or WebP with a transparent background, at least 120 px tall) and **logo for dark backgrounds** (light-coloured version). The right one is used automatically in the header, footer, sign-in page, dashboard and emails, and in dark mode. Without a dark version, the main logo is shown as a white silhouette on dark backgrounds. Choose the **logo size** in the header (small / medium / large); on phones it is capped so it never pushes the menu off screen.
+- **Square site icon** (PNG, at least 512 × 512 px, ideally transparent) and its **background colour**: the browser icons (favicon), the iPhone/iPad home-screen icon, Android icons and the “maskable” icon for the future installable app are created from it automatically, optimised and replaced when you change it. Images that are not square or too small are refused with an explanation.
+- A **live preview** shows the logos on light and dark headers, the browser tab and the home-screen icons before you save.
+- SVG files are not accepted for logos and icons because an SVG can contain scripts; use PNG or WebP.
+
 **Light & dark mode** (Theme & branding › *Light & dark mode*)
 - **Default for visitors**: *System* (follows each visitor’s phone or computer — recommended), *Light* or *Dark*.
 - **Let visitors choose**: shows a sun/moon button in the header (and *Display* in the mobile menu and in *My account › Settings*). The choice is remembered on the device and, for signed-in members, on their account so it follows them to other devices. Switch it off to force the default for everyone.
 - Dark colours are **generated from your brand colours** with readable contrast; you can override the dark background, card and text colours. Use the **Light / Dark** buttons above the preview to check both before saving.
 - If you use an image logo, upload a **Logo (dark backgrounds)** under *Logo & icons*; it is shown automatically in dark mode.
 - The dashboard has its own light/dark/system setting in your user menu (top right).
+
+### Dashboard language (English / فارسی)
+Each team member can use the dashboard in **English** or **Persian (فارسی)**: user menu (top right) › **فارسی / English**, or **Profile › Dashboard language**. The choice is personal and remembered on the account (and on the device for the sign-in page). Menus, page titles, tables, columns, buttons, forms, validation messages, notifications and filters are translated.
+
+- Only the dashboard changes. The **website, member pages and every email stay in English**, and your content — case and article titles, names, comments, settings values — is never translated or altered.
+- Layout direction for Persian: **Settings › General › Dashboard** — *left to right* (same layout as English, default) or *right to left*.
+- Translations live in `lang/fa.json` (dashboard wording) and `lang/fa/validation.php` (form errors); Filament’s own Persian translations cover its built-in texts. When new dashboard text is added in code, run the site with `TRANSLATION_AUDIT=true` and open the new pages in Persian: missing Persian strings are listed in `storage/logs/missing-fa.log`.
 
 ## Library
 - **Media library** — upload many files at once (metadata such as GPS/EXIF is removed automatically; responsive WebP versions are created). Add alt text for accessibility and Google Images. **Replace file** swaps an image everywhere it is used. The details page shows where each file is used.

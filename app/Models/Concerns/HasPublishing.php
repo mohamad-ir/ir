@@ -58,7 +58,7 @@ trait HasPublishing
 
     public function displayStatus(): string
     {
-        return $this->isScheduled() ? 'Scheduled' : ($this->status?->getLabel() ?? 'Draft');
+        return $this->isScheduled() ? __('Scheduled') : ($this->status?->getLabel() ?? __('Draft'));
     }
 
     public function displayStatusColor(): string

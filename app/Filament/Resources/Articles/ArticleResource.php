@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ArticleResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = Article::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
@@ -38,23 +40,23 @@ class ArticleResource extends Resource
                 Section::make()->schema([
                     Fields::title('/articles'),
                     Fields::slug('/articles', 'articles'),
-                    Textarea::make('excerpt')->rows(2)->maxLength(400)->helperText('Shown on cards, in the article header and as the default Google description.'),
+                    Textarea::make('excerpt')->rows(2)->maxLength(400)->helperText(__('Shown on cards, in the article header and as the default Google description.')),
                     Fields::richEditor('body', 'Article')->required()->extraInputAttributes(['style' => 'min-height: 28rem']),
                 ]),
-                Section::make('References')->icon('heroicon-o-book-open')->collapsible()->schema([Fields::references()->hiddenLabel()]),
+                Section::make('References')->heading(__('References'))->icon('heroicon-o-book-open')->collapsible()->schema([Fields::references()->hiddenLabel()]),
                 Fields::seo('title', 'excerpt'),
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
                 Fields::publishing('articles', hasComments: true),
-                Section::make('Classification')->icon('heroicon-o-tag')->schema([
-                    Select::make('category_id')->label('Category')->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'article'))
+                Section::make('Classification')->heading(__('Classification'))->icon('heroicon-o-tag')->schema([
+                    Select::make('category_id')->label(__('Category'))->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'article'))
                         ->createOptionForm([\Filament\Forms\Components\TextInput::make('name')->required()])
                         ->createOptionUsing(fn (array $data) => Category::create(['type' => 'article', 'name' => $data['name'], 'slug' => str($data['name'])->slug()])->id)
                         ->preload()->searchable(),
                     Fields::topics(),
                     Fields::tags(),
                 ]),
-                Section::make('Featured image')->icon('heroicon-o-photo')->schema([Fields::featuredImage()->hiddenLabel()]),
+                Section::make('Featured image')->heading(__('Featured image'))->icon('heroicon-o-photo')->schema([Fields::featuredImage()->hiddenLabel()]),
             ]),
         ]);
     }
@@ -69,11 +71,11 @@ class ArticleResource extends Resource
                 TextColumn::make('title')->searchable()->sortable()->weight('medium')->wrap()->extraHeaderAttributes(['style' => 'min-width: 20rem'])->description(fn (Article $record) => $record->category?->name),
                 ContentTable::status(),
                 ContentTable::published(),
-                TextColumn::make('reading_time')->label('Read')->suffix(' min')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('reading_time')->label(__('Read'))->suffix(__(' min'))->toggleable(isToggledHiddenByDefault: true),
                 ContentTable::views(),
                 ContentTable::author(),
             ])
-            ->filters([...ContentTable::filters(), SelectFilter::make('category_id')->label('Category')->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'article'))])
+            ->filters([...ContentTable::filters(), SelectFilter::make('category_id')->label(__('Category'))->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'article'))])
             ->recordActions(ContentTable::recordActions('article', 'articles'))
             ->toolbarActions(ContentTable::bulkActions('articles'));
     }

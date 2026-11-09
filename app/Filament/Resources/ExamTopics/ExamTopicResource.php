@@ -19,6 +19,8 @@ use Filament\Tables\Table;
 
 class ExamTopicResource extends Resource
 {
+    use \App\Filament\Concerns\TranslatesResourceLabels;
+
     protected static ?string $model = ExamTopic::class;
 
     protected static ?string $modelLabel = 'exam topic';
@@ -45,7 +47,7 @@ class ExamTopicResource extends Resource
             ]),
             Group::make()->columnSpan(['lg' => 1])->schema([
                 Fields::publishing('exam_topics', hasAuthor: false, hasAccess: false, hasFeatured: false),
-                Section::make('Details')->schema([
+                Section::make('Details')->heading(__('Details'))->schema([
                     Select::make('exam')->options(Exam::options())->default('all')->required(),
                     Select::make('icon')->options(FeatureGridBlock::ICONS + ['scissors' => 'Surgery'])->searchable(),
                 ]),
@@ -61,7 +63,7 @@ class ExamTopicResource extends Resource
             ->columns([
                 TextColumn::make('title')->searchable()->weight('medium'),
                 TextColumn::make('exam')->badge(),
-                TextColumn::make('questions_count')->counts('questions')->label('Questions'),
+                TextColumn::make('questions_count')->counts('questions')->label(__('Questions')),
                 ContentTable::status(),
             ])
             ->recordActions(ContentTable::recordActions('exam_topic', 'exam_topics'))
