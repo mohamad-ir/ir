@@ -97,8 +97,8 @@
                     @foreach ($recentAttempts as $a)
                         @continue(! $a->question)
                         <li class="flex items-center gap-4 px-5 py-3.5">
-                            @if ($a->is_correct === true)<x-heroicon-s-check-circle class="size-5 shrink-0 text-emerald-600" />
-                            @elseif ($a->is_correct === false)<x-heroicon-s-x-circle class="size-5 shrink-0 text-red-500" />
+                            @if ($a->is_correct === true)<x-heroicon-s-check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                            @elseif ($a->is_correct === false)<x-heroicon-s-x-circle class="size-5 shrink-0 text-red-500 dark:text-red-400" />
                             @else<x-heroicon-s-eye class="size-5 shrink-0 text-muted" />@endif
                             <a href="{{ route('exam.practice', ['question' => $a->question_id]) }}" class="min-w-0 flex-1 truncate text-[0.9375rem] hover:text-accent-ink">{{ $a->question->title }}</a>
                             <span class="text-xs text-muted">{{ $a->created_at?->diffForHumans() }}</span>

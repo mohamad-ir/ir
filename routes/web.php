@@ -61,6 +61,13 @@ Route::post('/currency', function (\Illuminate\Http\Request $request) {
 })->name('currency')->middleware('throttle:30,1');
 
 // Banner click counter (sent with navigator.sendBeacon)
+Route::post('/color-mode', function (\Illuminate\Http\Request $request) {
+    $mode = \App\Support\ColorMode::valid($request->input('mode')) ?? abort(422);
+    $request->user()?->forceFill(['color_mode' => $mode])->saveQuietly();
+
+    return response()->json(['mode' => $mode])->cookie(\App\Support\ColorMode::COOKIE, $mode, 60 * 24 * 365, '/', null, null, false);
+})->name('color-mode')->middleware('throttle:30,1');
+
 Route::post('/banner-click/{slide}', function (\App\Models\BannerSlide $slide) {
     $slide->increment('clicks_count');
 
@@ -129,6 +136,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/password', 'updatePassword')->name('password.update');
         Route::get('/export', 'export')->name('export');
         Route::delete('/', 'destroy')->name('destroy');
+        Route::post('/avatar', [Controllers\AvatarController::class, 'store'])->name('avatar.store')->middleware('throttle:10,1');
+        Route::delete('/avatar', [Controllers\AvatarController::class, 'destroy'])->name('avatar.destroy')->middleware('throttle:10,1');
         Route::post('/bookmarks/{type}/{id}', 'toggleBookmark')->name('bookmark')->where('type', 'case|article|video|question');
     });
 

@@ -69,11 +69,7 @@
 
         @if ($course->author)
             <section class="flex flex-col gap-5 rounded-card bg-surface p-6 ring-1 ring-line sm:flex-row sm:items-center">
-                @if ($course->author->avatarUrl())
-                    <img src="{{ $course->author->avatarUrl() }}" alt="" class="size-20 shrink-0 rounded-full object-cover">
-                @else
-                    <span class="grid size-20 shrink-0 place-items-center rounded-full bg-accent font-heading text-2xl font-bold text-accent-contrast">{{ $course->author->initials() }}</span>
-                @endif
+                <x-avatar :user="$course->author" size="lg" />
                 <div>
                     <p class="eyebrow">Your teacher</p>
                     <p class="mt-1 font-heading text-xl font-semibold text-ink">{{ $course->author->displayName() }}</p>

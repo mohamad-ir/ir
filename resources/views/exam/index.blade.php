@@ -27,7 +27,7 @@
             <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($topics as $topic)
                     <a href="{{ $topic->urlPath() }}" class="group card-interactive flex flex-col p-6">
-                        <span class="grid size-12 place-items-center rounded-ui bg-highlight/15 text-[color-mix(in_oklab,var(--color-highlight)_55%,black)]">
+                        <span class="grid size-12 place-items-center rounded-ui bg-highlight/15 text-highlight-ink">
                             <x-dynamic-component :component="'heroicon-o-'.($topic->icon ?: 'clipboard-document-check')" class="size-6" />
                         </span>
                         <p class="mt-5 text-xs font-semibold uppercase tracking-[.12em] text-muted">{{ $topic->exam?->getLabel() }}</p>

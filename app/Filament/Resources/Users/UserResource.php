@@ -24,6 +24,7 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -92,6 +93,9 @@ class UserResource extends Resource
             ->modifyQueryUsing(fn (Builder $query) => $query->with('roles'))
             ->defaultSort('created_at', 'desc')
             ->columns([
+                ImageColumn::make('avatar')->label('')->circular()->imageSize(36)
+                    ->getStateUsing(fn (User $record) => $record->avatarUrl('sm'))
+                    ->defaultImageUrl(fn (User $record) => (new \App\Filament\Support\InitialsAvatarProvider)->get($record)),
                 TextColumn::make('name')->searchable(['name', 'email'])->sortable()->weight('medium')->description(fn (User $record) => $record->email),
                 TextColumn::make('roles.name')->label('Role')->badge()->formatStateUsing(fn ($state) => Permissions::ROLES[$state] ?? $state)
                     ->color(fn ($state) => match ($state) { 'super_admin', 'administrator' => 'danger', 'editor' => 'warning', 'author', 'contributor' => 'info', default => 'gray' }),
@@ -124,6 +128,13 @@ class UserResource extends Resource
                         ->action(function (User $record) {
                             $record->forceFill(['app_authentication_secret' => null, 'app_authentication_recovery_codes' => null])->save();
                             Notification::make()->success()->title('Two-factor authentication reset')->send();
+                        }),
+                    Action::make('removePhoto')->label('Remove profile photo')->icon('heroicon-o-user-minus')->color('warning')
+                        ->visible(fn (User $record) => filled($record->avatar_path))
+                        ->requiresConfirmation()->modalDescription('Use this for an unsuitable photo. The member can upload a new one.')
+                        ->action(function (User $record) {
+                            app(\App\Services\Users\AvatarService::class)->remove($record);
+                            Notification::make()->success()->title('Profile photo removed')->send();
                         }),
                     DeleteAction::make(),
                 ]),

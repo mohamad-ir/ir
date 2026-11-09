@@ -5,7 +5,7 @@
             <img src="{{ $thumb }}" alt="" loading="lazy" decoding="async" class="size-full object-cover opacity-90 transition duration-700 group-hover:scale-[1.04] group-hover:opacity-100">
         @endif
         <div class="absolute inset-0 grid place-items-center">
-            <span class="grid size-14 place-items-center rounded-full bg-white/90 text-ink shadow-xl ring-8 ring-white/15 transition duration-300 group-hover:scale-110 group-hover:bg-white">
+            <span class="grid size-14 place-items-center on-light rounded-full bg-white/90 text-ink shadow-xl ring-8 ring-white/15 transition duration-300 group-hover:scale-110 group-hover:bg-white">
                 <x-heroicon-s-play class="ml-0.5 size-6" />
             </span>
         </div>

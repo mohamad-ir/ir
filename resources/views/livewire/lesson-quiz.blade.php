@@ -15,7 +15,7 @@
     @if ($submitted)
         <div @class(['flex flex-wrap items-center justify-between gap-4 px-6 py-5', 'bg-emerald-50' => $passed, 'bg-highlight/10' => ! $passed]) role="status">
             <div class="flex items-center gap-3">
-                @if ($passed)<x-heroicon-s-check-circle class="size-8 text-emerald-600" />@else<x-heroicon-s-arrow-path class="size-8 text-highlight" />@endif
+                @if ($passed)<x-heroicon-s-check-circle class="size-8 text-emerald-600 dark:text-emerald-400" />@else<x-heroicon-s-arrow-path class="size-8 text-highlight" />@endif
                 <div>
                     <p class="font-heading text-2xl font-semibold text-ink">{{ $score }}%</p>
                     <p class="text-sm text-fg/80">{{ $passed ? 'Well done — you passed and the lesson is complete.' : 'Not quite — review the explanations and try again. You need '.$lesson->passMark().'%.' }}</p>
@@ -61,7 +61,7 @@
                                         ])>
                                     <span @class(['grid size-5 shrink-0 place-items-center border-2', 'rounded' => $multiple, 'rounded-full' => ! $multiple,
                                         'border-accent bg-accent text-white' => $state === 'chosen', 'border-emerald-500 bg-emerald-500 text-white' => $state === 'correct',
-                                        'border-red-400 bg-red-400 text-white' => $state === 'wrong', 'border-line-strong' => $state === 'idle', 'border-emerald-500 text-emerald-600' => $state === 'missed'])>
+                                        'border-red-400 bg-red-400 text-white' => $state === 'wrong', 'border-line-strong' => $state === 'idle', 'border-emerald-500 text-emerald-600 dark:text-emerald-400' => $state === 'missed'])>
                                         @if ($state === 'wrong')<x-heroicon-m-x-mark class="size-3.5" />@elseif ($state !== 'idle')<x-heroicon-m-check class="size-3.5" />@endif
                                     </span>
                                     <span class="flex-1">{{ $option['text'] }}</span>

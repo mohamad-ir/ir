@@ -68,11 +68,7 @@
 
         @if ($webinar->author)
             <section class="flex flex-col gap-5 rounded-card bg-surface p-6 ring-1 ring-line sm:flex-row sm:items-center">
-                @if ($webinar->author->avatarUrl())
-                    <img src="{{ $webinar->author->avatarUrl() }}" alt="" class="size-20 shrink-0 rounded-full object-cover">
-                @else
-                    <span class="grid size-20 shrink-0 place-items-center rounded-full bg-accent font-heading text-2xl font-bold text-accent-contrast">{{ $webinar->author->initials() }}</span>
-                @endif
+                <x-avatar :user="$webinar->author" size="lg" />
                 <div>
                     <p class="eyebrow">Presented by</p>
                     <p class="mt-1 font-heading text-xl font-semibold text-ink">{{ $webinar->author->displayName() }}</p>

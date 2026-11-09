@@ -3,7 +3,7 @@
         <a href="{{ $featured->urlPath() }}" class="group mb-14 grid overflow-hidden rounded-card bg-ink text-ink-contrast shadow-[var(--shadow-lift)] lg:grid-cols-[1.4fr_1fr]">
             <div class="relative aspect-video bg-black lg:aspect-auto">
                 @if ($featured->thumbnail())<img src="{{ $featured->thumbnail() }}" alt="" class="size-full object-cover opacity-85 transition duration-700 group-hover:scale-[1.02] group-hover:opacity-100">@endif
-                <span class="absolute inset-0 grid place-items-center"><span class="grid size-20 place-items-center rounded-full bg-white/90 text-ink shadow-2xl ring-[12px] ring-white/15 transition group-hover:scale-105"><x-heroicon-s-play class="ml-1 size-8" /></span></span>
+                <span class="absolute inset-0 grid place-items-center"><span class="grid size-20 place-items-center on-light rounded-full bg-white/90 text-ink shadow-2xl ring-[12px] ring-white/15 transition group-hover:scale-105"><x-heroicon-s-play class="ml-1 size-8" /></span></span>
             </div>
             <div class="flex flex-col justify-center p-8 lg:p-10">
                 <p class="eyebrow !text-white/60">Featured · {{ $featured->category?->name }}</p>

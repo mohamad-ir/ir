@@ -19,7 +19,7 @@
             @endif
             <span class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent"></span>
             <span class="absolute inset-0 grid place-items-center">
-                <span class="grid size-20 place-items-center rounded-full bg-white/95 text-ink shadow-2xl ring-[14px] ring-white/15 transition duration-300 group-hover:scale-110"><x-heroicon-s-play class="ml-1 size-9" /></span>
+                <span class="grid size-20 place-items-center on-light rounded-full bg-white/95 text-ink shadow-2xl ring-[14px] ring-white/15 transition duration-300 group-hover:scale-110"><x-heroicon-s-play class="ml-1 size-9" /></span>
             </span>
             @if ($video->durationLabel())
                 <span class="absolute bottom-4 right-4 rounded bg-black/75 px-2 py-1 text-sm font-semibold tabular-nums text-white">{{ $video->durationLabel() }}</span>

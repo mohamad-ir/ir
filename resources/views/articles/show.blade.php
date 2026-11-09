@@ -15,7 +15,7 @@
                 <div class="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted">
                     @if ($article->author)
                         <span class="inline-flex items-center gap-2">
-                            <span class="grid size-8 place-items-center rounded-full bg-ink text-xs font-bold text-ink-contrast">{{ $article->author->initials() }}</span>
+                            <x-avatar :user="$article->author" size="xs" />
                             <span class="font-medium text-fg">{{ $article->author->displayName() }}</span>
                         </span>
                     @endif
@@ -78,7 +78,7 @@
 
                 @if ($article->author)
                     <div class="mt-10 flex gap-5 rounded-card bg-subtle p-6">
-                        <span class="grid size-14 shrink-0 place-items-center rounded-full bg-ink font-heading text-lg font-bold text-ink-contrast">{{ $article->author->initials() }}</span>
+                        <x-avatar :user="$article->author" size="md" />
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[.14em] text-muted">Written by</p>
                             <p class="mt-1 font-heading text-lg font-semibold text-ink">{{ $article->author->displayName() }}</p>

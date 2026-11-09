@@ -55,6 +55,11 @@ class SettingDefaults
                 'footer_style' => 'dark',
                 'container' => 'standard',
                 'custom_css' => null,
+                'color_mode' => 'system',
+                'color_mode_switch' => true,
+                'dark_background' => null,
+                'dark_surface' => null,
+                'dark_text' => null,
             ],
             'header' => [
                 'show_search' => true,

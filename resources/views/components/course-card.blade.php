@@ -11,7 +11,7 @@
             @if ($enrolled)
                 <span class="rounded-full bg-accent px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-accent-contrast">Enrolled</span>
             @elseif ($course->isFree())
-                <span class="rounded-full bg-white px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-ink">Free</span>
+                <span class="on-light rounded-full bg-white px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-ink">Free</span>
             @elseif ($course->included_in_membership)
                 <span class="rounded-full bg-highlight px-2.5 py-0.5 text-[0.7rem] font-bold uppercase tracking-wider text-highlight-contrast">Included in membership</span>
             @endif

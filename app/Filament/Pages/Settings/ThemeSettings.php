@@ -140,6 +140,20 @@ class ThemeSettings extends SettingsPage
                             ToggleButtons::make('theme.density')->label('Section spacing')->options(['compact' => 'Compact', 'comfortable' => 'Comfortable', 'spacious' => 'Spacious'])->inline()->live(),
                             ToggleButtons::make('theme.container')->label('Content width')->options(['narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide'])->inline()->live(),
                         ]),
+                        Tab::make('Light & dark mode')->icon('heroicon-o-moon')->schema([
+                            ToggleButtons::make('theme.color_mode')->label('Default for visitors')->inline()
+                                ->options(\App\Support\ColorMode::MODES)
+                                ->icons(['light' => 'heroicon-o-sun', 'dark' => 'heroicon-o-moon', 'system' => 'heroicon-o-computer-desktop'])
+                                ->helperText('“System” follows the light or dark setting of each visitor’s phone or computer (recommended).'),
+                            Toggle::make('theme.color_mode_switch')->label('Let visitors choose (sun/moon button in the header)')
+                                ->helperText('Their choice is remembered on their device and, for members, on their account.'),
+                            Placeholder::make('dark_help')->hiddenLabel()->content(new HtmlString('<p class="text-sm text-gray-500">Dark colours are created automatically from your brand colours. Change them below only if you want a different look — leave empty for automatic. Use the <strong>Light / Dark</strong> buttons above the preview to check both. Upload a <em>Logo (dark backgrounds)</em> under “Logo &amp; icons” so an image logo stays readable in dark mode.</p>')),
+                            Grid::make(3)->schema([
+                                ColorPicker::make('theme.dark_background')->label('Dark background')->placeholder('Automatic')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
+                                ColorPicker::make('theme.dark_surface')->label('Dark cards')->placeholder('Automatic')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
+                                ColorPicker::make('theme.dark_text')->label('Dark-mode text')->placeholder('Automatic')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600),
+                            ]),
+                        ]),
                         Tab::make('Header & footer')->icon('heroicon-o-window')->schema([
                             ToggleButtons::make('theme.header_style')->label('Header')->options(['light' => 'Light', 'dark' => 'Dark'])->inline()->live(),
                             Toggle::make('theme.header_sticky')->label('Keep header visible while scrolling')->live(),

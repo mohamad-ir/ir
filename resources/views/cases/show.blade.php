@@ -137,7 +137,7 @@
                                 <x-media-img :media="$comparison['before']" variant="lg" sizes="(min-width:1024px) 860px, 100vw" class="absolute inset-0 size-full object-contain" />
                             </div>
                             <div class="absolute inset-y-0 w-0.5 bg-white/90 shadow-[0_0_0_1px_rgba(0,0,0,.2)]" :style="`left: ${pos}%`">
-                                <button type="button" class="absolute top-1/2 left-1/2 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-ink shadow-lg" x-on:keydown="keys($event)" aria-label="Drag to compare" role="slider" :aria-valuenow="Math.round(pos)" aria-valuemin="0" aria-valuemax="100">
+                                <button type="button" class="absolute top-1/2 left-1/2 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center on-light rounded-full bg-white text-ink shadow-lg" x-on:keydown="keys($event)" aria-label="Drag to compare" role="slider" :aria-valuenow="Math.round(pos)" aria-valuemin="0" aria-valuemax="100">
                                     <x-heroicon-m-arrows-right-left class="size-5" />
                                 </button>
                             </div>
