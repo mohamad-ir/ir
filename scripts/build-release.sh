@@ -32,7 +32,7 @@ rm -rf "$APP/public/build" && cp -a "$ROOT/public/build" "$APP/public/build"
 
 # 3. Strip development-only files
 rm -rf "$APP"/{tests,release,preview,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc,PROJECT_PROGRESS.md}
-find "$APP/vendor" -type f \( -name 'phpunit.xml*' -o -name '.editorconfig' -o -name '.gitattributes' -o -name '.travis.yml' -o -name '.php-cs-fixer*' -o -name 'phpstan*.neon*' -o -name 'psalm.xml*' \) -delete
+find "$APP/vendor" -type f \( -name 'phpunit.xml*' -o -name '.editorconfig' -o -name '.gitattributes' -o -name '.travis.yml' -o -name '.php-cs-fixer*' -o -name 'phpstan*.neon*' -o -name 'psalm.xml*' -o -name '*.log' \) -delete
 rm -f "$APP/.env" "$APP/storage/app/installed.lock"
 find "$APP/storage" -type f ! -name .gitignore -delete
 mkdir -p "$APP/storage/app/backups" "$APP/storage/framework/"{cache/data,sessions,views} "$APP/storage/logs" "$APP/bootstrap/cache"
