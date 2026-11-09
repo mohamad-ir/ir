@@ -24,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Until installation is finished there is no database to rely on: keep sessions and cache in
+        // files and run jobs immediately, whatever .env says, so the web installer always opens.
+        if (! \App\Support\Installer::isInstalled()) {
+            config(['session.driver' => 'file', 'cache.default' => 'file', 'queue.default' => 'sync']);
+        }
+
         $this->app->scoped(SeoManager::class);
         $this->app->singleton(SearchIndexer::class);
         $this->app->singleton(BlockRegistry::class);
