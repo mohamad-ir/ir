@@ -31,7 +31,12 @@
         <tr><td align="center">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
                 <tr><td style="padding:0 8px 18px;font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;color:{{ $primary }}">
-                    <a href="{{ url('/') }}" style="color:{{ $primary }};text-decoration:none">{{ setting('site.name') }}</a>
+                    @php
+                        // Email programs do not all show WebP, so only a PNG/JPG logo is used; otherwise the site name.
+                        $emailLogo = app(\App\Services\Branding\BrandingService::class)->logo('light');
+                        $emailLogo = $emailLogo && in_array($emailLogo->mime_type, ['image/png', 'image/jpeg'], true) ? $emailLogo : null;
+                    @endphp
+                    <a href="{{ url('/') }}" style="color:{{ $primary }};text-decoration:none">@if ($emailLogo)<img src="{{ $emailLogo->url() }}" alt="{{ setting('branding.logo_alt') ?: setting('site.name') }}" height="36" style="height:36px;width:auto;max-width:260px;border:0;display:block">@else{{ setting('site.name') }}@endif</a>
                 </td></tr>
                 <tr><td class="wrap" style="background:#ffffff;border-radius:14px;padding:36px 40px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.65;color:#1c2733">
                     @yield('body')

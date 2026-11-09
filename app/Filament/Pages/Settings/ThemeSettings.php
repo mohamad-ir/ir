@@ -49,7 +49,20 @@ class ThemeSettings extends SettingsPage
 
     protected function groups(): array
     {
-        return ['theme', 'branding'];
+        return ['theme', 'branding', 'site'];
+    }
+
+    /** Only the identity fields of the "site" group are edited here; the rest stays in General settings. */
+    protected function mutateStateBeforeSave(array $state): array
+    {
+        $state['site'] = \Illuminate\Support\Arr::only($state['site'] ?? [], ['name', 'tagline']);
+        unset($state['branding']['icon_set']);
+
+        if ($errors = app(\App\Services\Branding\BrandingService::class)->validate($state['branding'] ?? [])) {
+            throw \Illuminate\Validation\ValidationException::withMessages(collect($errors)->mapWithKeys(fn ($m, $k) => ['data.'.$k => $m])->all());
+        }
+
+        return $state;
     }
 
     protected function permission(): string
@@ -89,6 +102,7 @@ class ThemeSettings extends SettingsPage
     protected function afterSave(): void
     {
         Cache::forget('theme.css');
+        app(\App\Services\Branding\BrandingService::class)->syncIcons();
     }
 
     protected function getHeaderActions(): array
@@ -113,7 +127,7 @@ class ThemeSettings extends SettingsPage
         return [
             Grid::make(['default' => 1, 'xl' => 12])->schema([
                 Group::make()->columnSpan(['xl' => 5])->schema([
-                    Tabs::make()->tabs([
+                    Tabs::make()->persistTabInQueryString()->tabs([
                         Tab::make('Colours')->icon('heroicon-o-swatch')->schema([
                             Grid::make(2)->schema([
                                 $color('primary', 'Primary', 'Headings, buttons, dark sections'),
@@ -159,12 +173,37 @@ class ThemeSettings extends SettingsPage
                             Toggle::make('theme.header_sticky')->label('Keep header visible while scrolling')->live(),
                             ToggleButtons::make('theme.footer_style')->label('Footer')->options(['dark' => 'Dark', 'light' => 'Light'])->inline()->live(),
                         ]),
-                        Tab::make('Logo & icons')->icon('heroicon-o-photo')->schema([
-                            TextInput::make('branding.logo_text')->label('Logo text')->placeholder('Defaults to the website name'),
-                            MediaPicker::make('branding.logo_id')->label('Logo (light backgrounds)')->helperText('SVG-like PNG with transparent background, about 400×100 px.'),
-                            MediaPicker::make('branding.logo_dark_id')->label('Logo (dark backgrounds)'),
-                            MediaPicker::make('branding.favicon_id')->label('Browser icon (favicon)')->helperText('Square PNG, at least 512×512 px.'),
-                            MediaPicker::make('branding.og_image_id')->label('Default social sharing image')->helperText('1200×630 px, used when a page has no image.'),
+                        Tab::make('Site identity')->icon('heroicon-o-identification')->schema([
+                            Section::make('Name')->compact()->columns(2)->schema([
+                                TextInput::make('site.name')->label('Site name')->required()->maxLength(80)->live(onBlur: true)
+                                    ->helperText('Used in page titles, search results, emails and certificates.'),
+                                TextInput::make('branding.short_name')->label('Short name')->maxLength(30)->placeholder('Defaults to the site name')->live(onBlur: true)
+                                    ->helperText('Under the icon on phone home screens — up to 12 characters fit best.'),
+                                TextInput::make('site.tagline')->label('Tagline')->maxLength(140)->columnSpanFull(),
+                                TextInput::make('branding.logo_text')->label('Display title')->maxLength(60)->placeholder('Defaults to the site name')->live(onBlur: true)
+                                    ->helperText('Shown next to the built-in symbol when no logo image is uploaded.'),
+                                TextInput::make('branding.logo_alt')->label('Logo text alternative')->maxLength(120)->placeholder('Defaults to the site name')
+                                    ->helperText('Read by screen readers and search engines — usually just the site name.'),
+                            ]),
+                            Section::make('Logo')->compact()->schema([
+                                Grid::make(1)->schema([
+                                    MediaPicker::make('branding.logo_id')->label('Logo for light backgrounds')->live()
+                                        ->helperText('Horizontal logo, PNG or WebP with a transparent background, at least 120 px tall (about 480 × 120).'),
+                                    MediaPicker::make('branding.logo_dark_id')->label('Logo for dark backgrounds')->live()
+                                        ->helperText('Light-coloured version. Used in dark mode, on a dark header/footer and on the sign-in page.'),
+                                ]),
+                                ToggleButtons::make('branding.logo_height')->label('Logo size in the header')->inline()->options(\App\Services\Branding\BrandingService::LOGO_HEIGHTS)->live(),
+                            ]),
+                            Section::make('Site icon')->compact()->schema([
+                                MediaPicker::make('branding.favicon_id')->label('Square site icon')->live()
+                                    ->helperText('Square PNG, at least 512 × 512 px, ideally with a transparent background. Browser tabs, bookmarks, phone home screens and the future app icon are created from it automatically.'),
+                                ColorPicker::make('branding.icon_background')->label('Icon background')->regex('/^#[0-9a-fA-F]{6}$/')->live(debounce: 600)
+                                    ->helperText('Fills the space around the icon on iPhone and Android home screens.'),
+                            ]),
+                            View::make('filament.branding-preview'),
+                            Section::make('Sharing')->compact()->schema([
+                                MediaPicker::make('branding.og_image_id')->label('Default social sharing image')->helperText('1200×630 px, used when a page has no image.'),
+                            ]),
                         ]),
                         Tab::make('Advanced')->icon('heroicon-o-code-bracket')->schema([
                             Textarea::make('theme.custom_css')->label('Custom CSS')->rows(10)->extraInputAttributes(['class' => 'font-mono text-xs'])

@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
-use App\Models\Media;
 use App\Support\Settings;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
@@ -44,7 +43,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(fn () => Settings::get('site.name'))
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('2rem')
-            ->favicon(fn () => Media::find(Settings::get('branding.favicon_id'))?->url() ?? asset('favicon.svg'))
+            ->favicon(fn () => app(\App\Services\Branding\BrandingService::class)->iconUrl('favicon-32'))
+            ->renderHook(\Filament\View\PanelsRenderHook::HEAD_END, fn () => app(\App\Services\Branding\BrandingService::class)->headTags())
             ->colors([
                 'primary' => [50 => 'oklch(0.975 0.012 196)', 100 => 'oklch(0.948 0.024 196)', 200 => 'oklch(0.9 0.045 196)', 300 => 'oklch(0.83 0.07 196)', 400 => 'oklch(0.72 0.09 196)', 500 => 'oklch(0.6 0.098 196)', 600 => 'oklch(0.52 0.092 196)', 700 => 'oklch(0.45 0.082 196)', 800 => 'oklch(0.39 0.07 196)', 900 => 'oklch(0.33 0.058 196)', 950 => 'oklch(0.24 0.042 196)'],
                 'gray' => Color::Slate,

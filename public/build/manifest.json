@@ -88,7 +88,7 @@
     "src": "node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CqjurzgF.css",
+    "file": "assets/app-20l-qSRd.css",
     "name": "app",
     "names": [
       "app.css"
@@ -121,7 +121,7 @@
     ]
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-B72LXoaO.css",
+    "file": "assets/theme-m1QITmQE.css",
     "name": "theme",
     "names": [
       "theme.css"
@@ -154,7 +154,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BdPSHLPC.js",
+    "file": "assets/app-Bn33Invy.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

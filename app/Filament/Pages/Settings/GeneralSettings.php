@@ -41,8 +41,8 @@ class GeneralSettings extends SettingsPage
             Tabs::make()->persistTabInQueryString()->tabs([
                 Tab::make('Website')->icon('heroicon-o-globe-alt')->schema([
                     Section::make()->columns(2)->schema([
-                        TextInput::make('site.name')->label('Website name')->required()->maxLength(80),
-                        TextInput::make('site.tagline')->label('Tagline')->maxLength(140),
+                        \Filament\Forms\Components\Placeholder::make('identity')->hiddenLabel()->columnSpanFull()
+                            ->content(fn () => new \Illuminate\Support\HtmlString('<span class="text-sm text-gray-500">The site name, tagline, logos and icons are edited in <a class="font-medium text-primary-600 underline" href="'.e(ThemeSettings::getUrl(['tab' => 'site-identity::data::tab'])).'">Design › Theme &amp; branding › Site identity</a>.</span>')),
                         Textarea::make('site.description')->label('Website description')->rows(2)->maxLength(300)->columnSpanFull()
                             ->helperText('Used on the homepage in Google results and when the site is shared.'),
                         Select::make('site.homepage_id')->label('Homepage')->options(fn () => Page::orderBy('title')->pluck('title', 'id'))->searchable(),

@@ -63,6 +63,10 @@
                     </ul>
                 @endif
             </div>
+            {{-- Developer credit: deliberately quiet; kept away from the bottom-right corner used by “Back to top”. --}}
+            <p class="mt-6 text-center text-[0.6875rem] tracking-[.04em] sm:text-left {{ $dark ? 'text-white/50' : 'text-muted' }}">
+                Developed by <span class="font-medium {{ $dark ? 'text-white/65' : 'text-fg/70' }}">mj tayaran</span>
+            </p>
         </div>
     </div>
 </footer>

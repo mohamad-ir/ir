@@ -1,7 +1,6 @@
 @php
     $seo = app(\App\Services\Seo\SeoManager::class);
     $theme = app(\App\Services\Theme\ThemeService::class);
-    $favicon = \App\Models\Media::find(setting('branding.favicon_id'));
     $headerStyle = setting('theme.header_style', 'light');
     $colorMode = \App\Support\ColorMode::current();
     $darkPaper = $theme->darkVars(\App\Support\Settings::group('theme'))['--color-paper'];
@@ -17,12 +16,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $seo->fullTitle() }}</title>
     @include('partials.seo')
-    @if ($favicon)
-        <link rel="icon" href="{{ $favicon->url() }}">
-        <link rel="apple-touch-icon" href="{{ $favicon->url() }}">
-    @else
+    @unless (is_array(setting('branding.icon_set')))
         <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    @endif
+    @endunless
+    {{ app(\App\Services\Branding\BrandingService::class)->headTags() }}
     <link rel="alternate" type="application/rss+xml" title="{{ setting('site.name') }}" href="{{ route('feed') }}">
     <style>{!! $theme->css() !!}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -43,6 +40,7 @@
     @endunless
 
     @include('partials.footer')
+    @include('partials.back-to-top')
     @include('partials.search-modal')
     @include('partials.cookie-banner')
 

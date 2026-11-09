@@ -326,6 +326,38 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    // Back to top: appears after about one screen of scrolling and rises above other bottom
+    // floaters (cookie banner, messages) marked with data-floating-bottom so nothing overlaps.
+    Alpine.data('backToTop', () => ({
+        visible: false, lift: 0, frame: null,
+        init() {
+            const update = () => { this.frame = null; this.check(); };
+            const schedule = () => { this.frame ??= requestAnimationFrame(update); };
+            window.addEventListener('scroll', schedule, { passive: true });
+            window.addEventListener('resize', schedule, { passive: true });
+            new MutationObserver(schedule).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class'], childList: true });
+            this.check();
+        },
+        check() {
+            this.visible = window.scrollY > Math.max(480, window.innerHeight * 1.2);
+            let lift = 0;
+            document.querySelectorAll('[data-floating-bottom]').forEach((el) => {
+                const r = el.getBoundingClientRect();
+                // Only floaters that are showing and reach into the right-hand corner where this button lives.
+                if (r.height > 0 && r.width > 0 && r.right > window.innerWidth - 96 && r.bottom > window.innerHeight - 120) {
+                    lift = Math.max(lift, window.innerHeight - r.top);
+                }
+            });
+            this.lift = lift;
+        },
+        top(event) {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+            // Keyboard users continue from the top of the page (event.detail is 0 for Enter/Space).
+            if (event.detail === 0) document.querySelector('.skip-link')?.focus({ preventScroll: true });
+        },
+    }));
+
     Alpine.data('share', (url, title) => ({
         copied: false,
         async copy() {

@@ -35,6 +35,11 @@ class SettingDefaults
                 'logo_dark_id' => null,
                 'favicon_id' => null,
                 'logo_text' => null,
+                'logo_alt' => null,
+                'logo_height' => 'md',
+                'short_name' => null,
+                'icon_background' => '#ffffff',
+                'icon_set' => null,
                 'og_image_id' => null,
             ],
             'theme' => [

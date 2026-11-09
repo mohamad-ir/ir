@@ -1,15 +1,25 @@
 @props(['light' => false, 'size' => 'md'])
+{{--
+    Site logo. $light = the logo sits on a dark background (dark header/footer, sign-in page).
+    In dark mode the page background is dark too, so the "dark backgrounds" version is swapped in.
+    Without that version, the main logo is shown as a white silhouette so it stays readable.
+--}}
 @php
-    $logo = \App\Models\Media::find(setting($light ? 'branding.logo_dark_id' : 'branding.logo_id'));
-    // In dark mode a regular logo is swapped for the "dark backgrounds" version when one is uploaded.
-    $darkLogo = $light ? null : \App\Models\Media::find(setting('branding.logo_dark_id'));
-    $name = setting('branding.logo_text') ?: setting('site.name');
+    $brand = app(\App\Services\Branding\BrandingService::class);
+    $main = $brand->logo('light');
+    $onDark = $brand->logo('dark');
+    $step = ['sm' => 0, 'md' => 1, 'lg' => 2][setting('branding.logo_height', 'md')] ?? 1;
+    $height = ['h-7', 'h-9', 'h-11', 'h-12'][$step + ($size === 'lg' ? 1 : 0)];
+    $img = "{$height} w-auto max-w-[11rem] object-contain object-left sm:max-w-[16rem]";
+    $alt = $brand->logoAlt();
 @endphp
-<a href="{{ url('/') }}" {{ $attributes->merge(['class' => 'group inline-flex items-center gap-2.5 shrink-0']) }} aria-label="{{ setting('site.name') }} — home">
-    @if ($logo)
-        <img src="{{ $logo->url() }}" alt="{{ setting('site.name') }}" @class([$size === 'lg' ? 'h-11' : 'h-9', 'w-auto', 'dark:hidden' => $darkLogo])>
-        @if ($darkLogo)
-            <img src="{{ $darkLogo->url() }}" alt="{{ setting('site.name') }}" class="{{ $size === 'lg' ? 'h-11' : 'h-9' }} hidden w-auto dark:block">
+<a href="{{ url('/') }}" {{ $attributes->merge(['class' => 'group inline-flex items-center gap-2.5 shrink-0']) }} aria-label="{{ $brand->name() }} — home">
+    @if ($light && ($onDark || $main))
+        <img src="{{ ($onDark ?? $main)->url() }}" alt="{{ $alt }}" @class([$img, 'brightness-0 invert' => ! $onDark])>
+    @elseif ($main)
+        <img src="{{ $main->url() }}" alt="{{ $alt }}" @class([$img, 'dark:hidden' => $onDark, 'dark:brightness-0 dark:invert' => ! $onDark])>
+        @if ($onDark)
+            <img src="{{ $onDark->url() }}" alt="{{ $alt }}" class="{{ $img }} hidden dark:block">
         @endif
     @else
         <svg viewBox="0 0 32 32" class="{{ $size === 'lg' ? 'size-10' : 'size-8' }} shrink-0" aria-hidden="true">
@@ -19,7 +29,7 @@
             <path d="M4.5 22.6h23" stroke="var(--color-highlight)" stroke-opacity=".9" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         <span class="flex flex-col leading-none">
-            <span class="font-heading text-[1.28rem] font-semibold tracking-tight {{ $light ? 'text-white' : 'text-ink' }}">{{ $name }}</span>
+            <span class="font-heading text-[1.28rem] font-semibold tracking-tight {{ $light ? 'text-white' : 'text-ink' }}">{{ $brand->displayTitle() }}</span>
             @if ($size === 'lg' && setting('site.tagline'))
                 <span class="mt-1 text-xs {{ $light ? 'text-white/60' : 'text-muted' }}">{{ setting('site.tagline') }}</span>
             @endif

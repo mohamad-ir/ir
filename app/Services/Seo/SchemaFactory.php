@@ -23,7 +23,8 @@ class SchemaFactory
 
     protected static function publisher(): array
     {
-        return ['@type' => 'Organization', 'name' => Settings::get('site.name'), 'url' => url('/')];
+        return array_filter(['@type' => 'Organization', 'name' => Settings::get('site.name'), 'url' => url('/'),
+            'logo' => ['@type' => 'ImageObject', 'url' => app(\App\Services\Branding\BrandingService::class)->schemaLogo()]]);
     }
 
     public static function article(Article $a): array
