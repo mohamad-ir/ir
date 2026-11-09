@@ -31,7 +31,8 @@ rm -rf "$APP/public/build" && cp -a "$ROOT/public/build" "$APP/public/build"
 ( cd "$APP" && php artisan filament:assets --quiet 2>/dev/null || true )
 
 # 3. Strip development-only files
-rm -rf "$APP"/{tests,release,preview,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc}
+rm -rf "$APP"/{tests,release,preview,node_modules,.github,scripts,phpunit.xml,vite.config.js,package.json,package-lock.json,.editorconfig,.gitattributes,.npmrc,PROJECT_PROGRESS.md}
+find "$APP/vendor" -type f \( -name 'phpunit.xml*' -o -name '.editorconfig' -o -name '.gitattributes' -o -name '.travis.yml' -o -name '.php-cs-fixer*' -o -name 'phpstan*.neon*' -o -name 'psalm.xml*' \) -delete
 rm -f "$APP/.env" "$APP/storage/app/installed.lock"
 find "$APP/storage" -type f ! -name .gitignore -delete
 mkdir -p "$APP/storage/app/backups" "$APP/storage/framework/"{cache/data,sessions,views} "$APP/storage/logs" "$APP/bootstrap/cache"
@@ -69,7 +70,11 @@ mkdir -p "$PKG/docs"
 cp "$ROOT"/docs/*.md "$PKG/docs/" 2>/dev/null || true
 cp "$ROOT/README.md" "$PKG/README.md"
 
-# 6. Zip
+# 6. Standard permissions (folders 755, files 644, executables 755): nothing group/world-writable,
+#    which hosts running PHP through suPHP/suEXEC refuse with "500 Internal Server Error".
+chmod -R u+rwX,go+rX,go-w "$PKG"
+
+# 7. Zip
 rm -f "$DIST/oct-academy-$VERSION.zip"
 ( cd "$PKG" && zip -qr -9 "$DIST/oct-academy-$VERSION.zip" . -x '*.DS_Store' )
 rm -rf "$WORK"

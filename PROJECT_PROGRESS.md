@@ -79,7 +79,7 @@
 
 - ✅ Stage 16 (v1.4.0) — Release review and hardening
   - Independent security and correctness reviews of everything since 1.3.0, plus dependency audit; all findings fixed (see log below), CI workflow added (`.github/workflows/ci.yml`: composer/npm audit, asset build, production caches, full test suite on MariaDB)
-- ✅ Stage 17 (v1.4.1) — Installer fix: atomic `.env` creation with repair of an incomplete `.env` before installation; installer independent of the database until installed; deployment guide: `.env` security, local testing (Herd/Valet), upgrade 1.4.0 → 1.4.1, go-live checklist
+- ✅ Stage 17 (v1.4.1) — Installer fix: atomic `.env` creation with repair of an incomplete `.env` before installation; installer independent of the database until installed; deployment guide: `.env` security, local testing (Herd/Valet), upgrade 1.4.0 → 1.4.1, go-live checklist; *Require two-factor authentication* applied on every request (it was frozen into cached routes by `php artisan optimize`); release package: standard permissions (644/755, nothing group-writable — suPHP/suEXEC safe) and no development files (vendor phpunit configs, internal progress log)
 
 ## Verification log (2026-11-10, 1.4.1 — installer fix)
 - Report: fresh 1.4.0 on Laravel Herd → `/install` 500 “Database file database/database.sqlite does not exist”, `.env` containing only `APP_KEY`.
