@@ -51,6 +51,16 @@
   - Videos in content: rich-editor “Video” block (link / upload / library) expanded after sanitising, gated library videos show a locked card, emails get a linked thumbnail; case “Videos” field; page-builder Video block gained link/upload sources (and members-only library videos are now locked — previously they played for anyone)
   - About page: demo Featured video + Gallery sections; gallery block layouts reuse the album viewer
 
+- ✅ Stage 12 (v1.4, in progress — not released yet) — Light/Dark/System mode, profile photos
+  - Display mode: dark palette generated in ThemeService from the brand colours (optional dark background/card/text overrides, WCAG check), `.dark` class + `dark:` variant, no-flash inline resolver (server renders the stored mode, script resolves “system” and follows OS changes live), header menu + mobile + profile switchers, cookie + `users.color_mode` sync (account wins), site default and “let visitors choose” settings, dark preview in Theme & branding, logo swap for dark backgrounds, scoped rules for brand panels / white chips / status tints
+  - Profile photos: AvatarService (finfo + getimagesize checks, 40 MP limit, decode + re-encode via Intervention, auto-orient, metadata stripped, square WebP 96/256/512 under random names, old files and empty folders deleted on replace/remove/account deletion), JSON + no-JS form endpoints (throttled), in-browser cropper (drag, zoom, rotate, keyboard, circular guide, Esc), `<x-avatar>` with initials fallback used in header, account, comments, author/teacher boxes, Filament avatar + admin “Remove profile photo”
+  - Fixed while testing: rich-text colours (`prose-clinical`) were overridden by the Typography plugin’s layer, so articles used a fixed grey instead of the theme text/heading colours (invisible in dark mode)
+
+## Verification log (2026-11-09, v1.4 work in progress)
+- `php artisan test` → 223 passed (22 new: uploads incl. fake/oversized/SVG/GIF/script-payload files, re-encoding, cleanup, rate limit, admin removal; mode resolution, cookie/account sync, forced default, contrast for every preset).
+- Browser QA: dark mode on home, cases, case page, articles, videos, courses, webinars, membership, galleries, about, exam practice (answer feedback), login, account; guest choice persists across reloads; System follows OS changes live; member choice follows to a second device; mobile menu switcher; photo upload → crop → save (header updates live) → replace → remove; Esc closes cropper; non-image rejected; admin theme tab with dark preview; admin users list with photos.
+- No release package built for this stage (owner asked to wait for further changes).
+
 ## Verification log (2026-10-22, v1.3)
 - `php artisan test` → 201 passed (27 new for v1.3).
 - Browser QA: guest/learner/admin comment flows (first comment pending → approved inline → staff reply → pin → helpful → edit → report), mobile layout, case spoiler fold, admin queue, banner sliders on home/courses (desktop + mobile, autoplay, arrows), About video + gallery.

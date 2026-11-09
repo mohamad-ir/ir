@@ -73,6 +73,13 @@ Header, header buttons, three footer columns and legal links. Drag to reorder; h
 ### Theme & branding / Header & footer
 Colours (with an accessibility contrast check and ready-made presets), heading and body fonts, text size, corner rounding, button shape, spacing, header and footer styles, logo, favicon and default social image — all with a live preview before saving.
 
+**Light & dark mode** (Theme & branding › *Light & dark mode*)
+- **Default for visitors**: *System* (follows each visitor’s phone or computer — recommended), *Light* or *Dark*.
+- **Let visitors choose**: shows a sun/moon button in the header (and *Display* in the mobile menu and in *My account › Settings*). The choice is remembered on the device and, for signed-in members, on their account so it follows them to other devices. Switch it off to force the default for everyone.
+- Dark colours are **generated from your brand colours** with readable contrast; you can override the dark background, card and text colours. Use the **Light / Dark** buttons above the preview to check both before saving.
+- If you use an image logo, upload a **Logo (dark backgrounds)** under *Logo & icons*; it is shown automatically in dark mode.
+- The dashboard has its own light/dark/system setting in your user menu (top right).
+
 ## Library
 - **Media library** — upload many files at once (metadata such as GPS/EXIF is removed automatically; responsive WebP versions are created). Add alt text for accessibility and Google Images. **Replace file** swaps an image everywhere it is used. The details page shows where each file is used.
 - **Topics & diseases** — the backbone of filters, topic pages (e.g. `/topics/central-serous-chorioretinopathy`) and related content. Featured topics appear on the homepage and in search.
@@ -80,6 +87,7 @@ Colours (with an accessibility contrast check and ready-made presets), heading a
 ## Audience
 - **Users & members** — invite team members and give them a role. *Roles & permissions* (System) lets you fine-tune what each role may do.
   - *Super administrator* — everything. *Administrator* — everything except roles. *Editor* — all content including courses and webinars, menus, SEO, newsletter, enquiries, and read-only sales. *Author* — own cases/articles/videos/questions, can publish. *Contributor* — drafts for review. *Member* — public account only.
+- **Profile photos** — members add, crop, change or remove their photo in *My account › Settings*. Photos appear in the header, the account page, next to comments and on author/teacher boxes; without a photo a coloured initials circle is shown. Every upload is checked and re-saved by the server (JPG, PNG or WebP, at least 128 × 128 px, up to 5 MB; location and camera data are removed) and the previous photo’s files are deleted. To remove an unsuitable photo: *Users & members* › row menu › **Remove profile photo**. Team members use the same account page for the photo shown on articles, courses and webinars.
 - **Newsletter subscribers** — import/export CSV; people who unsubscribed are never re-added.
 - **Email campaigns** — write, **Send test**, then **Send now** or **Schedule**. Sending is throttled (Settings › Email) to respect your host’s limits; the report shows opens and clicks.
 - **Enquiries** — messages from the contact form. **Reply** sends an email and records it in the notes.

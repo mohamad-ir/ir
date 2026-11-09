@@ -186,6 +186,9 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
 
+### Upgrading from 1.3 (light/dark mode, profile photos)
+Same steps. **Apply database updates** adds one column (each member’s light/dark preference). Visitors get *System* mode with a header switcher by default — change it in **Design › Theme & branding › Light & dark mode**. If your logo is an image, upload a version for dark backgrounds there. Profile photos are stored in `public_html/media/avatars` (included in backups with the other media). Add a sentence about profile photos to your privacy policy (see the template in a fresh installation).
+
 ## 12. Troubleshooting
 
 | Problem | Fix |
