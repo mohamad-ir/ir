@@ -216,6 +216,7 @@ The worker is served by Laravel at `/sw.js` (never cached by browsers or proxies
 
 | Problem | Fix |
 |---|---|
+| **`/install` shows a 500 error “database.sqlite does not exist”** (1.4.0 only, rare) | The first visit left a `.env` that contains only `APP_KEY`. Delete `oct-academy/.env` (or replace it with a copy of `.env.example`) and open `/install` again. Fixed in the next version: `.env` is now created atomically, an incomplete one is repaired automatically, and the installer no longer needs a database before it is configured. |
 | **500 error / blank page** | Check `oct-academy/storage/logs/laravel-YYYY-MM-DD.log`. Most often a folder is not writable or PHP < 8.3. |
 | **“No application encryption key”** | `.env` is not writable; give it permission `644` and reload — a key is generated automatically. |
 | **Styles missing** | `public_html/build` was not copied, or `.htaccess` is missing (hidden file). |
