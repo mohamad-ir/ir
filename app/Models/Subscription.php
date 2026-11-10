@@ -12,7 +12,7 @@ class Subscription extends Model
 {
     protected $fillable = [
         'user_id', 'membership_plan_id', 'stripe_subscription_id', 'stripe_customer_id', 'status', 'amount', 'currency',
-        'interval', 'current_period_end', 'trial_ends_at', 'cancel_at_period_end', 'canceled_at', 'ended_at',
+        'interval', 'current_period_end', 'trial_ends_at', 'cancel_at_period_end', 'canceled_at', 'ended_at', 'stripe_synced_at',
     ];
 
     protected function casts(): array
@@ -20,6 +20,7 @@ class Subscription extends Model
         return [
             'status' => SubscriptionStatus::class,
             'current_period_end' => 'datetime',
+            'stripe_synced_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'canceled_at' => 'datetime',
             'ended_at' => 'datetime',

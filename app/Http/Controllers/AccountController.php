@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CareerStage;
 use App\Models\Article;
 use App\Models\Bookmark;
+use App\Models\CareerStage;
+use App\Models\Certificate;
 use App\Models\ClinicalCase;
+use App\Models\LessonQuizAttempt;
 use App\Models\Question;
 use App\Models\Subscriber;
 use App\Models\User;
 use App\Models\Video;
+use App\Services\Learning\LearningService;
 use App\Services\Newsletter\NewsletterService;
+use App\Services\Payments\StripeClient;
 use App\Services\Seo\SeoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +35,7 @@ class AccountController extends Controller
         $correct = (clone $attempts)->where('is_correct', true)->count();
         $total = (clone $attempts)->whereNotNull('is_correct')->count();
 
-        $learning = app(\App\Services\Learning\LearningService::class);
+        $learning = app(LearningService::class);
         $enrollments = $user->enrollments()->with(['course' => fn ($q) => $q->published()->with(['featuredMedia', 'lessons:id,course_id,slug,sort_order,course_section_id,duration_minutes', 'sections']), 'lastLesson'])
             ->latest('updated_at')->get()->filter(fn ($e) => $e->course !== null)
             ->each(fn ($e) => $e->setAttribute('progress', $learning->progress($user, $e->course)));
@@ -42,7 +46,7 @@ class AccountController extends Controller
             'webinars' => $user->webinarRegistrations()->whereNull('canceled_at')->with('webinar')->get()
                 ->filter(fn ($r) => $r->webinar && $r->webinar->isPublished() && ! $r->webinar->hasEnded())->sortBy(fn ($r) => $r->webinar->starts_at)->values(),
             'subscription' => $user->activeSubscription(),
-            'certificates' => \App\Models\Certificate::valid()->where('user_id', $user->id)->latest('issued_at')->get(),
+            'certificates' => Certificate::valid()->where('user_id', $user->id)->latest('issued_at')->get(),
             'bookmarks' => $bookmarks,
             'answered' => $answered,
             'accuracy' => $total ? round($correct / $total * 100) : null,
@@ -60,10 +64,11 @@ class AccountController extends Controller
 
         return view('account.billing', [
             'user' => $user,
-            'subscription' => $user->subscriptions()->with('plan')->latest('id')->first(),
+            // The subscription that gives access, otherwise the most recent one.
+            'subscription' => $user->activeSubscription()?->load('plan') ?? $user->subscriptions()->with('plan')->latest('id')->first(),
             'isMember' => $user->isMember(),
             'orders' => $user->orders()->whereIn('status', ['paid', 'partially_refunded', 'refunded'])->latest('paid_at')->latest('id')->get(),
-            'paymentsEnabled' => \App\Services\Payments\StripeClient::configured(),
+            'paymentsEnabled' => StripeClient::configured(),
         ]);
     }
 
@@ -135,8 +140,8 @@ class AccountController extends Controller
             'bookmarks' => $user->bookmarks()->with('bookmarkable')->get()->map(fn ($b) => ['type' => $b->bookmarkable_type, 'title' => $b->bookmarkable?->title, 'saved_at' => $b->created_at])->all(),
             'question_attempts' => $user->questionAttempts()->with('question:id,title')->get()->map(fn ($a) => ['question' => $a->question?->title, 'answer' => $a->selected_key, 'correct' => $a->is_correct, 'at' => $a->created_at])->all(),
             'newsletter' => Subscriber::where('email', $user->email)->first()?->only(['email', 'status', 'interests', 'confirmed_at']),
-            'certificates' => \App\Models\Certificate::where('user_id', $user->id)->get()->map(fn ($c) => $c->only(['code', 'course_title', 'recipient_name', 'issued_at', 'revoked_at']))->all(),
-            'quiz_attempts' => \App\Models\LessonQuizAttempt::where('user_id', $user->id)->with('lesson:id,title')->get()->map(fn ($a) => ['lesson' => $a->lesson?->title, 'score' => $a->score, 'passed' => $a->passed, 'at' => $a->created_at])->all(),
+            'certificates' => Certificate::where('user_id', $user->id)->get()->map(fn ($c) => $c->only(['code', 'course_title', 'recipient_name', 'issued_at', 'revoked_at']))->all(),
+            'quiz_attempts' => LessonQuizAttempt::where('user_id', $user->id)->with('lesson:id,title')->get()->map(fn ($a) => ['lesson' => $a->lesson?->title, 'score' => $a->score, 'passed' => $a->passed, 'at' => $a->created_at])->all(),
             'courses' => $user->enrollments()->with('course:id,title')->get()->map(fn ($e) => ['course' => $e->course?->title, 'access' => $e->source, 'enrolled_at' => $e->created_at, 'completed_at' => $e->completed_at])->all(),
             'webinars' => $user->webinarRegistrations()->with('webinar:id,title,starts_at')->get()->map(fn ($r) => ['webinar' => $r->webinar?->title, 'starts_at' => $r->webinar?->starts_at, 'registered_at' => $r->created_at, 'cancelled_at' => $r->canceled_at])->all(),
             'membership' => $user->subscriptions()->get()->map(fn ($s) => $s->only(['status', 'amount', 'currency', 'interval', 'current_period_end', 'created_at', 'canceled_at']))->all(),

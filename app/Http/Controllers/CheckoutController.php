@@ -77,14 +77,25 @@ class CheckoutController extends Controller
 
         abort_unless((string) ($session['client_reference_id'] ?? '') === (string) $request->user()->id, 403);
 
-        $fulfillment->fulfilCheckoutSession($session);
+        try {
+            $fulfillment->fulfilCheckoutSession($session);
+        } catch (\Throwable $e) {
+            // The webhook grants access as well; never show an error to someone who has just paid.
+            report($e);
+
+            return view('checkout.result', ['state' => 'processing']);
+        }
         $type = $session['metadata']['type'] ?? null;
 
-        if ($type !== 'membership' && ($session['payment_status'] ?? null) !== 'paid') {
+        if ($type !== 'membership' && ! Fulfillment::isPaid($session)) {
             return view('checkout.result', ['state' => 'pending']);
         }
 
         $request->user()->forgetMembership();
+        if ($type === 'membership' && ! $request->user()->isMember()) {
+            // e.g. a bank debit or 3-D Secure still being confirmed
+            return view('checkout.result', ['state' => 'pending']);
+        }
 
         $itemId = $session['metadata']['item_id'] ?? 0;
         $course = $type === 'course' ? Course::find($itemId) : null;

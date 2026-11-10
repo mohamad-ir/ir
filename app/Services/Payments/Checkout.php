@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Webinar;
 use App\Support\Currency;
 use App\Support\Settings;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 /**
  * Builds Stripe Checkout sessions. Stripe hosts the payment page, so card
@@ -56,8 +57,9 @@ class Checkout
     protected function oneTime(User $user, Course|Webinar $item, string $type, string $description, bool $consent): string
     {
         [$amount, $currency] = $item->priceFor(Currency::current());
+        $this->expireOpenSessions($user, $item);
 
-        $order = Order::create([
+        $order = $this->createOrder([
             'user_id' => $user->id,
             'email' => $user->email,
             'name' => $user->name,
@@ -91,12 +93,48 @@ class Checkout
             'payment_intent_data' => ['metadata' => $metadata, 'description' => $order->number.' — '.$description],
             'invoice_creation' => Settings::get('payments.invoice_one_time') ? ['enabled' => true, 'invoice_data' => ['metadata' => $metadata]] : null,
             'metadata' => $metadata,
+            // A webinar ticket cannot be bought after the start (Stripe allows 30 minutes to 24 hours).
+            'expires_at' => $item instanceof Webinar && $item->starts_at && $item->starts_at->gt(now()->addMinutes(35)) && $item->starts_at->lt(now()->addDay())
+                ? $item->starts_at->timestamp : null,
             ...$this->commonOptions(),
         ], 'order-'.$order->id);
 
         $order->update(['stripe_checkout_session_id' => $session['id']]);
 
         return $session['url'];
+    }
+
+    /**
+     * Closes the member's earlier unpaid Checkout pages for the same item, so the same course or ticket
+     * cannot be paid twice from an old tab.
+     */
+    protected function expireOpenSessions(User $user, Course|Webinar $item): void
+    {
+        Order::where('user_id', $user->id)->where('status', OrderStatus::Pending)
+            ->where('purchasable_type', $item->getMorphClass())->where('purchasable_id', $item->id)
+            ->whereNotNull('stripe_checkout_session_id')->where('created_at', '>', now()->subDay())
+            ->get()->each(function (Order $old) {
+                try {
+                    $this->stripe->post('checkout/sessions/'.$old->stripe_checkout_session_id.'/expire');
+                    $old->update(['status' => OrderStatus::Canceled]);
+                } catch (StripeException) {
+                    // Already completed or expired: the webhook decides.
+                }
+            });
+    }
+
+    /** Order numbers are sequential; two checkouts at the same moment retry with the next number. */
+    protected function createOrder(array $attributes): Order
+    {
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return Order::create($attributes);
+            } catch (UniqueConstraintViolationException $e) {
+                if ($attempt >= 5) {
+                    throw $e;
+                }
+            }
+        }
     }
 
     /** Opens Stripe's Customer Portal: update card, download invoices, cancel. */
@@ -195,6 +233,11 @@ class Checkout
             'tax_behavior' => $this->taxBehavior(),
             'metadata' => ['plan_id' => $plan->id],
         ], 'plan-price-'.$plan->id.'-'.md5($fingerprint));
+
+        // Going back to an earlier price within 24 hours returns that (archived) Price: switch it on again.
+        if (($price['active'] ?? true) === false) {
+            $price = $this->stripe->post('prices/'.$price['id'], ['active' => true]);
+        }
 
         if ($known && $known['id'] !== $price['id']) {
             try {
