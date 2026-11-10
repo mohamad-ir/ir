@@ -45,9 +45,16 @@ class ContactForm extends Component
 
     public function submit(): void
     {
-        // Bots: hidden field filled, or form submitted impossibly fast.
-        if ($this->website !== '' || time() - $this->renderedAt < 3) {
+        // Bots: hidden field filled → pretend success. A very fast submission (autofill) is validated
+        // normally and only asked to try again, so a real message is never silently lost.
+        if ($this->website !== '') {
             $this->sent = true;
+
+            return;
+        }
+        if (time() - $this->renderedAt < 3) {
+            $this->validate();
+            $this->addError('message', 'Please check your message and press Send again.');
 
             return;
         }

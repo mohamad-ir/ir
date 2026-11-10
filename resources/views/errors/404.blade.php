@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@php(app(\App\Services\Seo\SeoManager::class)->title('Page not found')->noindex()->canonical(url('/')))
 @section('content')
     <section class="container-site section">
         <div class="mx-auto max-w-xl text-center">

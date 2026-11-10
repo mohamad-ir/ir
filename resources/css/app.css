@@ -193,7 +193,8 @@
         @apply inline-flex items-center gap-1 rounded-full bg-ink/[.06] px-2.5 py-0.5 text-xs font-medium text-ink;
     }
     .chip-outline, .chip-accent, .chip-highlight { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
-    .chip-accent { @apply bg-accent/10 text-accent-ink; }
+    /* Text mixed toward the page text colour keeps AA contrast on the tint in light and dark mode. */
+    .chip-accent { @apply bg-accent/10; color: color-mix(in oklab, var(--color-accent-ink) 78%, var(--color-fg)); }
     .chip-highlight { @apply bg-highlight/15 text-highlight-ink; }
     .chip-outline { @apply bg-transparent ring-1 ring-line-strong text-muted; }
 
@@ -300,3 +301,9 @@
 /* Responsive builder visibility */
 @media (width < 64rem) { .hide-mobile { display: none !important; } }
 @media (width >= 64rem) { .hide-desktop { display: none !important; } }
+
+/* Laravel's default pagination (search results) in dark mode: readable text and controls. */
+:root.dark nav[role="navigation"] :is(.text-gray-700, .text-gray-500, .text-gray-400) { color: var(--color-muted); }
+:root.dark nav[role="navigation"] .bg-white { background-color: var(--color-surface); }
+:root.dark nav[role="navigation"] :is(.border-gray-300, .ring-gray-300) { border-color: var(--color-line); --tw-ring-color: var(--color-line); }
+:root.dark nav[role="navigation"] :is(a, span[aria-current] span) { color: var(--color-fg); }

@@ -131,7 +131,7 @@
                 <section class="mt-10">
                     <h2 class="eyebrow">Comparison</h2>
                     <div class="mt-4" x-data="compareSlider()">
-                        <div x-ref="frame" class="viewer-frame relative aspect-[16/9] select-none overflow-hidden" x-on:mousedown="dragging = true; set($event)" x-on:mousemove.window="dragging && set($event)" x-on:mouseup.window="dragging = false" x-on:touchstart.passive="set($event)" x-on:touchmove.passive="set($event)">
+                        <div x-ref="frame" class="viewer-frame relative aspect-[16/9] touch-pan-y select-none overflow-hidden" x-on:dragstart.prevent x-on:pointerdown.prevent="dragging = true; set($event)" x-on:pointermove.window="dragging && set($event)" x-on:pointerup.window="dragging = false" x-on:pointercancel.window="dragging = false">
                             <x-media-img :media="$comparison['after']" variant="lg" sizes="(min-width:1024px) 860px, 100vw" class="absolute inset-0 size-full object-contain" />
                             <div class="absolute inset-0 overflow-hidden" :style="`clip-path: inset(0 ${100 - pos}% 0 0)`">
                                 <x-media-img :media="$comparison['before']" variant="lg" sizes="(min-width:1024px) 860px, 100vw" class="absolute inset-0 size-full object-contain" />
@@ -173,7 +173,7 @@
                             <fieldset class="mt-6 grid gap-2.5 sm:grid-cols-2" :disabled="submitted">
                                 <legend class="sr-only">Choose one diagnosis</legend>
                                 @foreach ($options as $i => $option)
-                                    <label class="relative flex cursor-pointer items-center gap-3 rounded-ui bg-white/[.06] px-4 py-3.5 ring-1 ring-white/10 transition hover:bg-white/10"
+                                    <label class="relative flex cursor-pointer items-center gap-3 rounded-ui bg-white/[.06] px-4 py-3.5 ring-1 ring-white/10 transition hover:bg-white/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-white"
                                            :class="{
                                                '!ring-2 !ring-[color-mix(in_oklab,var(--color-accent)_60%,white)] !bg-white/[.12]': selected === {{ $i }} && !submitted,
                                                '!bg-emerald-500/20 !ring-2 !ring-emerald-400': submitted && {{ ! empty($option['is_correct']) ? 'true' : 'false' }},
@@ -322,7 +322,7 @@
                                 <a href="#{{ $id }}" class="-ml-px block border-l-2 py-1.5 pl-4 text-sm transition" :class="active === '{{ $id }}' ? 'border-accent font-semibold text-ink' : 'border-transparent text-muted hover:text-ink'">{{ $label }}</a>
                             </li>
                         @endforeach
-                        <li x-show="!revealed" class="py-1.5 pl-4 text-sm text-muted/70"><x-heroicon-m-lock-closed class="mr-1 inline size-3.5" />Answer hidden until revealed</li>
+                        <li x-show="!revealed" class="py-1.5 pl-4 text-sm text-muted"><x-heroicon-m-lock-closed class="mr-1 inline size-3.5" />Answer hidden until revealed</li>
                     </ol>
                 </nav>
 

@@ -27,7 +27,7 @@
             <div class="grid gap-10 sm:grid-cols-3 lg:col-span-5">
                 @foreach ($columns as $menu)
                     <div>
-                        <h2 class="text-xs font-semibold tracking-[.14em] uppercase font-sans {{ $dark ? 'text-white/50' : 'text-muted' }}">{{ $menu['name'] }}</h2>
+                        <h2 class="text-xs font-semibold tracking-[.14em] uppercase font-sans {{ $dark ? 'text-white/70' : 'text-muted' }}">{{ $menu['name'] }}</h2>
                         <ul class="mt-4 space-y-2.5" role="list">
                             @foreach ($menu['items'] as $item)
                                 <li><a href="{{ safe_href($item['url']) }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif class="text-[0.9375rem] transition {{ $dark ? 'text-white/80 hover:text-white' : 'text-fg/80 hover:text-ink' }}">{{ $item['label'] }}</a></li>
@@ -39,7 +39,7 @@
 
             @if (setting('footer.show_newsletter', true) && setting('newsletter.enabled', true))
                 <div class="lg:col-span-3">
-                    <h2 class="text-xs font-semibold tracking-[.14em] uppercase font-sans {{ $dark ? 'text-white/50' : 'text-muted' }}">Weekly case</h2>
+                    <h2 class="text-xs font-semibold tracking-[.14em] uppercase font-sans {{ $dark ? 'text-white/70' : 'text-muted' }}">Weekly case</h2>
                     <p class="mt-4 text-[0.9375rem] {{ $dark ? 'text-white/80' : 'text-fg/80' }}">{{ setting('newsletter.signup_heading') }}</p>
                     <livewire:newsletter-form variant="footer" :dark="$dark" source="footer" />
                 </div>
@@ -68,7 +68,7 @@
                     class="mt-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium ring-1 transition {{ $dark ? 'text-white/85 ring-white/25 hover:bg-white/10' : 'text-ink ring-line-strong hover:bg-ink/5' }}">
                 <x-heroicon-o-arrow-down-tray class="size-4" /> Install the app
             </button>
-            <p class="mt-6 text-center text-[0.6875rem] tracking-[.04em] sm:text-left {{ $dark ? 'text-white/50' : 'text-muted' }}">
+            <p class="mt-6 text-center text-[0.6875rem] tracking-[.04em] sm:text-left {{ $dark ? 'text-white/70' : 'text-muted' }}">
                 Developed by <span class="font-medium {{ $dark ? 'text-white/65' : 'text-fg/70' }}">mj tayaran</span>
             </p>
         </div>

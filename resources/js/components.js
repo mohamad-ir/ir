@@ -62,7 +62,7 @@ document.addEventListener('alpine:init', () => {
 
     /* ---------------- OCT image viewer (lightbox with zoom, pan, contrast, invert) ---------------- */
     Alpine.data('caseViewer', (images = []) => ({
-        images, index: 0, open: false, scale: 1, x: 0, y: 0, dragging: false, start: null,
+        images, index: 0, open: false, opener: null, scale: 1, x: 0, y: 0, dragging: false, start: null,
         invert: false, contrast: 100, brightness: 100, full: {},
         get current() { return this.images[this.index] || {}; },
         /* Zoomed in: show the untouched original (every diagnostic detail) once it has downloaded. */
@@ -78,11 +78,17 @@ document.addEventListener('alpine:init', () => {
         },
         get filter() { return `contrast(${this.contrast}%) brightness(${this.brightness}%) ${this.invert ? 'invert(1)' : ''}`; },
         show(i = 0) {
+            this.opener = document.activeElement;
             this.index = i; this.reset(); this.open = true;
             document.documentElement.classList.add('overflow-hidden');
+            this.$nextTick(() => this.$refs.closeViewer?.focus());
             track('image_zoom', { index: i });
         },
-        close() { this.open = false; document.documentElement.classList.remove('overflow-hidden'); },
+        close() {
+            if (!this.open) return;
+            this.open = false; document.documentElement.classList.remove('overflow-hidden');
+            this.opener?.focus?.();
+        },
         reset() { this.scale = 1; this.x = 0; this.y = 0; },
         resetTone() { this.invert = false; this.contrast = 100; this.brightness = 100; },
         next() { this.index = (this.index + 1) % this.images.length; this.reset(); },

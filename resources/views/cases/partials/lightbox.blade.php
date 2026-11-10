@@ -1,10 +1,12 @@
 {{-- Requires an enclosing x-data="caseViewer(images)" --}}
 <template x-teleport="body">
-    <div x-cloak x-show="open" x-transition.opacity class="fixed inset-0 z-[70] flex flex-col bg-black/95 text-white" role="dialog" aria-modal="true" aria-label="Image viewer"
+    <div x-cloak x-show="open" x-transition.opacity x-trap.inert.noscroll="open" class="fixed inset-0 z-[70] flex flex-col bg-black/95 text-white" role="dialog" aria-modal="true" aria-label="Image viewer"
          x-on:keydown.escape.window="close()">
-        <div class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
-            <p class="text-sm text-white/70"><span x-text="index + 1"></span> / <span x-text="images.length"></span> <span class="ml-3 font-medium text-white" x-text="current.label"></span></p>
-            <div class="flex items-center gap-1">
+        {{-- Phones: counter and Close on the first row, tools wrap below; nothing ever leaves the screen. --}}
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 sm:px-6 sm:py-3">
+            <p class="min-w-0 flex-1 truncate text-sm text-white/70"><span x-text="index + 1"></span> / <span x-text="images.length"></span> <span class="ml-3 font-medium text-white" x-text="current.label"></span></p>
+            <button type="button" x-ref="closeViewer" class="order-2 rounded-ui p-2 hover:bg-white/10 sm:order-3" x-on:click="close()" aria-label="Close viewer"><x-heroicon-o-x-mark class="size-6" /></button>
+            <div class="order-3 flex w-full flex-wrap items-center justify-center gap-1 sm:order-2 sm:w-auto sm:justify-end">
                 <button type="button" class="rounded-ui p-2 hover:bg-white/10" x-on:click="zoom(-0.5)" aria-label="Zoom out"><x-heroicon-o-magnifying-glass-minus class="size-5" /></button>
                 <span class="w-12 text-center text-xs tabular-nums text-white/60" x-text="Math.round(scale * 100) + '%'"></span>
                 <button type="button" class="rounded-ui p-2 hover:bg-white/10" x-on:click="zoom(0.5)" aria-label="Zoom in"><x-heroicon-o-magnifying-glass-plus class="size-5" /></button>
@@ -20,10 +22,10 @@
                 </div>
                 <button type="button" class="rounded-ui px-2 py-1.5 text-xs hover:bg-white/10" x-on:click="reset(); resetTone()">Reset</button>
                 <a :href="current.full" target="_blank" rel="noopener" class="rounded-ui p-2 hover:bg-white/10" aria-label="Open original"><x-heroicon-o-arrow-top-right-on-square class="size-5" /></a>
-                <button type="button" class="ml-2 rounded-ui p-2 hover:bg-white/10" x-on:click="close()" aria-label="Close viewer"><x-heroicon-o-x-mark class="size-6" /></button>
             </div>
         </div>
-        <div class="relative flex-1 overflow-hidden" x-on:wheel.prevent="wheel($event)" x-on:mousedown="down($event)" x-on:mousemove.window="moveDrag($event)" x-on:mouseup.window="up()"
+        {{-- Pointer events: panning works with a finger as well as a mouse. --}}
+        <div class="relative flex-1 touch-none overflow-hidden" x-on:wheel.prevent="wheel($event)" x-on:pointerdown="down($event)" x-on:pointermove.window="moveDrag($event)" x-on:pointerup.window="up()" x-on:pointercancel.window="up()"
              x-on:dblclick="scale > 1 ? reset() : zoom(1.5)" :class="scale > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-zoom-in'">
             <img :src="hd ? current.full : current.src" :srcset="hd ? '' : (current.srcset || '')" sizes="100vw" :alt="current.alt" draggable="false" class="absolute inset-0 m-auto max-h-full max-w-full select-none object-contain transition-[filter] duration-150"
                  :style="`transform: translate(${x}px, ${y}px) scale(${scale}); filter: ${filter}; transition: ${dragging ? 'none' : 'transform .2s ease'}`">

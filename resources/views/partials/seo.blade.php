@@ -23,5 +23,4 @@
 @if ($handle = setting('seo.twitter_handle'))<meta name="twitter:site" content="{{ '@'.ltrim($handle, '@') }}">@endif
 @if ($v = setting('seo.google_verification'))<meta name="google-site-verification" content="{{ $v }}">@endif
 @if ($v = setting('seo.bing_verification'))<meta name="msvalidate.01" content="{{ $v }}">@endif
-<meta name="theme-color" content="{{ setting('theme.primary') }}">
 <script type="application/ld+json">{!! $seo->jsonLd() !!}</script>

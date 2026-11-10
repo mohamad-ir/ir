@@ -137,7 +137,11 @@ class SeoManager
 
     public function metaDescription(): string
     {
-        return $this->description ?: (string) Settings::get('site.description');
+        $text = $this->description ?: (string) Settings::get('site.description');
+        // Descriptions taken from page content may contain formatting marks (e.g. *bold*) and line breaks.
+        $text = trim(preg_replace(['/[*_#`>]+/u', '/\s+/u'], ['', ' '], strip_tags($text)));
+
+        return Str::limit($text, 300, '…');
     }
 
     public function canonicalUrl(): string
