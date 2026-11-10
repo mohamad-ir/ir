@@ -2,8 +2,11 @@
 
 namespace App\Support;
 
+use App\Services\Pwa\PwaService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Number;
 use Throwable;
 
 /** Environment checks shown in System › Health and used by the installer. */
@@ -40,8 +43,8 @@ class SystemHealth
     /** @return array<int, array{label: string, ok: bool, value: string, help?: string}> */
     public static function runtime(): array
     {
-        $lastCron = Settings::get('system.last_cron_at');
-        $cronOk = $lastCron && now()->diffInMinutes(\Illuminate\Support\Carbon::parse($lastCron)) < 10;
+        $lastCron = Settings::fresh('system.last_cron_at');
+        $cronOk = $lastCron && now()->diffInMinutes(Carbon::parse($lastCron)) < 10;
         try {
             $db = DB::selectOne('select version() as v')->v;
         } catch (Throwable) {
@@ -49,15 +52,15 @@ class SystemHealth
         }
 
         return [
-            ['label' => __('Scheduled tasks (cron)'), 'ok' => (bool) $cronOk, 'value' => $lastCron ? __('last run :ago', ['ago' => \Illuminate\Support\Carbon::parse($lastCron)->diffForHumans()]) : __('never run'), 'help' => __('Add the cron job from the installation guide in DirectAdmin › Cron Jobs. Without it, scheduled newsletters and backups do not run.')],
+            ['label' => __('Scheduled tasks (cron)'), 'ok' => (bool) $cronOk, 'value' => $lastCron ? __('last run :ago', ['ago' => Carbon::parse($lastCron)->diffForHumans()]) : __('never run'), 'help' => __('Add the cron job from the installation guide in DirectAdmin › Cron Jobs. Without it, scheduled newsletters and backups do not run.')],
             ['label' => __('Database server'), 'ok' => $db !== 'unavailable', 'value' => (string) $db],
             ['label' => __('Debug mode'), 'ok' => ! config('app.debug'), 'value' => config('app.debug') ? __('ON') : __('off'), 'help' => __('Set APP_DEBUG=false in .env on the live site — debug pages reveal sensitive information.')],
             ['label' => __('Environment'), 'ok' => app()->isProduction(), 'value' => app()->environment(), 'help' => __('Set APP_ENV=production in .env.')],
             ['label' => __('HTTPS'), 'ok' => str_starts_with((string) config('app.url'), 'https://'), 'value' => (string) config('app.url'), 'help' => __('Enable SSL in DirectAdmin and set APP_URL to https://…')],
-            ['label' => __('Installable app (PWA)'), 'ok' => ! app(\App\Services\Pwa\PwaService::class)->enabled() || str_starts_with((string) config('app.url'), 'https://'), 'value' => app(\App\Services\Pwa\PwaService::class)->enabled() ? __('on') : __('off'), 'help' => __('Installing the app and offline reading need HTTPS: enable SSL in DirectAdmin and set APP_URL to https://…')],
+            ['label' => __('Installable app (PWA)'), 'ok' => ! app(PwaService::class)->enabled() || str_starts_with((string) config('app.url'), 'https://'), 'value' => app(PwaService::class)->enabled() ? __('on') : __('off'), 'help' => __('Installing the app and offline reading need HTTPS: enable SSL in DirectAdmin and set APP_URL to https://…')],
             ['label' => __('Pending queue jobs'), 'ok' => true, 'value' => (string) (rescue(fn () => DB::table('jobs')->count(), 0, false))],
-            ['label' => __('Media library size'), 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(config('filesystems.disks.public.root')), 1)],
-            ['label' => __('Backups size'), 'ok' => true, 'value' => \Illuminate\Support\Number::fileSize(static::dirSize(storage_path('app/backups')), 1)],
+            ['label' => __('Media library size'), 'ok' => true, 'value' => Number::fileSize(static::dirSize(config('filesystems.disks.public.root')), 1)],
+            ['label' => __('Backups size'), 'ok' => true, 'value' => Number::fileSize(static::dirSize(storage_path('app/backups')), 1)],
             ['label' => __('Application version'), 'ok' => true, 'value' => config('cms.version').' · Laravel '.app()->version().' · PHP '.PHP_VERSION],
         ];
     }
@@ -71,7 +74,9 @@ class SystemHealth
         $unit = strtolower(substr($value, -1));
         $n = (int) $value;
 
-        return match ($unit) { 'g' => $n * 1024 ** 3, 'm' => $n * 1024 ** 2, 'k' => $n * 1024, default => $n };
+        return match ($unit) {
+            'g' => $n * 1024 ** 3, 'm' => $n * 1024 ** 2, 'k' => $n * 1024, default => $n
+        };
     }
 
     public static function dirSize(string $dir): int

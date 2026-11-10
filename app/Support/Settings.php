@@ -78,6 +78,23 @@ class Settings
         static::flush();
     }
 
+    /**
+     * Writes a value that changes very often (the cron heartbeat) without clearing the settings and theme
+     * caches; read it with fresh().
+     */
+    public static function setQuietly(string $key, mixed $value): void
+    {
+        Setting::updateOrCreate(['key' => $key], ['value' => json_encode($value), 'is_encrypted' => false]);
+    }
+
+    /** Reads a value straight from the database (for values written with setQuietly()). */
+    public static function fresh(string $key, mixed $default = null): mixed
+    {
+        $raw = Setting::where('key', $key)->value('value');
+
+        return $raw === null ? $default : (json_decode($raw, true) ?? $default);
+    }
+
     /** @param array<string, mixed> $values */
     public static function setMany(array $values, array $encryptedKeys = []): void
     {

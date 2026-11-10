@@ -33,6 +33,7 @@ use App\Support\RichText;
 use App\Support\SafeUrl;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -292,4 +293,14 @@ it('restores the content of a revision but not its publication state', function 
 
     $article->restoreRevision($revision, keep: ['slug', 'status', 'published_at']);
     expect($article->fresh()->status->value)->toBe('draft');
+});
+
+it('records the cron heartbeat without clearing the settings cache every minute', function () {
+    Settings::get('site.name');                       // cached
+    DB::enableQueryLog();
+    Settings::setQuietly('system.last_cron_at', now()->toIso8601String());
+    DB::flushQueryLog();
+    Settings::get('site.name');
+    expect(DB::getQueryLog())->toBe([])   // still served from the cache
+        ->and(Settings::fresh('system.last_cron_at'))->not->toBeNull();
 });

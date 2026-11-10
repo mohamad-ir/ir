@@ -215,4 +215,4 @@ Active memberships, kept in sync with Stripe. Members manage their own card, inv
 SEO settings (title template, verification codes, robots), **Redirects**, the **404 monitor** (turn broken links into redirects in one click) and the **Search dictionary** (abbreviations such as CSR ⇄ central serous chorioretinopathy used by site search).
 
 ## System
-Site settings, email, analytics, roles, **Activity log** (who changed what), **Backups** and **Health & maintenance** (requirements, cron status, caches, search index, maintenance mode, removing sample content).
+Site settings, email, analytics, roles, **Activity log** (who changed what), **Backups** (anyone with *Create, download and delete backups* can create and delete them; downloading is limited to super administrators because an archive contains the application key and password hashes) and **Health & maintenance** (requirements, cron status, caches, search index, maintenance mode, removing sample content).
