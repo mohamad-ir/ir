@@ -1953,5 +1953,6 @@
     "Applied: :profile.": "اعمال‌شده: :profile.",
     "Set image quality": "تعیین کیفیت تصویر",
     "The optimised versions are rebuilt in the background within a few minutes. Originals are not changed.": "نسخه‌های بهینه‌شده ظرف چند دقیقه در پس‌زمینه بازسازی می‌شوند. فایل‌های اصلی تغییر نمی‌کنند.",
-    ":count image(s) will be re-optimised": ":count تصویر دوباره بهینه‌سازی می‌شود"
+    ":count image(s) will be re-optimised": ":count تصویر دوباره بهینه‌سازی می‌شود",
+    "Could not regenerate the sizes": "بازسازی اندازه‌ها انجام نشد"
 }

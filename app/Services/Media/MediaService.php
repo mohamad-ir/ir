@@ -107,13 +107,21 @@ class MediaService
         $media->delete();
     }
 
+    /**
+     * Rebuild the optimised versions. New files overwrite the old ones (same names), and files that
+     * are no longer needed are removed only afterwards, so a failure never leaves the site without images.
+     */
     public function regenerate(Media $media): Media
     {
-        foreach ($media->variants ?? [] as $variant) {
-            Storage::disk($media->disk)->delete($variant);
-        }
-        $media->variants = null;
+        $old = $media->variants ?? [];
         $this->processImage($media, newUpload: false);
+        $disk = Storage::disk($media->disk);
+        if ($stale = array_diff($old, $media->variants ?? [])) {
+            $disk->delete(array_values($stale));
+        }
+        if ($disk->exists($media->path)) {
+            $media->size = $disk->size($media->path);
+        }
         $media->save();
 
         return $media;
@@ -160,11 +168,25 @@ class MediaService
         $media->width = $info[0];
         $media->height = $info[1];
 
-        try {
-            $this->raiseMemoryLimit();
-            $manager = Images::manager();
-            $this->cleanOriginal($media, $fullPath, $manager, $newUpload);
+        $this->raiseMemoryLimit();
+        // Only the first frame is needed for the optimised versions (avoids decoding every frame of an animation).
+        $manager = Images::manager(decodeAnimation: false);
 
+        // Privacy first: an image whose metadata cannot be removed is never published.
+        try {
+            $this->cleanOriginal($media, $fullPath, $manager);
+        } catch (Throwable $e) {
+            if (! ImageMetadata::stripFile($fullPath, $media->mime_type) && $media->mime_type !== 'image/gif') {
+                if ($newUpload) {
+                    $disk->delete($media->path);
+                    throw new InvalidArgumentException('This image could not be processed safely (its private metadata could not be removed). Please export it again as JPEG or PNG and upload it once more.');
+                }
+                report($e);
+            }
+        }
+        clearstatcache(true, $fullPath);
+
+        try {
             $image = $manager->read($fullPath);
             if ($image->isAnimated()) {
                 $image->removeAnimation(0);
@@ -200,6 +222,7 @@ class MediaService
         } catch (Throwable $e) {
             report($e);
             $media->variants_version = Media::VARIANTS_VERSION; // not retried automatically; "Regenerate sizes" can retry
+            // The previous optimised versions (if any) are kept untouched.
         }
     }
 
@@ -207,7 +230,7 @@ class MediaService
      * Re-optimise images made by an older version of the pipeline, a few at a time (called by the
      * scheduler every minute, so large libraries are upgraded without timeouts). Returns the count.
      */
-    public function upgradeOutdated(int $limit = 10, int $seconds = 40): int
+    public function upgradeOutdated(int $limit = 10, int $seconds = 25): int
     {
         $started = microtime(true);
         $done = 0;
@@ -218,11 +241,13 @@ class MediaService
                 if (microtime(true) - $started > $seconds) {
                     return false;
                 }
+                // Marked first: if PHP stops on this image (memory or time limit), it is not retried
+                // forever and the queue moves on; its previous versions stay in place.
+                $media->forceFill(['variants_version' => Media::VARIANTS_VERSION])->saveQuietly();
                 try {
                     $this->regenerate($media);
                 } catch (Throwable $e) {
                     report($e);
-                    $media->forceFill(['variants_version' => Media::VARIANTS_VERSION])->saveQuietly();
                 }
                 $done++;
             });
@@ -261,13 +286,14 @@ class MediaService
         return $colour <= 1024 * 0.04; // allow small coloured overlays (measurement lines, labels)
     }
 
-    protected function cleanOriginal(Media $media, string $path, ImageManager $manager, bool $newUpload): void
+    protected function cleanOriginal(Media $media, string $path, ImageManager $manager): void
     {
         if ($media->mime_type === 'image/gif') {
             return;
         }
-        // A phone photo stored sideways (EXIF orientation) is turned upright once, at upload.
-        if ($newUpload && $media->mime_type === 'image/jpeg' && ImageMetadata::jpegOrientation((string) file_get_contents($path, length: 262144)) !== 1) {
+        // A photo stored sideways with an EXIF orientation is turned upright (pixels rotated, tag
+        // removed), which keeps exactly how browsers displayed it.
+        if ($media->mime_type === 'image/jpeg' && ImageMetadata::jpegOrientation((string) file_get_contents($path)) !== 1) {
             file_put_contents($path, (string) $manager->read($path)->toJpeg(95));
 
             return;
@@ -308,6 +334,7 @@ class MediaService
         $native = $image->core()->native();
         if ($native instanceof \Imagick) {
             $im = clone $native;
+            $this->convertToSrgb($im);
             $im->stripImage();
             if ($im->getImageColorspace() === \Imagick::COLORSPACE_CMYK) {
                 $im->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
@@ -332,6 +359,22 @@ class MediaService
         }
 
         return self::gdToWebp($native, $quality);
+    }
+
+    /**
+     * Wide-gamut photos (Display P3, Adobe RGB) are converted to sRGB before their colour profile is
+     * removed, so the optimised versions keep the same colours as the original.
+     */
+    protected function convertToSrgb(\Imagick $im): void
+    {
+        $srgb = base_path('vendor/dompdf/dompdf/lib/res/sRGB2014.icc');
+        try {
+            if (isset($im->getImageProfiles('icc', true)['icc']) && is_file($srgb)) {
+                $im->profileImage('icc', (string) file_get_contents($srgb));
+            }
+        } catch (Throwable) {
+            // No colour management available: keep the pixel values as they are.
+        }
     }
 
     protected static function gdWebp(): bool

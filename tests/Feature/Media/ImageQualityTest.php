@@ -13,6 +13,7 @@ use App\Services\Users\AvatarService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
 use Livewire\Livewire;
 
 /*
@@ -256,4 +257,63 @@ it('lets editors choose the quality of an image, which rebuilds its sizes', func
     Livewire::test(ListMedia::class)
         ->callTableBulkAction('quality', [$media->id], ['quality' => 'auto']);
     expect($media->fresh()->quality)->toBeNull()->and($media->fresh()->variants_version)->toBe(0);
+});
+
+it('never deletes the current versions before new ones exist, and a failing image does not block the queue', function () {
+    $service = app(MediaService::class);
+    $broken = $service->store(testImage(1200, 600));
+    $good = $service->store(testImage(1200, 600));
+    $brokenVariants = $broken->variants;
+    // An outdated item whose original has become unreadable…
+    Storage::disk('public')->put($broken->path, 'not an image any more');
+    Media::whereKey([$broken->id, $good->id])->update(['variants_version' => 0]);
+    // …and a stale file from an older size list on the good one.
+    Storage::disk('public')->put('uploads/stale-old.webp', 'x');
+    $good->forceFill(['variants' => [...$good->variants, 'old' => 'uploads/stale-old.webp']])->saveQuietly();
+
+    expect($service->upgradeOutdated())->toBe(2)
+        ->and($broken->fresh()->variants_version)->toBe(Media::VARIANTS_VERSION)        // not retried forever
+        ->and($broken->fresh()->variants)->toBe($brokenVariants)
+        ->and($good->fresh()->variants_version)->toBe(Media::VARIANTS_VERSION);
+    foreach ($brokenVariants as $file) {
+        Storage::disk('public')->assertExists($file);                                   // still served
+    }
+    Storage::disk('public')->assertMissing('uploads/stale-old.webp');
+});
+
+it('refuses an upload whose private metadata cannot be removed', function () {
+    $service = new class extends MediaService
+    {
+        protected function cleanOriginal(Media $media, string $path, ImageManager $manager): void
+        {
+            throw new RuntimeException('decoder failed');
+        }
+    };
+    // When re-encoding fails, the lossless clean-up still removes the metadata…
+    $media = $service->store(withExif(testImage(800, 600), orientation: 6));
+    expect(Storage::disk('public')->get($media->path))->not->toContain('SecretCam');
+
+    // …and a file that cannot be cleaned at all is rejected and deleted.
+    $truncated = withExif(testImage(800, 600));
+    file_put_contents($truncated, substr(file_get_contents($truncated), 0, -2)); // no end-of-image marker
+    expect(fn () => $service->store($truncated))->toThrow(InvalidArgumentException::class);
+    expect(collect(Storage::disk('public')->allFiles())->filter(fn ($f) => ! str_contains($f, $media->filename) && ! str_contains($f, pathinfo($media->path, PATHINFO_FILENAME))))->toBeEmpty();
+});
+
+it('turns an original that still carries an orientation tag upright when it is re-optimised', function () {
+    $media = app(MediaService::class)->store(testImage(1200, 800));
+    Storage::disk('public')->put($media->path, file_get_contents(withExif(testImage(1200, 800), orientation: 6)));
+
+    app(MediaService::class)->regenerate($media);
+    expect([$media->width, $media->height])->toBe([800, 1200])
+        ->and(Storage::disk('public')->get($media->path))->not->toContain('SecretCam');
+});
+
+it('recognises clinical images whatever way the case stores their id', function () {
+    $media = app(MediaService::class)->store(testImage(900, 600));
+    $other = app(MediaService::class)->store(testImage(900, 600));
+    ClinicalCase::factory()->create(['images' => [['media_id' => (string) $media->id]], 'comparison' => ['before_media_id' => $other->id, 'after_media_id' => '999999']]);
+
+    expect($media->isClinical())->toBeTrue()->and($other->isClinical())->toBeTrue()
+        ->and(app(MediaService::class)->store(testImage(900, 600))->isClinical())->toBeFalse();
 });

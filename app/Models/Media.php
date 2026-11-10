@@ -69,11 +69,14 @@ class Media extends Model
             return true;
         }
 
-        // Narrow with LIKE, then check the decoded image lists exactly.
-        return ClinicalCase::withTrashed()
-            ->where(fn ($q) => $q->where('images', 'like', '%'.$id.'%')->orWhere('comparison', 'like', '%'.$id.'%'))
-            ->get(['id', 'images', 'comparison', 'featured_media_id'])
-            ->contains(fn (ClinicalCase $c) => in_array($id, $c->clinicalMediaIds(), true));
+        // JSON lookups (form values may be stored as numbers or as strings).
+        return ClinicalCase::withTrashed()->where(function ($q) use ($id) {
+            foreach ([$id, (string) $id] as $value) {
+                $q->orWhereJsonContains('images', ['media_id' => $value])
+                    ->orWhereJsonContains('comparison->before_media_id', $value)
+                    ->orWhereJsonContains('comparison->after_media_id', $value);
+            }
+        })->exists();
     }
 
     /** @return array<string, string> */
