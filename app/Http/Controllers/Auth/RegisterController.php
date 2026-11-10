@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\CareerStage;
 use App\Http\Controllers\Controller;
+use App\Models\CareerStage;
 use App\Models\User;
 use App\Services\Newsletter\NewsletterService;
 use App\Services\Seo\SeoManager;
@@ -36,7 +36,7 @@ class RegisterController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:190', 'unique:users,email'],
-            'career_stage' => ['required', Rule::enum(CareerStage::class)],
+            'career_stage' => CareerStage::selectableKeys() ? ['required', Rule::in(CareerStage::selectableKeys())] : ['nullable', 'prohibited'],
             'institution' => ['nullable', 'string', 'max:160'],
             'country' => ['nullable', 'string', 'size:2'],
             'password' => ['required', 'confirmed', Password::min(10)->letters()->numbers()->uncompromised()],

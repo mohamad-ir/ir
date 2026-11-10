@@ -45,7 +45,7 @@ class ReusableBlockResource extends Resource
                 ]),
                 PageResource::builder('blocks', includeReusable: false)->label(__('Sections')),
             ]),
-            Group::make()->columnSpan(['xl' => 7])->schema([View::make('filament.page-builder.preview')]),
+            Group::make()->columnSpan(['xl' => 7])->extraAttributes(['class' => 'oa-sticky-preview'])->schema([View::make('filament.page-builder.preview')]),
         ]);
     }
 

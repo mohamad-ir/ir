@@ -29,7 +29,7 @@ The installer checks all of these and tells you exactly what is missing.
 
 ## 3. Upload the files
 
-The package `oct-academy-<version>.zip` (e.g. `oct-academy-1.4.1.zip`) contains:
+The package `oct-academy-<version>.zip` (e.g. `oct-academy-1.5.0.zip`) contains:
 
 ```
 oct-academy/    ← the application (must NOT be inside public_html)
@@ -59,7 +59,7 @@ domains/YOURDOMAIN/
     └── media/            (your uploaded images will be stored here)
 ```
 
-Check the download first (optional): the package's SHA-256 checksum is listed in `release/SHA256SUMS` of the project; on a computer, `shasum -a 256 oct-academy-1.4.1.zip` (macOS/Linux) or `certutil -hashfile oct-academy-1.4.1.zip SHA256` (Windows) must print the same value.
+Check the download first (optional): the package's SHA-256 checksum is listed in `release/SHA256SUMS` of the project; on a computer, `shasum -a 256 oct-academy-1.5.0.zip` (macOS/Linux) or `certutil -hashfile oct-academy-1.5.0.zip SHA256` (Windows) must print the same value.
 
 > **Alternative (if your host lets you change the document root):** keep everything inside `oct-academy/` and point the domain’s document root to `oct-academy/public`. Then you do not need the package’s `public_html` folder.
 
@@ -196,6 +196,9 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
+
+### Upgrading from 1.4.x to 1.5 (dashboard usability, career stages)
+Same steps (from 1.4.0, the 1.4.1 notes below also apply). **Apply database updates** adds one table: the career stages members choose from become a list managed in **Audience › Career stages**. Existing members keep their choice (the stored values are unchanged) and four stages are added for an international audience. Nothing else needs configuring. The dashboard now has an **English | فارسی** switch in the top bar; Persian users of the right-to-left layout will see English content (titles, dates, sentences) in the correct order.
 
 ### Upgrading from 1.4.0 to 1.4.1 (installer fix)
 Same steps; there are **no database updates** and no new settings — all content, members, settings, uploads and the existing `.env` stay exactly as they are. The release fixes the first-run setup of new installations (see Troubleshooting) and makes *Settings › General › Require two-factor authentication* take effect immediately even after **Optimise for speed** (before, a change only applied after the caches were cleared). It is safe to apply to running sites. After uploading: **Clear all caches** and **Optimise for speed** (System › Health & maintenance), then check that the page shows version 1.4.1. Recommended once: in File Manager set the permissions of `oct-academy/.env` to `640` (new installations get this automatically; older ones were created with `644`).

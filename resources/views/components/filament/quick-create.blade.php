@@ -10,7 +10,9 @@
 @if ($items->isNotEmpty())
     <x-filament::dropdown placement="bottom-end" teleport>
         <x-slot name="trigger">
-            <x-filament::button icon="heroicon-m-plus" size="sm">{{ __('New') }}</x-filament::button>
+            {{-- Icon only on phones, where the top bar is narrow. --}}
+            <span class="sm:hidden"><x-filament::icon-button icon="heroicon-m-plus" color="primary" :label="__('New')" /></span>
+            <span class="hidden sm:inline-flex"><x-filament::button icon="heroicon-m-plus" size="sm">{{ __('New') }}</x-filament::button></span>
         </x-slot>
         <x-filament::dropdown.list>
             @foreach ($items as [$label, $key, $resource, $icon])

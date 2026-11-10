@@ -229,7 +229,7 @@ class PopupResource extends Resource
                         ]),
                     ]),
                 ]),
-                Group::make()->columnSpan(['xl' => 5])->extraAttributes(['class' => 'xl:sticky xl:top-20 xl:self-start'])->schema([
+                Group::make()->columnSpan(['xl' => 5])->extraAttributes(['class' => 'oa-sticky-preview'])->schema([
                     Section::make('Live preview')->heading(__('Live preview'))->compact()->schema([
                         ViewField::make('preview')->hiddenLabel()->dehydrated(false)->view('filament.popup-preview'),
                     ]),

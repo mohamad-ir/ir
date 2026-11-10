@@ -67,7 +67,7 @@ PHP
 
 # 5. Documentation
 mkdir -p "$PKG/docs"
-cp "$ROOT"/docs/*.md "$PKG/docs/" 2>/dev/null || true
+cp "$ROOT"/docs/*.md "$ROOT"/docs/*.pdf "$PKG/docs/" 2>/dev/null || true
 cp "$ROOT/README.md" "$PKG/README.md"
 
 # 6. Standard permissions (folders 755, files 644, executables 755): nothing group/world-writable,

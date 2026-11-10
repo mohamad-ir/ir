@@ -63,7 +63,7 @@ class OrderResource extends Resource
             Section::make('Customer')->heading(__('Customer'))->columnSpan(1)->schema([
                 TextEntry::make('name')->placeholder('—'),
                 TextEntry::make('email')->copyable(),
-                TextEntry::make('user.career_stage')->label(__('Career stage'))->placeholder('—'),
+                TextEntry::make('user.career_stage')->label(__('Career stage'))->formatStateUsing(fn (?string $state) => \App\Models\CareerStage::labelFor($state))->placeholder('—'),
                 TextEntry::make('stripe_payment_intent_id')->label(__('Stripe payment'))->placeholder('—')->copyable()
                     ->url(fn (Order $record) => $record->stripeDashboardUrl(), shouldOpenInNewTab: true),
                 TextEntry::make('receipt_url')->label(__('Receipt / invoice'))->placeholder('—')->formatStateUsing(fn () => 'Open')

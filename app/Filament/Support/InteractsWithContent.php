@@ -66,7 +66,7 @@ trait InteractsWithContent
     protected function revisionsAction(): Action
     {
         return Action::make('revisions')
-            ->label(fn () => 'History ('.$this->record->revisions()->count().')')
+            ->label(fn () => __('History (:count)', ['count' => $this->record->revisions()->count()]))
             ->icon('heroicon-o-clock')
             ->color('gray')
             ->slideOver()

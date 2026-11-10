@@ -6,7 +6,7 @@
                 <x-avatar :user="auth()->user()" size="md" />
                 <div>
                     <h1 class="font-heading text-3xl font-medium text-ink">{{ auth()->user()->displayName() }}</h1>
-                    <p class="text-sm text-muted">{{ auth()->user()->career_stage?->getLabel() }} @if(auth()->user()->institution) · {{ auth()->user()->institution }} @endif</p>
+                    <p class="text-sm text-muted">{{ auth()->user()->careerStageLabel() }} @if(auth()->user()->institution) · {{ auth()->user()->institution }} @endif</p>
                 </div>
             </div>
             <nav class="flex flex-wrap gap-1 rounded-full bg-subtle p-1 ring-1 ring-line" aria-label="Account">
