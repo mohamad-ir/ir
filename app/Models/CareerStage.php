@@ -36,6 +36,11 @@ class CareerStage extends Model
 
     protected $fillable = ['key', 'name', 'color', 'sort_order', 'is_active'];
 
+    /** Per-request copies (labels are looked up once per comment / table row). */
+    protected static ?array $memo = null;
+
+    protected static ?array $counts = null;
+
     protected function casts(): array
     {
         return ['is_active' => 'boolean', 'sort_order' => 'integer'];
@@ -59,6 +64,9 @@ class CareerStage extends Model
     public static function uniqueKey(string $name): string
     {
         $base = Str::limit(Str::slug($name, '_'), 32, '') ?: 'stage';
+        if (ctype_digit($base)) {
+            $base = 'stage_'.$base; // keys made only of digits would turn into numbers in PHP arrays
+        }
         $key = $base;
         for ($i = 2; static::where('key', $key)->exists(); $i++) {
             $key = $base.'_'.$i;
@@ -70,18 +78,34 @@ class CareerStage extends Model
     public static function flush(): void
     {
         Cache::forget('career-stages');
+        static::$memo = null;
+        static::$counts = null;
     }
 
     /** @return array<int, array{key: string, name: string, color: string, is_active: bool}> ordered list */
     public static function cachedList(): array
     {
-        try {
-            return Cache::rememberForever('career-stages', fn () => Schema::hasTable('career_stages')
-                ? static::query()->orderBy('sort_order')->orderBy('id')->get(['key', 'name', 'color', 'is_active'])->map->only(['key', 'name', 'color', 'is_active'])->all()
-                : collect(self::DEFAULTS)->map(fn ($d) => ['key' => $d[0], 'name' => $d[1], 'color' => $d[2], 'is_active' => true])->all());
-        } catch (Throwable) {
-            return collect(self::DEFAULTS)->map(fn ($d) => ['key' => $d[0], 'name' => $d[1], 'color' => $d[2], 'is_active' => true])->all();
+        if (static::$memo !== null) {
+            return static::$memo;
         }
+
+        try {
+            // Before the table exists (files uploaded, database not updated yet) the starting list is used,
+            // but never cached, so the real list appears as soon as the database update has run.
+            if (! Schema::hasTable('career_stages')) {
+                return static::defaults();
+            }
+
+            return static::$memo = Cache::rememberForever('career-stages', fn () => static::query()->orderBy('sort_order')->orderBy('id')
+                ->get(['key', 'name', 'color', 'is_active'])->map->only(['key', 'name', 'color', 'is_active'])->all());
+        } catch (Throwable) {
+            return static::defaults();
+        }
+    }
+
+    protected static function defaults(): array
+    {
+        return collect(self::DEFAULTS)->map(fn ($d) => ['key' => $d[0], 'name' => $d[1], 'color' => $d[2], 'is_active' => true])->all();
     }
 
     /**
@@ -118,8 +142,12 @@ class CareerStage extends Model
         return collect(static::cachedList())->firstWhere('key', $key)['color'] ?? 'gray';
     }
 
+    /** Members per stage, counted in one query per request. */
     public function usersCount(): int
     {
-        return User::where('career_stage', $this->key)->count();
+        static::$counts ??= User::query()->whereNotNull('career_stage')->groupBy('career_stage')
+            ->selectRaw('career_stage, COUNT(*) as aggregate')->pluck('aggregate', 'career_stage')->map(fn ($n) => (int) $n)->all();
+
+        return static::$counts[$this->key] ?? 0;
     }
 }

@@ -47,13 +47,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         ];
     }
 
-    /** Emails and notifications to people are always English, whatever language the dashboard is shown in. */
     /** Career stage name (managed in Audience › Career stages); null when none is set. */
     public function careerStageLabel(): ?string
     {
         return CareerStage::labelFor($this->career_stage);
     }
 
+    /** Emails and notifications to people are always English, whatever language the dashboard is shown in. */
     public function preferredLocale(): string
     {
         return 'en';

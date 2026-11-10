@@ -16,14 +16,16 @@
             @error('email')<p class="field-error">{{ $message }}</p>@enderror
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
+            @if (\App\Models\CareerStage::options())
             <div>
                 <label for="career_stage" class="field-label">I am a…</label>
                 <select id="career_stage" name="career_stage" required class="input">
                     <option value="">Select</option>
-                    @foreach (\App\Models\CareerStage::options() as $key => $name)<option value="{{ $key }}" @selected(old('career_stage') === $key)>{{ $name }}</option>@endforeach
+                    @foreach (\App\Models\CareerStage::options() as $key => $name)<option value="{{ $key }}" @selected(old('career_stage') === (string) $key)>{{ $name }}</option>@endforeach
                 </select>
                 @error('career_stage')<p class="field-error">{{ $message }}</p>@enderror
             </div>
+            @endif
             <div>
                 <label for="country" class="field-label">Country</label>
                 <select id="country" name="country" class="input">

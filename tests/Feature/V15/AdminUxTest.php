@@ -30,7 +30,7 @@ it('keeps the open/closed state of builder and repeater items when items are add
 
     $this->actingAsStaff();
     // The stored states are cleared on every page load, so each visit starts from the default.
-    $this->get('/admin')->assertSee('_x_filament:(builder|repeater):collapsed:', false);
+    $this->get('/admin')->assertSee('^(_x_)?filament:(builder|repeater):collapsed:', false);
 });
 
 it('keeps previews left-to-right and in view in every editor with a live preview', function () {

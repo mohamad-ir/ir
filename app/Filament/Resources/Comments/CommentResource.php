@@ -69,7 +69,7 @@ class CommentResource extends Resource
                         .'<span class="text-sm">'.e($record->excerpt(220)).'</span>'
                         .($record->moderation_note ? '<br><span class="text-xs text-warning-600">'.e($record->moderation_note).'</span>' : '')))
                     ->description(fn (Comment $record) => $record->authorName().($record->user ? ' · '.$record->user->email : '')),
-                TextColumn::make('commentable.title')->label(__('On'))->limit(60)->wrap()
+                TextColumn::make('commentable.title')->label(__('On'))->limit(60)->wrap()->width('24%')
                     ->description(fn (Comment $record) => __(['case' => 'OCT case', 'article' => 'Article', 'video' => 'Video'][$record->commentable_type] ?? $record->commentable_type))
                     ->url(fn (Comment $record) => $record->url(), shouldOpenInNewTab: true),
                 TextColumn::make('status')->badge()

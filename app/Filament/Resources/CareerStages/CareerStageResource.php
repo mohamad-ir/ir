@@ -46,7 +46,7 @@ class CareerStageResource extends Resource
             TextInput::make('name')->label(__('Name'))->required()->maxLength(80)->columnSpanFull()
                 ->placeholder(__('e.g. Orthoptist'))
                 ->helperText(__('Shown to members in English on the registration form and in their profile.')),
-            TextInput::make('key')->label(__('Key'))->maxLength(40)->alphaDash()->unique(ignoreRecord: true)
+            TextInput::make('key')->label(__('Key'))->maxLength(40)->alphaDash()->notRegex('/^\d+$/')->unique(ignoreRecord: true)
                 ->disabledOn('edit')->dehydrated(fn (string $operation) => $operation === 'create')
                 ->placeholder(__('Created from the name'))
                 ->helperText(__('Stored with each member. It cannot be changed later, so renaming a stage never affects members.')),
@@ -61,6 +61,8 @@ class CareerStageResource extends Resource
         return $table
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            // Reordering saves with one query (no model events), so refresh the cached list here.
+            ->afterReordering(fn () => CareerStage::flush())
             ->paginated(false)
             ->columns([
                 TextColumn::make('name')->label(__('Name'))->weight('medium')->searchable()

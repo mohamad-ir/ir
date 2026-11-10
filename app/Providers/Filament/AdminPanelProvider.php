@@ -114,7 +114,7 @@ class AdminPanelProvider extends PanelProvider
             // Builder/repeater items keep their open/closed state when an item is added, cloned or moved
             // (Filament otherwise re-opens every item). The stored states are cleared on each page load.
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString(
-                "<script>(function(){function c(){try{Object.keys(localStorage).forEach(function(k){if(/^_x_filament:(builder|repeater):collapsed:/.test(k))localStorage.removeItem(k)})}catch(e){}}c();document.addEventListener('livewire:navigating',c)})()</script>"
+                "<script>(function(){function c(){try{Object.keys(localStorage).forEach(function(k){if(/^(_x_)?filament:(builder|repeater):collapsed:/.test(k))localStorage.removeItem(k)})}catch(e){}}c();document.addEventListener('livewire:navigating',c)})()</script>"
             ))
             ->authMiddleware([
                 Authenticate::class,

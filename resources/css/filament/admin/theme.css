@@ -5,6 +5,7 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/components/filament/**/*';
 
 /*
  * Dashboard theme. Built on Filament's design system, refined for a calm,

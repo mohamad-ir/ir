@@ -15,6 +15,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Members are counted and filtered by stage.
+        if (! collect(Schema::getIndexes('users'))->contains(fn ($i) => $i['columns'] === ['career_stage'])) {
+            Schema::table('users', fn (Blueprint $table) => $table->index('career_stage'));
+        }
+
         Schema::create('career_stages', function (Blueprint $table) {
             $table->id();
             $table->string('key', 40)->unique();
@@ -39,10 +44,22 @@ return new class extends Migration
                 'key' => mb_substr($key, 0, 40), 'name' => ucfirst(str_replace(['_', '-'], ' ', $key)), 'color' => 'gray',
                 'sort_order' => 900 + $i, 'is_active' => false, 'created_at' => $now, 'updated_at' => $now,
             ]));
+
+        CareerStage::flush();
     }
 
     public function down(): void
     {
+        // Earlier versions only know the six original stages: members on any other stage become “other”,
+        // so their pages keep working after a rollback.
+        DB::table('users')->whereNotNull('career_stage')
+            ->whereNotIn('career_stage', ['student', 'resident', 'fellow', 'ophthalmologist', 'optometrist', 'other'])
+            ->update(['career_stage' => 'other']);
+
         Schema::dropIfExists('career_stages');
+        if (collect(Schema::getIndexes('users'))->contains(fn ($i) => $i['columns'] === ['career_stage'])) {
+            Schema::table('users', fn (Blueprint $table) => $table->dropIndex(['career_stage']));
+        }
+        CareerStage::flush();
     }
 };

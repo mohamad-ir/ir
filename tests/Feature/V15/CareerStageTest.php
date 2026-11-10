@@ -4,6 +4,8 @@ use App\Filament\Resources\CareerStages\Pages\ManageCareerStages;
 use App\Models\CareerStage;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 
 beforeEach(fn () => $this->seedRoles());
@@ -92,4 +94,51 @@ it('shows the stage name wherever a member appears in the dashboard', function (
 
     $this->get('/admin/users')->assertOk()->assertSee('Orthoptist');
     $this->get('/admin/users/'.$member->id.'/edit')->assertOk();
+});
+
+it('refreshes the cached list after drag-and-drop reordering', function () {
+    $this->actingAsStaff();
+    CareerStage::options(); // cached
+    $ids = CareerStage::orderByDesc('sort_order')->pluck('id')->map(fn ($id) => (string) $id)->all();
+
+    Livewire::test(ManageCareerStages::class)->call('reorderTable', $ids);
+
+    expect(array_key_first(CareerStage::options()))->toBe('other');
+});
+
+it('counts members per stage in one query and never creates number-only keys', function () {
+    User::factory()->count(2)->create(['career_stage' => 'resident']);
+    $stages = CareerStage::all();
+
+    DB::enableQueryLog();
+    $counts = $stages->mapWithKeys(fn ($s) => [$s->key => $s->usersCount()]);
+    expect(count(DB::getQueryLog()))->toBe(1)
+        ->and($counts['resident'])->toBe(2)->and($counts['fellow'])->toBe(0);
+
+    expect(CareerStage::create(['name' => '2024'])->key)->toBe('stage_2024');
+});
+
+it('keeps registration open when every stage is switched off', function () {
+    $this->seed(RolesSeeder::class);
+    CareerStage::query()->update(['is_active' => false]);
+    CareerStage::flush();
+
+    $this->get('/register')->assertOk()->assertDontSee('I am a…');
+    $this->post('/register', [
+        'name' => 'Dr C', 'email' => 'c@example.org',
+        'password' => 'Str0ngPassword9', 'password_confirmation' => 'Str0ngPassword9', 'terms' => '1',
+    ])->assertSessionHasNoErrors();
+});
+
+it('maps new stages to “other” when the update is rolled back, so older versions keep working', function () {
+    $orthoptist = User::factory()->create(['career_stage' => 'orthoptist']);
+    $fellow = User::factory()->create(['career_stage' => 'fellow']);
+
+    $migration = require database_path('migrations/2026_11_11_100000_create_career_stages_table.php');
+    $migration->down();
+    expect($orthoptist->fresh()->career_stage)->toBe('other')->and($fellow->fresh()->career_stage)->toBe('fellow')
+        ->and(Schema::hasTable('career_stages'))->toBeFalse();
+
+    $migration->up();
+    expect(CareerStage::count())->toBe(count(CareerStage::DEFAULTS));
 });
