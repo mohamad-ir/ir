@@ -88,7 +88,7 @@
   - Audit fixes: setup checklist uses a container query (was cramped in the half-width tablet column); quick-create button icon-only on phones; untranslated dashboard strings wrapped in __() (password helper, History (n), “Insert section here”, Stripe webhook modal) and translated
   - Career stages: fixed enum replaced by a managed list (career_stages table, Audience › Career stages: add, rename, colour, reorder, switch off; deleting a stage in use is blocked; keys immutable) used by registration, profile, dashboard form/table/filter, order details, comments and the data export; users.career_stage unchanged (same keys); international defaults (+ other-specialty doctor/GP, orthoptist, ophthalmic nurse/technician/photographer, researcher)
 
-- ✅ Stage 19 (after 1.5.0, not yet released) — Image quality and optimisation
+- ✅ Stage 19 (v1.6.0) — Image quality and optimisation
   - Originals: metadata removed losslessly (JPEG APPn/COM segments and data after EOI, PNG text/eXIf/tIME chunks, WebP EXIF/XMP chunks; ICC/sRGB/Adobe kept) instead of a JPEG q90 re-encode; only EXIF-rotated JPEGs are re-encoded (q95, upright); unparsable files fall back to a high-quality re-encode
   - Privacy fix: with Imagick (Intervention strip=false by default) EXIF/GPS/comments were kept in originals, WebP variants, profile photos and branding icons → one image factory (App\Support\Images) with strip enabled for every upload path
   - Variants: thumb 400 / md 960 / lg 1600 / new xl 2560 for large and Retina screens; the largest is made at the source width when the source falls between sizes; never upscaled; srcset lists every size; GIFs keep their animation (still thumbnail only)
