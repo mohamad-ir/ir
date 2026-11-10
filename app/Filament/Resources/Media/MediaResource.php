@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\Media;
 
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Models\Media;
 use App\Models\MediaFolder;
+use App\Services\Media\MediaService;
+use App\Services\Media\MediaUsage;
+use App\Support\Ui;
 use BackedEnum;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -14,7 +18,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
@@ -30,7 +33,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class MediaResource extends Resource
 {
-    use \App\Filament\Concerns\TranslatesResourceLabels;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Media::class;
 
@@ -75,6 +78,13 @@ class MediaResource extends Resource
                     Textarea::make('description')->label(__('Internal notes'))->rows(2),
                     static::folderSelect(),
                     Toggle::make('is_deidentified')->label(__('Checked: contains no patient-identifiable information')),
+                    Select::make('quality')->label(__('Image quality'))
+                        ->visible(fn (?Media $record) => $record?->isImage() && $record->mime_type !== 'image/gif')
+                        ->options(Media::qualityOptions())->default('auto')->selectablePlaceholder(false)
+                        ->formatStateUsing(fn (?string $state) => $state ?: 'auto')
+                        ->dehydrateStateUsing(fn (?string $state) => $state === 'auto' ? null : $state)
+                        ->helperText(fn (?Media $record) => __('Automatic uses the high profile for clinical images (images in OCT cases and questions, de-identified images, grayscale OCT scans, PNG files) and the standard profile for photographs. The original file is always kept unchanged.')
+                            .($record?->optimized_profile ? ' '.__('Applied: :profile.', ['profile' => Media::qualityOptions()[$record->optimized_profile] ?? $record->optimized_profile]) : '')),
                 ]),
             ]),
         ]);
@@ -97,7 +107,7 @@ class MediaResource extends Resource
                 ])->space(1),
             ])
             ->filters([
-                SelectFilter::make('type')->options(\App\Support\Ui::options(['image' => 'Images', 'video' => 'Videos', 'application' => 'Documents']))
+                SelectFilter::make('type')->options(Ui::options(['image' => 'Images', 'video' => 'Videos', 'application' => 'Documents']))
                     ->query(fn (Builder $query, array $data) => $data['value'] ? $query->where('mime_type', 'like', $data['value'].'/%') : $query),
                 SelectFilter::make('folder_id')->label(__('Folder'))->options(fn () => MediaFolder::orderBy('name')->pluck('name', 'id')),
                 TernaryFilter::make('missing_alt')->label(__('Alt text'))->trueLabel(__('Missing alt text'))->falseLabel(__('Has alt text'))
@@ -111,6 +121,15 @@ class MediaResource extends Resource
                         ->schema([static::folderSelect()])
                         ->action(fn (Collection $records, array $data) => $records->each->update(['folder_id' => $data['folder_id']]))
                         ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('quality')->label(__('Set image quality'))->icon('heroicon-o-sparkles')
+                        ->schema([Select::make('quality')->label(__('Image quality'))->options(Media::qualityOptions())->default('auto')->required()
+                            ->helperText(__('The optimised versions are rebuilt in the background within a few minutes. Originals are not changed.'))])
+                        ->action(function (Collection $records, array $data) {
+                            $images = $records->filter(fn (Media $m) => $m->isImage() && $m->mime_type !== 'image/gif');
+                            Media::whereKey($images->modelKeys())->update(['quality' => $data['quality'] === 'auto' ? null : $data['quality'], 'variants_version' => 0]);
+                            Notification::make()->success()->title(__(':count image(s) will be re-optimised', ['count' => $images->count()]))->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     BulkAction::make('delete')->label(__('Delete'))->icon('heroicon-o-trash')->color('danger')->requiresConfirmation()
                         ->modalDescription(__('Files that are still used on the website will be skipped.'))
                         ->visible(fn () => auth()->user()->can('media.delete'))
@@ -118,12 +137,12 @@ class MediaResource extends Resource
                             $deleted = 0;
                             $skipped = 0;
                             foreach ($records as $media) {
-                                if (app(\App\Services\Media\MediaUsage::class)->find($media)) {
+                                if (app(MediaUsage::class)->find($media)) {
                                     $skipped++;
 
                                     continue;
                                 }
-                                app(\App\Services\Media\MediaService::class)->delete($media);
+                                app(MediaService::class)->delete($media);
                                 $deleted++;
                             }
                             Notification::make()->success()->title("Deleted {$deleted} files".($skipped ? ", skipped {$skipped} in use" : ''))->send();

@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\NotFoundLog;
+use App\Models\Order;
 use App\Services\Analytics\AnalyticsQuery;
 use App\Services\Backup\BackupService;
+use App\Services\Learning\WebinarReminders;
+use App\Services\Media\MediaService;
 use App\Services\Newsletter\CampaignSender;
-use App\Models\NotFoundLog;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Schedule;
 
@@ -17,10 +20,13 @@ Schedule::call(fn () => Settings::set('system.last_cron_at', now()->toIso8601Str
 Schedule::call(fn () => app(CampaignSender::class)->tick())->everyMinute()->name('newsletter')->withoutOverlapping(10);
 
 Schedule::call(function () {
-    app(\App\Services\Learning\WebinarReminders::class)->send();
+    app(WebinarReminders::class)->send();
     // Checkout sessions expire after 24 hours; tidy any order whose "expired" webhook never arrived.
-    \App\Models\Order::where('status', 'pending')->where('created_at', '<', now()->subDays(2))->update(['status' => 'canceled']);
+    Order::where('status', 'pending')->where('created_at', '<', now()->subDays(2))->update(['status' => 'canceled']);
 })->everyFiveMinutes()->name('webinar-reminders')->withoutOverlapping(10);
+
+// Images made by an older optimisation pipeline are re-optimised in the background, a few per minute.
+Schedule::call(fn () => app(MediaService::class)->upgradeOutdated())->everyMinute()->name('media-optimise')->withoutOverlapping(10);
 
 Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')->everyMinute()->withoutOverlapping(5);
 

@@ -29,7 +29,7 @@
                      @endif
                      class="absolute inset-0" role="group" aria-roledescription="slide" aria-label="{{ $i + 1 }} of {{ $slides->count() }}">
                     <picture>
-                        @if ($slide->mobileMedia)<source media="(max-width: 640px)" srcset="{{ $slide->mobileMedia->url(isset($slide->mobileMedia->variants['md']) ? 'md' : null) }}">@endif
+                        @if ($slide->mobileMedia)<source media="(max-width: 640px)" srcset="{{ $slide->mobileMedia->srcset() ?: $slide->mobileMedia->url() }}" @if ($slide->mobileMedia->srcset()) sizes="100vw" @endif>@endif
                         <img src="{{ $slide->media->url(isset($slide->media->variants['lg']) ? 'lg' : null) }}" @if ($slide->media->srcset()) srcset="{{ $slide->media->srcset() }}" sizes="(min-width: 1280px) 1280px, 100vw" @endif
                              alt="{{ $slide->alt ?: ($slide->title ?: $slide->media->altText()) }}" class="absolute inset-0 size-full object-cover"
                              @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif decoding="async">

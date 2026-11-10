@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Media\Pages;
 
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Filament\Resources\Media\MediaResource;
 use App\Services\Media\MediaService;
 use App\Services\Media\MediaUsage;
@@ -13,13 +14,22 @@ use Throwable;
 
 class EditMedia extends EditRecord
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
+    use TranslatesPageLabels;
 
     protected static string $resource = MediaResource::class;
 
     public function getTitle(): string
     {
         return $this->record->title ?: $this->record->original_name;
+    }
+
+    /** A different quality profile (or clinical flag) needs new optimised versions. */
+    protected function afterSave(): void
+    {
+        if ($this->record->isImage() && $this->record->wasChanged(['quality', 'is_deidentified'])) {
+            app(MediaService::class)->regenerate($this->record);
+            Notification::make()->success()->title(__('Responsive sizes regenerated'))->send();
+        }
     }
 
     protected function getHeaderActions(): array

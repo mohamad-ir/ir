@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div class="overflow-hidden rounded-xl bg-gray-950 ring-1 ring-gray-950/5">
         @if ($media->isImage())
-            <img src="{{ $media->url('lg') }}" alt="{{ $media->altText() }}" class="mx-auto max-h-[34rem] w-auto">
+            <img src="{{ $media->url(isset($media->variants['lg']) ? 'lg' : null) }}" alt="{{ $media->altText() }}" class="mx-auto max-h-[34rem] w-auto">
         @elseif ($media->isVideo())
             <video src="{{ $media->url() }}" controls class="mx-auto max-h-[34rem] w-full"></video>
         @else
@@ -17,7 +17,8 @@
         <div><p class="text-xs uppercase tracking-wider text-gray-500">{{ __('File') }}</p><p class="mt-1 font-medium break-all">{{ $media->original_name }}</p></div>
         <div><p class="text-xs uppercase tracking-wider text-gray-500">{{ __('Type & size') }}</p><p class="mt-1 font-medium">{{ $media->mime_type }} · {{ $media->humanSize() }} @if($media->dimensions()) · {{ $media->dimensions() }} px @endif</p></div>
         <div><p class="text-xs uppercase tracking-wider text-gray-500">{{ __('Uploaded') }}</p><p class="mt-1 font-medium">{{ $media->created_at?->format('j M Y H:i') }} @if($media->uploader) by {{ $media->uploader->name }} @endif</p></div>
-        <div><p class="text-xs uppercase tracking-wider text-gray-500">{{ __('Optimised versions') }}</p><p class="mt-1 font-medium">{{ $media->variants ? implode(', ', array_keys($media->variants)).' (WebP)' : '—' }}</p></div>
+        <div><p class="text-xs uppercase tracking-wider text-gray-500">{{ __('Optimised versions') }}</p><p class="mt-1 font-medium">@forelse ($media->variants ?? [] as $name => $file)<span class="me-3 inline-block whitespace-nowrap" dir="ltr">{{ $name }} · {{ min(\App\Models\Media::VARIANT_WIDTHS[$name] ?? 0, $media->width ?: PHP_INT_MAX) }}px · {{ \Illuminate\Support\Number::fileSize(\Illuminate\Support\Facades\Storage::disk($media->disk)->exists($file) ? \Illuminate\Support\Facades\Storage::disk($media->disk)->size($file) : 0, precision: 0) }}</span>@empty — @endforelse
+            @if ($media->optimized_profile)<span class="mt-1 block text-xs text-gray-500">WebP · {{ \App\Models\Media::qualityOptions()[$media->optimized_profile] ?? $media->optimized_profile }}</span>@endif</p></div>
         <div class="sm:col-span-2" x-data="{ copied: false }" data-url="{{ $media->url() }}">
             <p class="text-xs uppercase tracking-wider text-gray-500">{{ __('Public URL') }}</p>
             <div class="mt-1 flex gap-2">

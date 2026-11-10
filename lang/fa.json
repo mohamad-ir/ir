@@ -1943,5 +1943,15 @@
     "Click help": "راهنمای باز شدن با لینک",
     "Global limits": "محدودیت‌های کلی",
     "System paths": "مسیرهای سیستمی",
-    "Types": "انواع"
+    "Types": "انواع",
+    "Image quality": "کیفیت تصویر",
+    "Automatic (recommended)": "خودکار (پیشنهادی)",
+    "Standard — photographs": "استاندارد — عکس‌ها",
+    "High — clinical and diagnostic images": "بالا — تصاویر بالینی و تشخیصی",
+    "Lossless — maximum detail, larger files": "بدون افت — حداکثر جزئیات، حجم بیشتر",
+    "Automatic uses the high profile for clinical images (images in OCT cases and questions, de-identified images, grayscale OCT scans, PNG files) and the standard profile for photographs. The original file is always kept unchanged.": "حالت خودکار برای تصاویر بالینی (تصاویر موارد OCT و سؤال‌ها، تصاویر بی‌نام‌شده، اسکن‌های خاکستری OCT و فایل‌های PNG) کیفیت بالا و برای عکس‌ها کیفیت استاندارد را به کار می‌برد. فایل اصلی همیشه بدون تغییر نگه داشته می‌شود.",
+    "Applied: :profile.": "اعمال‌شده: :profile.",
+    "Set image quality": "تعیین کیفیت تصویر",
+    "The optimised versions are rebuilt in the background within a few minutes. Originals are not changed.": "نسخه‌های بهینه‌شده ظرف چند دقیقه در پس‌زمینه بازسازی می‌شوند. فایل‌های اصلی تغییر نمی‌کنند.",
+    ":count image(s) will be re-optimised": ":count تصویر دوباره بهینه‌سازی می‌شود"
 }

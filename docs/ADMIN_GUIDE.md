@@ -125,6 +125,13 @@ Each team member can use the dashboard in **English** or **Persian (فارسی)*
 
 ## Library
 - **Media library** — upload many files at once (metadata such as GPS/EXIF is removed automatically; responsive WebP versions are created). Add alt text for accessibility and Google Images. **Replace file** swaps an image everywhere it is used. The details page shows where each file is used.
+- **Image quality** — every uploaded original is kept unchanged, pixel for pixel; only privacy data (GPS, camera, comments, EXIF/XMP/IPTC) is removed. The website shows optimised WebP copies at 400, 960, 1600 and 2560 px (never enlarged), and the browser picks the right one for each screen, including Retina displays. Zooming in the OCT case viewer or a gallery loads the original, so every diagnostic detail stays visible. Each image has an **Image quality** setting on its details page:
+  - *Automatic (recommended)* — images used in OCT cases and questions, de-identified patient images, grayscale scans (OCT, red-free, infrared) and PNG files get the **High** profile; other photographs get **Standard**.
+  - *Standard* — photographs and illustrations (WebP quality 84–86).
+  - *High* — clinical and diagnostic images (WebP quality 92).
+  - *Lossless* — pixel-exact copies; largest files, for images where every pixel matters.
+
+  Changing it rebuilds the copies immediately. To change many images, select them in the library and use **Set image quality**; they are rebuilt in the background within a few minutes. The details page lists each optimised size with its file size.
 - **Topics & diseases** — the backbone of filters, topic pages (e.g. `/topics/central-serous-chorioretinopathy`) and related content. Featured topics appear on the homepage and in search.
 
 ## Audience

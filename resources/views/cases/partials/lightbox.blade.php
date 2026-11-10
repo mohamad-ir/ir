@@ -25,7 +25,7 @@
         </div>
         <div class="relative flex-1 overflow-hidden" x-on:wheel.prevent="wheel($event)" x-on:mousedown="down($event)" x-on:mousemove.window="moveDrag($event)" x-on:mouseup.window="up()"
              x-on:dblclick="scale > 1 ? reset() : zoom(1.5)" :class="scale > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-zoom-in'">
-            <img :src="current.src" :alt="current.alt" draggable="false" class="absolute inset-0 m-auto max-h-full max-w-full select-none object-contain transition-[filter] duration-150"
+            <img :src="hd ? current.full : current.src" :srcset="hd ? '' : (current.srcset || '')" sizes="100vw" :alt="current.alt" draggable="false" class="absolute inset-0 m-auto max-h-full max-w-full select-none object-contain transition-[filter] duration-150"
                  :style="`transform: translate(${x}px, ${y}px) scale(${scale}); filter: ${filter}; transition: ${dragging ? 'none' : 'transform .2s ease'}`">
             <template x-if="images.length > 1">
                 <div>
