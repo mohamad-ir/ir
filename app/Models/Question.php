@@ -23,6 +23,11 @@ class Question extends Model
 {
     use HasFactory, HasPublishing, HasRevisions, HasTaxonomies, LogsActivity, Searchable, SoftDeletes;
 
+    protected static function booted(): void
+    {
+        static::saved(fn (self $q) => Media::markClinical([$q->media_id]));
+    }
+
     protected $fillable = [
         'exam_topic_id', 'type', 'exam', 'title', 'stem', 'media_id', 'options', 'explanation', 'model_answer',
         'key_points', 'references', 'difficulty', 'access_level', 'status', 'published_at', 'author_id',

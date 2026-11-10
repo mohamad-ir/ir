@@ -197,6 +197,9 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
 
+### Upgrading from 1.5 to 1.6 (image quality)
+Same steps. **Apply database updates** adds three columns to the media library. Existing images are then re-optimised automatically in the background by the cron job (about ten images a minute; the website keeps working with the old copies meanwhile). Originals are not re-encoded: only their privacy metadata is removed. With SSH you can do it in one go with `php artisan media:optimize`. Installing the PHP **Imagick** extension is recommended (better resizing, CMYK and 16-bit images) but not required; WebP files are written by GD/libwebp in both cases. On hosts with Imagick, this version also fixes the removal of EXIF/GPS data from images and profile photos (earlier uploads are cleaned during the re-optimisation).
+
 ### Upgrading from 1.4.x to 1.5 (dashboard usability, career stages)
 Same steps (from 1.4.0, the 1.4.1 notes below also apply). **Apply database updates** adds one table: the career stages members choose from become a list managed in **Audience › Career stages**. Existing members keep their choice (the stored values are unchanged) and four stages are added for an international audience. Nothing else needs configuring. The dashboard now has an **English | فارسی** switch in the top bar; Persian users of the right-to-left layout will see English content (titles, dates, sentences) in the correct order.
 
@@ -274,6 +277,7 @@ Tick these off before announcing the site:
 php artisan cms:install --demo        # install without the web installer
 php artisan cms:admin email@example.com   # create a super admin / reset a password
 php artisan cms:reindex               # rebuild search index and sitemap
+php artisan media:optimize            # re-optimise images made by an older version (--all for every image)
 php artisan cms:demo --remove         # remove sample content
 php artisan optimize                  # cache config/routes/views for speed
 ```

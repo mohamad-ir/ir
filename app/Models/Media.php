@@ -17,16 +17,78 @@ class Media extends Model
     protected $fillable = [
         'folder_id', 'disk', 'path', 'filename', 'original_name', 'mime_type', 'extension', 'size',
         'width', 'height', 'title', 'alt', 'caption', 'credit', 'description', 'variants', 'hash',
-        'is_deidentified', 'uploaded_by',
+        'is_deidentified', 'uploaded_by', 'quality', 'optimized_profile', 'variants_version',
     ];
 
     protected function casts(): array
     {
-        return ['variants' => 'array', 'is_deidentified' => 'boolean', 'size' => 'integer'];
+        return ['variants' => 'array', 'is_deidentified' => 'boolean', 'size' => 'integer', 'variants_version' => 'integer'];
     }
 
-    /** Responsive widths generated for every raster image (WebP). */
-    public const VARIANT_WIDTHS = ['thumb' => 400, 'md' => 960, 'lg' => 1600];
+    /**
+     * Responsive widths generated for every raster image (WebP). xl serves large and high-density
+     * (Retina) screens; zooming in a viewer loads the untouched original.
+     */
+    public const VARIANT_WIDTHS = ['thumb' => 400, 'md' => 960, 'lg' => 1600, 'xl' => 2560];
+
+    /** Bumped whenever the optimisation pipeline changes; older images are re-optimised in the background. */
+    public const VARIANTS_VERSION = 2;
+
+    /**
+     * WebP quality per profile and variant (100 = lossless).
+     *  - standard: photographs and illustrations.
+     *  - high: clinical and diagnostic images (fundus photos, OCT scans, angiography) and graphics with text.
+     *  - lossless: pixel-exact copies for images where every detail matters.
+     */
+    public const QUALITY = [
+        'standard' => ['thumb' => 80, 'md' => 84, 'lg' => 86, 'xl' => 86],
+        'high' => ['thumb' => 85, 'md' => 92, 'lg' => 92, 'xl' => 92],
+        'lossless' => ['thumb' => 85, 'md' => 100, 'lg' => 100, 'xl' => 100],
+    ];
+
+    /**
+     * Images shown in OCT cases and questions are clinical: those optimised with the automatic
+     * standard profile are queued for re-optimisation with the high profile.
+     */
+    public static function markClinical(array $ids): void
+    {
+        $ids = array_filter($ids);
+        if ($ids) {
+            static::whereIn('id', $ids)->whereNull('quality')->where('optimized_profile', 'standard')->update(['variants_version' => 0]);
+        }
+    }
+
+    /** True when the image is shown in an OCT case or a question. */
+    public function isClinical(): bool
+    {
+        if (! $this->exists) {
+            return false;
+        }
+        $id = (int) $this->id;
+        if (Question::withTrashed()->where('media_id', $id)->exists() || ClinicalCase::withTrashed()->where('featured_media_id', $id)->exists()) {
+            return true;
+        }
+
+        // JSON lookups (form values may be stored as numbers or as strings).
+        return ClinicalCase::withTrashed()->where(function ($q) use ($id) {
+            foreach ([$id, (string) $id] as $value) {
+                $q->orWhereJsonContains('images', ['media_id' => $value])
+                    ->orWhereJsonContains('comparison->before_media_id', $value)
+                    ->orWhereJsonContains('comparison->after_media_id', $value);
+            }
+        })->exists();
+    }
+
+    /** @return array<string, string> */
+    public static function qualityOptions(): array
+    {
+        return [
+            'auto' => __('Automatic (recommended)'),
+            'standard' => __('Standard — photographs'),
+            'high' => __('High — clinical and diagnostic images'),
+            'lossless' => __('Lossless — maximum detail, larger files'),
+        ];
+    }
 
     public function folder(): BelongsTo
     {
@@ -60,10 +122,22 @@ class Media extends Model
         return $this->url(isset($this->variants['thumb']) ? 'thumb' : null);
     }
 
+    /** URL of the largest optimised version (falls back to the original). */
+    public function largestUrl(): string
+    {
+        foreach (array_reverse(array_keys(self::VARIANT_WIDTHS)) as $name) {
+            if (isset($this->variants[$name]) && $name !== 'thumb') {
+                return $this->url($name);
+            }
+        }
+
+        return $this->url();
+    }
+
     public function srcset(): ?string
     {
-        if (empty($this->variants)) {
-            return null;
+        if (empty($this->variants) || $this->mime_type === 'image/gif') {
+            return null; // GIFs keep their animation, so the original is always served
         }
 
         $parts = [];

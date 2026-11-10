@@ -4,7 +4,7 @@
     $images = $case->imageItems();
     $comparison = $case->comparisonItems();
     $viewerImages = $images->map(fn ($i) => [
-        'src' => $i['media']->url('lg'), 'full' => $i['media']->url(),
+        'src' => $i['media']->url(isset($i['media']->variants['lg']) ? 'lg' : null), 'srcset' => $i['media']->srcset(), 'full' => $i['media']->url(),
         'caption' => $i['caption'] ?? $i['media']->caption, 'label' => $i['label'] ?? null, 'alt' => $i['media']->altText(),
     ])->values();
     $refs = $case->references ?? [];

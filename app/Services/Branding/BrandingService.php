@@ -3,12 +3,10 @@
 namespace App\Services\Branding;
 
 use App\Models\Media;
+use App\Support\Images;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
-use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
-use Intervention\Image\ImageManager;
 use Throwable;
 
 /**
@@ -132,7 +130,7 @@ class BrandingService
             } elseif (! $icon->width || abs($icon->width - $icon->height) > max(2, $icon->width * 0.02)) {
                 $errors['branding.favicon_id'] = "Site icon: the image must be square (this one is {$icon->width} × {$icon->height} px).";
             } elseif ($icon->width < self::ICON_MIN_PX) {
-                $errors['branding.favicon_id'] = 'Site icon: at least '.self::ICON_MIN_PX." × ".self::ICON_MIN_PX." px is needed for phone home screens (this one is {$icon->width} px).";
+                $errors['branding.favicon_id'] = 'Site icon: at least '.self::ICON_MIN_PX.' × '.self::ICON_MIN_PX." px is needed for phone home screens (this one is {$icon->width} px).";
             }
         }
 
@@ -169,7 +167,7 @@ class BrandingService
     {
         try {
             $disk = Storage::disk($icon->disk);
-            $manager = extension_loaded('imagick') && class_exists(\Imagick::class) ? new ImageManager(new ImagickDriver, decodeAnimation: false) : new ImageManager(new GdDriver, decodeAnimation: false);
+            $manager = Images::manager(decodeAnimation: false);
             $source = $manager->read($disk->path($icon->path));
             $background = Settings::get('branding.icon_background') ?: '#ffffff';
             $dir = 'branding/icons-'.substr($fingerprint, 0, 12);

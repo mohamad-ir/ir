@@ -3,12 +3,11 @@
 namespace App\Services\Users;
 
 use App\Models\User;
+use App\Support\Images;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
-use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\ImageManager;
 use Throwable;
 
@@ -116,8 +115,6 @@ class AvatarService
 
     protected function manager(): ImageManager
     {
-        return extension_loaded('imagick') && class_exists(\Imagick::class)
-            ? new ImageManager(new ImagickDriver, decodeAnimation: false)
-            : new ImageManager(new GdDriver, decodeAnimation: false);
+        return Images::manager(decodeAnimation: false);
     }
 }

@@ -63,8 +63,19 @@ document.addEventListener('alpine:init', () => {
     /* ---------------- OCT image viewer (lightbox with zoom, pan, contrast, invert) ---------------- */
     Alpine.data('caseViewer', (images = []) => ({
         images, index: 0, open: false, scale: 1, x: 0, y: 0, dragging: false, start: null,
-        invert: false, contrast: 100, brightness: 100,
+        invert: false, contrast: 100, brightness: 100, full: {},
         get current() { return this.images[this.index] || {}; },
+        /* Zoomed in: show the untouched original (every diagnostic detail) once it has downloaded. */
+        get hd() { return this.scale > 1 && !!this.full[this.index]; },
+        loadFull() {
+            const i = this.index, url = this.images[i]?.full;
+            if (!url || this.full[i] !== undefined) return;
+            this.full[i] = false;
+            const img = new Image();
+            img.onload = () => { this.full[i] = true; };
+            img.onerror = () => { delete this.full[i]; };
+            img.src = url;
+        },
         get filter() { return `contrast(${this.contrast}%) brightness(${this.brightness}%) ${this.invert ? 'invert(1)' : ''}`; },
         show(i = 0) {
             this.index = i; this.reset(); this.open = true;
@@ -76,7 +87,7 @@ document.addEventListener('alpine:init', () => {
         resetTone() { this.invert = false; this.contrast = 100; this.brightness = 100; },
         next() { this.index = (this.index + 1) % this.images.length; this.reset(); },
         prev() { this.index = (this.index - 1 + this.images.length) % this.images.length; this.reset(); },
-        zoom(delta) { this.scale = Math.min(6, Math.max(1, +(this.scale + delta).toFixed(2))); if (this.scale === 1) { this.x = 0; this.y = 0; } },
+        zoom(delta) { this.scale = Math.min(6, Math.max(1, +(this.scale + delta).toFixed(2))); if (this.scale === 1) { this.x = 0; this.y = 0; } else { this.loadFull(); } },
         wheel(e) { this.zoom(e.deltaY < 0 ? 0.25 : -0.25); },
         down(e) { if (this.scale === 1) return; this.dragging = true; this.start = { x: e.clientX - this.x, y: e.clientY - this.y }; },
         moveDrag(e) { if (!this.dragging) return; this.x = e.clientX - this.start.x; this.y = e.clientY - this.start.y; },
@@ -424,8 +435,20 @@ document.addEventListener('alpine:init', () => {
 
     /* ---------------- Photo gallery viewer ---------------- */
     Alpine.data('galleryViewer', (slides = [], deepLink = false) => ({
-        slides, deepLink, current: null, zoomed: false, touchX: null, opener: null,
+        slides, deepLink, current: null, zoomed: false, touchX: null, opener: null, full: {},
         get slide() { return this.current === null ? null : this.slides[this.current]; },
+        /* Zoomed in: switch to the original once it has downloaded, so the view never goes blank. */
+        get hd() { return this.zoomed && !!this.full[this.current]; },
+        toggleZoom() {
+            this.zoomed = !this.zoomed;
+            const i = this.current, url = this.slides[i]?.full;
+            if (!this.zoomed || !url || this.full[i] !== undefined) return;
+            this.full[i] = false;
+            const img = new Image();
+            img.onload = () => { this.full[i] = true; };
+            img.onerror = () => { delete this.full[i]; };
+            img.src = url;
+        },
         init() {
             if (!this.deepLink) return;
             const m = window.location.hash.match(/^#photo-(\d+)$/);

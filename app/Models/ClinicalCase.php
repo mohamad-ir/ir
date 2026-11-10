@@ -32,6 +32,7 @@ class ClinicalCase extends Model
     protected static function booted(): void
     {
         static::saved(fn () => static::$currentWeeklyId = null);
+        static::saved(fn (self $case) => Media::markClinical($case->clinicalMediaIds()));
         static::deleted(fn () => static::$currentWeeklyId = null);
     }
 
@@ -105,6 +106,14 @@ class ClinicalCase extends Model
     }
 
     /** Image entries resolved to Media models: [['media' => Media, 'caption' => ..., 'label' => ...]] */
+    /** @return array<int, int> IDs of the images shown in this case (they are optimised with the clinical profile). */
+    public function clinicalMediaIds(): array
+    {
+        return collect($this->images ?? [])->pluck('media_id')
+            ->push($this->comparison['before_media_id'] ?? null, $this->comparison['after_media_id'] ?? null, $this->featured_media_id)
+            ->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+    }
+
     public function imageItems(): Collection
     {
         $items = collect($this->images ?? [])->filter(fn ($i) => ! empty($i['media_id']));

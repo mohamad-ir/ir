@@ -56,7 +56,7 @@
             <div class="flex items-center justify-between gap-4 px-4 py-3 text-sm">
                 <span class="tabular-nums text-white/70" x-text="(current + 1) + ' / ' + slides.length"></span>
                 <div class="flex items-center gap-1">
-                    <button type="button" x-on:click="zoomed = !zoomed" class="rounded-ui p-2 text-white/80 hover:bg-white/10 hover:text-white" :aria-label="zoomed ? 'Fit to screen' : 'Zoom in'">
+                    <button type="button" x-on:click="toggleZoom()" class="rounded-ui p-2 text-white/80 hover:bg-white/10 hover:text-white" :aria-label="zoomed ? 'Fit to screen' : 'Zoom in'">
                         <x-heroicon-o-magnifying-glass-plus class="size-5" x-show="!zoomed" /><x-heroicon-o-magnifying-glass-minus class="size-5" x-show="zoomed" x-cloak />
                     </button>
                     <a :href="slide && slide.full" target="_blank" rel="noopener" class="rounded-ui p-2 text-white/80 hover:bg-white/10 hover:text-white" aria-label="Open original"><x-heroicon-o-arrows-pointing-out class="size-5" /></a>
@@ -65,7 +65,7 @@
             </div>
             <div class="relative flex min-h-0 flex-1 items-center justify-center" :class="zoomed ? 'overflow-auto' : 'overflow-hidden'">
                 <template x-if="slide">
-                    <img :src="slide.src" :srcset="zoomed ? '' : slide.srcset" sizes="100vw" :alt="slide.alt" x-on:click="zoomed = !zoomed"
+                    <img :src="hd ? slide.full : slide.src" :srcset="hd ? '' : slide.srcset" sizes="100vw" :alt="slide.alt" x-on:click="toggleZoom()"
                          :class="zoomed ? 'max-w-none cursor-zoom-out' : 'max-h-full max-w-full cursor-zoom-in object-contain'" class="select-none" draggable="false">
                 </template>
                 <button type="button" x-show="slides.length > 1" x-on:click="prev()" class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 hover:bg-white/20 sm:left-4" aria-label="Previous image"><x-heroicon-m-chevron-left class="size-6" /></button>

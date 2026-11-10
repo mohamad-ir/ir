@@ -4,10 +4,11 @@ namespace App\RichEditor;
 
 use App\Filament\Forms\MediaPicker;
 use App\Models\Media;
+use App\Support\Ui;
 use Filament\Actions\Action;
+use Filament\Forms\Components\RichEditor\RichContentCustomBlock;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\RichEditor\RichContentCustomBlock;
 
 /** Responsive figure from the media library with caption and credit. */
 class FigureBlock extends RichContentCustomBlock
@@ -34,7 +35,7 @@ class FigureBlock extends RichContentCustomBlock
             ->schema([
                 MediaPicker::make('media_id')->label(__('Image'))->required(),
                 Textarea::make('caption')->rows(2)->helperText(__('Leave empty to use the caption saved in the media library.')),
-                Select::make('size')->options(\App\Support\Ui::options(['normal' => 'Text width', 'wide' => 'Wide', 'full' => 'Full width']))->default('normal'),
+                Select::make('size')->options(Ui::options(['normal' => 'Text width', 'wide' => 'Wide', 'full' => 'Full width']))->default('normal'),
             ]);
     }
 
@@ -62,10 +63,11 @@ class FigureBlock extends RichContentCustomBlock
         $size = in_array($config['size'] ?? 'normal', ['normal', 'wide', 'full']) ? $config['size'] : 'normal';
         $caption = trim($config['caption'] ?? '') ?: $media->caption;
         $credit = $media->credit ? ' <span class="figure-credit">'.e($media->credit).'</span>' : '';
-        $srcset = $media->srcset() ? ' srcset="'.e($media->srcset()).'" sizes="(min-width: 1024px) 860px, 100vw"' : '';
+        $sizes = ['normal' => '(min-width: 1024px) 860px, 100vw', 'wide' => '(min-width: 1024px) 990px, 100vw', 'full' => '100vw'][$size];
+        $srcset = $media->srcset() ? ' srcset="'.e($media->srcset()).'" sizes="'.$sizes.'"' : '';
         $dims = $media->width ? " width=\"{$media->width}\" height=\"{$media->height}\"" : '';
 
-        return '<figure class="figure figure-'.$size.'"><img src="'.e($media->url('lg')).'"'.$srcset.$dims.' alt="'.e($media->altText()).'">'
+        return '<figure class="figure figure-'.$size.'"><img src="'.e($media->url(isset($media->variants['lg']) ? 'lg' : null)).'"'.$srcset.$dims.' alt="'.e($media->altText()).'" loading="lazy" decoding="async">'
             .(($caption || $credit) ? '<figcaption>'.e($caption).$credit.'</figcaption>' : '').'</figure>';
     }
 }
