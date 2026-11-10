@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Webinars\RelationManagers;
 
+use App\Filament\Concerns\TranslatesRelationManagerLabels;
 use App\Models\User;
 use App\Models\WebinarRegistration;
 use App\Services\Learning\LearningService;
+use App\Support\Csv;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -18,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RegistrationsRelationManager extends RelationManager
 {
-    use \App\Filament\Concerns\TranslatesRelationManagerLabels;
+    use TranslatesRelationManagerLabels;
 
     protected static string $relationship = 'registrations';
 
@@ -54,7 +56,9 @@ class RegistrationsRelationManager extends RelationManager
                 TextColumn::make('user.name')->label(__('Name'))->searchable()->description(fn (WebinarRegistration $record) => $record->user?->email),
                 TextColumn::make('user.institution')->label(__('Institution'))->toggleable()->placeholder('—'),
                 TextColumn::make('source')->label(__('Place'))->badge()->formatStateUsing(fn ($state) => WebinarRegistration::SOURCES[$state] ?? $state)
-                    ->color(fn ($state) => match ($state) { 'purchase' => 'success', 'membership' => 'warning', 'admin' => 'info', default => 'gray' }),
+                    ->color(fn ($state) => match ($state) {
+                        'purchase' => 'success', 'membership' => 'warning', 'admin' => 'info', default => 'gray'
+                    }),
                 TextColumn::make('created_at')->label(__('Registered'))->date('j M Y')->sortable(),
                 TextColumn::make('joined_at')->label(__('Joined'))->dateTime('j M H:i')->placeholder('—')->toggleable(),
                 TextColumn::make('canceled_at')->label(__('Cancelled'))->date('j M Y')->placeholder('—')->toggleable(),
@@ -70,9 +74,9 @@ class RegistrationsRelationManager extends RelationManager
 
                         return response()->streamDownload(function () use ($rows) {
                             $out = fopen('php://output', 'w');
-                            fputcsv($out, ['Name', 'Email', 'Institution', 'Country', 'Place', 'Registered', 'Joined']);
+                            Csv::put($out, ['Name', 'Email', 'Institution', 'Country', 'Place', 'Registered', 'Joined']);
                             foreach ($rows as $r) {
-                                fputcsv($out, [$r->user?->name, $r->user?->email, $r->user?->institution, $r->user?->country, $r->source, $r->created_at?->toDateTimeString(), $r->joined_at?->toDateTimeString()]);
+                                Csv::put($out, [$r->user?->name, $r->user?->email, $r->user?->institution, $r->user?->country, $r->source, $r->created_at?->toDateTimeString(), $r->joined_at?->toDateTimeString()]);
                             }
                             fclose($out);
                         }, 'registrations-'.$this->getOwnerRecord()->slug.'.csv', ['Content-Type' => 'text/csv']);

@@ -32,6 +32,7 @@ class Permissions
     ];
 
     public const SYSTEM = [
+        'dashboard.access' => 'Sign in to the dashboard (two-step verification applies)',
         'content.edit_others' => 'Edit and delete content created by other people',
         'menus.manage' => 'Manage navigation menus',
         'design.manage' => 'Change theme, branding, header and footer',
@@ -49,7 +50,24 @@ class Permissions
         'system.manage' => 'Maintenance mode, cache and system tools',
         'sales.view' => 'View orders, memberships, enrolments and revenue',
         'sales.manage' => 'Manage membership plans, refunds, subscriptions and payment settings',
+        'content.free_access' => 'Free access to paid and members-only content (courses, webinars, membership material)',
     ];
+
+    /** Only a super administrator may give or remove these permissions. */
+    public const SUPER_ADMIN_ONLY = ['content.free_access'];
+
+    /**
+     * Permissions fixed for the built-in roles: the five team roles always sign in to the dashboard
+     * and the member role never does; free access for the team roles comes from the role itself.
+     */
+    public static function lockedFor(string $role): array
+    {
+        if (! array_key_exists($role, self::ROLES)) {
+            return [];
+        }
+
+        return ['dashboard.access' => $role !== 'member', 'content.free_access' => false];
+    }
 
     public const ROLES = [
         'super_admin' => 'Super administrator',
@@ -80,31 +98,35 @@ class Permissions
 
     public static function defaults(): array
     {
-        $all = array_keys(self::all());
+        // Free access is part of the built-in team roles themselves, never a stored permission of theirs.
+        $all = array_values(array_diff(array_keys(self::all()), self::SUPER_ADMIN_ONLY));
         $content = fn (array $actions) => collect(self::CONTENT)->keys()->crossJoin($actions)->map(fn ($p) => implode('.', $p))->all();
 
         return [
             'super_admin' => $all,
             'administrator' => array_values(array_diff($all, ['roles.manage'])),
             'editor' => [
-                ...$content(self::CONTENT_ACTIONS), 'content.edit_others',
+                'dashboard.access', ...$content(self::CONTENT_ACTIONS), 'content.edit_others',
                 'media.view', 'media.create', 'media.update', 'media.delete', 'taxonomy.manage', 'profile.manage', 'reusable_blocks.manage',
                 'menus.manage', 'seo.manage', 'analytics.view', 'newsletter.manage', 'enquiries.manage', 'activity.view', 'sales.view',
                 'comments.moderate', 'popups.manage',
             ],
             'author' => [
-                ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),
+                'dashboard.access', ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update', 'delete', 'publish'])->map(fn ($p) => implode('.', $p))->all(),
                 'media.view', 'media.create', 'media.update', 'analytics.view',
             ],
             'contributor' => [
-                ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update'])->map(fn ($p) => implode('.', $p))->all(),
+                'dashboard.access', ...collect(['cases', 'articles', 'videos', 'questions', 'galleries'])->crossJoin(['view', 'create', 'update'])->map(fn ($p) => implode('.', $p))->all(),
                 'media.view', 'media.create',
             ],
             'member' => [],
         ];
     }
 
-    /** Creates missing permissions and roles. Existing role assignments are never reduced. */
+    /**
+     * Creates missing permissions and roles. Existing role assignments are never reduced, except
+     * that the permissions fixed for built-in roles (see lockedFor) are always applied.
+     */
     public static function sync(bool $resetRoles = false): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
@@ -120,8 +142,33 @@ class Permissions
             } elseif ($role === 'super_admin' || $role === 'administrator') {
                 $model->givePermissionTo(array_diff($perms, $model->permissions->pluck('name')->all()));
             }
+            self::applyLocked($model);
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    /** Roles only a super administrator may assign or remove: super administrator and roles with free access. */
+    public static function superAdminOnlyRoleIds(): array
+    {
+        return Role::query()->where('name', 'super_admin')
+            ->orWhereHas('permissions', fn ($q) => $q->whereIn('name', self::SUPER_ADMIN_ONLY))
+            ->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    /** Applies the fixed permissions of a built-in role (no effect on custom roles). */
+    public static function applyLocked(Role $role): void
+    {
+        foreach (self::lockedFor($role->name) as $permission => $granted) {
+            if (! Permission::where('name', $permission)->where('guard_name', 'web')->exists()) {
+                continue;
+            }
+            $has = $role->hasPermissionTo($permission);
+            if ($granted && ! $has) {
+                $role->givePermissionTo($permission);
+            } elseif (! $granted && $has) {
+                $role->revokePermissionTo($permission);
+            }
+        }
     }
 }

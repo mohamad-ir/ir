@@ -3,6 +3,8 @@
 namespace App\Services\PageBuilder\Blocks;
 
 use App\Services\PageBuilder\PageBlock;
+use App\Support\SafeUrl;
+use App\Support\Ui;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -20,11 +22,20 @@ class FeatureGridBlock extends PageBlock
         'shield-check' => 'Quality', 'chart-bar' => 'Data', 'video-camera' => 'Video', 'building-library' => 'Institution',
     ];
 
-    public static function key(): string { return 'feature_grid'; }
+    public static function key(): string
+    {
+        return 'feature_grid';
+    }
 
-    public static function label(): string { return __('Features / services'); }
+    public static function label(): string
+    {
+        return __('Features / services');
+    }
 
-    public static function icon(): string { return 'heroicon-o-view-columns'; }
+    public static function icon(): string
+    {
+        return 'heroicon-o-view-columns';
+    }
 
     public static function schema(): array
     {
@@ -34,12 +45,12 @@ class FeatureGridBlock extends PageBlock
                 TextInput::make('heading')->maxLength(160),
             ]),
             Textarea::make('intro')->rows(2),
-            Select::make('columns')->options(\App\Support\Ui::options([2 => '2 columns', 3 => '3 columns', 4 => '4 columns']))->default(3)->selectablePlaceholder(false),
+            Select::make('columns')->options(Ui::options([2 => '2 columns', 3 => '3 columns', 4 => '4 columns']))->default(3)->selectablePlaceholder(false),
             Repeater::make('items')->schema([
                 Select::make('icon')->options(self::ICONS)->searchable()->default('eye'),
                 TextInput::make('title')->required()->maxLength(100),
                 Textarea::make('text')->rows(2)->maxLength(400)->columnSpanFull(),
-                TextInput::make('url')->label(__('Link (optional)'))->columnSpanFull(),
+                TextInput::make('url')->label(__('Link (optional)'))->rule(SafeUrl::rule())->columnSpanFull(),
             ])->columns(2)->collapsible()->reorderable()->cloneable()->itemLabel(fn (array $state) => $state['title'] ?? null)->defaultItems(3)->addActionLabel(__('Add item')),
         ];
     }

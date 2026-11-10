@@ -1,7 +1,7 @@
 @php
     $mine = auth()->check() && $comment->user_id === auth()->id();
     $isAuthor = $comment->user_id && $comment->user_id === $authorId;
-    $isTeam = $comment->user?->isStaff();
+    $isTeam = $comment->user?->canUseDashboard();
 @endphp
 <article id="comment-{{ $comment->id }}" @class(['group flex scroll-mt-28 gap-3 sm:gap-4', 'opacity-70' => $comment->status === 'pending']) x-data="{ menu: false }">
     @include('livewire.comments.avatar', ['person' => $comment->user, 'small' => $isReply])
@@ -12,7 +12,7 @@
             @elseif ($isTeam)<span class="chip !py-0 !text-[11px]">{{ setting('site.name') }} team</span>@endif
             @if ($comment->user?->career_stage)<span class="text-xs text-muted">{{ $comment->user->careerStageLabel() }}</span>@endif
             <span class="text-muted" aria-hidden="true">·</span>
-            <a href="#comment-{{ $comment->id }}" class="text-xs text-muted hover:text-ink"><time datetime="{{ $comment->created_at->toIso8601String() }}" title="{{ $comment->created_at->format('j M Y, H:i') }}">{{ $comment->created_at->diffForHumans() }}</time></a>
+            <a href="#comment-{{ $comment->id }}" class="text-xs text-muted hover:text-ink"><time datetime="{{ $comment->created_at->toIso8601String() }}" title="{{ $comment->created_at->format('j M Y, H:i') }}">{{ $comment->created_at->gt(now()->subMinute()) ? 'just now' : $comment->created_at->diffForHumans() }}</time></a>
             @if ($comment->edited_at)<span class="text-xs text-muted">(edited)</span>@endif
             @if ($comment->is_pinned)<span class="flex items-center gap-1 text-xs font-semibold text-accent-ink"><x-heroicon-s-bookmark class="size-3.5" /> Pinned</span>@endif
             @if ($comment->status === 'pending')

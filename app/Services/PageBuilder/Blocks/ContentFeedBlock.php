@@ -9,6 +9,8 @@ use App\Models\Question;
 use App\Models\Topic;
 use App\Models\Video;
 use App\Services\PageBuilder\PageBlock;
+use App\Support\SafeUrl;
+use App\Support\Ui;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,11 +23,20 @@ class ContentFeedBlock extends PageBlock
 {
     public const SOURCES = ['cases' => 'OCT cases', 'articles' => 'Articles', 'videos' => 'Videos', 'questions' => 'Exam questions'];
 
-    public static function key(): string { return 'content_feed'; }
+    public static function key(): string
+    {
+        return 'content_feed';
+    }
 
-    public static function label(): string { return __('Content feed'); }
+    public static function label(): string
+    {
+        return __('Content feed');
+    }
 
-    public static function icon(): string { return 'heroicon-o-squares-2x2'; }
+    public static function icon(): string
+    {
+        return 'heroicon-o-squares-2x2';
+    }
 
     public static function schema(): array
     {
@@ -37,7 +48,7 @@ class ContentFeedBlock extends PageBlock
             Textarea::make('intro')->rows(2)->maxLength(400),
             Grid::make(3)->schema([
                 Select::make('source')->options(self::SOURCES)->default('cases')->required()->live()->selectablePlaceholder(false),
-                Select::make('mode')->label(__('Show'))->options(\App\Support\Ui::options(['latest' => 'Latest', 'featured' => 'Featured first', 'popular' => 'Most viewed']))->default('latest')->selectablePlaceholder(false),
+                Select::make('mode')->label(__('Show'))->options(Ui::options(['latest' => 'Latest', 'featured' => 'Featured first', 'popular' => 'Most viewed']))->default('latest')->selectablePlaceholder(false),
                 Select::make('limit')->label(__('Number of items'))->options([2 => 2, 3 => 3, 4 => 4, 6 => 6, 8 => 8, 9 => 9, 12 => 12])->default(3)->selectablePlaceholder(false),
             ]),
             Grid::make(2)->schema([
@@ -46,10 +57,10 @@ class ContentFeedBlock extends PageBlock
                     ->options(fn (Get $get) => Category::ofType($get('source') === 'videos' ? 'video' : 'article')->pluck('name', 'id'))
                     ->visible(fn (Get $get) => in_array($get('source'), ['articles', 'videos']))->placeholder(__('All categories')),
             ]),
-            ToggleButtons::make('layout')->inline()->options(\App\Support\Ui::options(['cards' => 'Cards', 'list' => 'List', 'feature' => 'Large first item']))->default('cards'),
+            ToggleButtons::make('layout')->inline()->options(Ui::options(['cards' => 'Cards', 'list' => 'List', 'feature' => 'Large first item']))->default('cards'),
             Grid::make(2)->schema([
                 TextInput::make('view_all_label')->label(__('“View all” label'))->placeholder(__('Browse all cases')),
-                TextInput::make('view_all_url')->label(__('“View all” link'))->placeholder('/cases'),
+                TextInput::make('view_all_url')->label(__('“View all” link'))->rule(SafeUrl::rule())->placeholder('/cases'),
             ]),
         ];
     }

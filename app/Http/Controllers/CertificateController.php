@@ -36,6 +36,6 @@ class CertificateController extends Controller
     {
         $user = $request->user();
 
-        return $user && ($user->id === $certificate->user_id || $user->can('courses.view'));
+        return $user && ($user->id === $certificate->user_id || ($user->canUseDashboard() && $user->can('courses.view')));
     }
 }

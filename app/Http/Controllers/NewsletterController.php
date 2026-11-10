@@ -64,10 +64,22 @@ class NewsletterController extends Controller
         ]);
     }
 
+    /** Signature of a tracked link, so the click tracker cannot be used to send people to other sites. */
+    public static function linkSignature(int $campaignId, string $url): string
+    {
+        return substr(hash_hmac('sha256', $campaignId.'|'.$url, (string) config('app.key')), 0, 32);
+    }
+
     public function click(Request $request, Campaign $campaign, string $token)
     {
         $url = (string) $request->query('u');
         if (! filter_var($url, FILTER_VALIDATE_URL) || ! preg_match('~^https?://~i', $url)) {
+            return redirect('/');
+        }
+        // Only links that are in this campaign (signed links; emails sent by earlier versions: the link appears in its text).
+        $signed = hash_equals(self::linkSignature($campaign->id, $url), (string) $request->query('s'));
+        $own = parse_url($url, PHP_URL_HOST) === parse_url(config('app.url'), PHP_URL_HOST);
+        if (! $signed && ! $own && ! str_contains((string) $campaign->body, $url) && ! str_contains((string) $campaign->body, e($url))) {
             return redirect('/');
         }
 

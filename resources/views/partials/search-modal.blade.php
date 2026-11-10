@@ -1,6 +1,6 @@
 <div x-data="searchPalette('{{ route('search.suggest') }}', '{{ route('search') }}')" x-on:open-search.window="show()" x-on:keydown.escape.window="close()">
     <template x-teleport="body">
-        <div x-cloak x-show="open" class="fixed inset-0 z-[60] overflow-y-auto p-4 pt-[12vh] sm:p-6 sm:pt-[14vh]" role="dialog" aria-modal="true" aria-label="Search">
+        <div x-cloak x-show="open" x-trap.inert.noscroll="open" class="fixed inset-0 z-[60] overflow-y-auto p-4 pt-[12vh] sm:p-6 sm:pt-[14vh]" role="dialog" aria-modal="true" aria-label="Search">
             <div x-show="open" x-transition.opacity class="fixed inset-0 bg-ink/45 backdrop-blur-sm" x-on:click="close()"></div>
             <div x-show="open" x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="opacity-0 scale-[.98] -translate-y-2" x-transition:leave="transition duration-150" x-transition:leave-end="opacity-0 scale-[.98]"
                  class="relative mx-auto max-w-2xl overflow-hidden rounded-card bg-surface shadow-[var(--shadow-pop)] ring-1 ring-line">

@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Schedule;
  *   * * * * * /usr/local/bin/php /home/USER/domains/DOMAIN/app/artisan schedule:run >> /dev/null 2>&1
  */
 
-Schedule::call(fn () => Settings::set('system.last_cron_at', now()->toIso8601String()))->everyMinute()->name('heartbeat');
+// Written quietly: a normal save would clear the settings and theme caches every minute.
+Schedule::call(fn () => Settings::setQuietly('system.last_cron_at', now()->toIso8601String()))->everyMinute()->name('heartbeat');
 
 Schedule::call(fn () => app(CampaignSender::class)->tick())->everyMinute()->name('newsletter')->withoutOverlapping(10);
 

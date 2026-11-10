@@ -1,5 +1,5 @@
 @php
-    $trackable = setting('analytics.enabled', true) && ! (setting('analytics.exclude_staff', true) && auth()->user()?->isStaff()) && ! ($noTracking ?? false);
+    $trackable = setting('analytics.enabled', true) && ! (setting('analytics.exclude_staff', true) && auth()->user()?->canUseDashboard()) && ! ($noTracking ?? false);
 @endphp
 @if ($trackable)
 <script>

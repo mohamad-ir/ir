@@ -22,9 +22,9 @@
             <x-empty-state title="Search the whole library" text="Try a disease name or abbreviation such as CSR, VKH, DME or macular hole — cases, articles, videos and exam questions are searched together." />
         @else
             <div class="mb-8 flex flex-wrap items-center gap-2">
-                <a href="{{ route('search', ['q' => $q]) }}" class="filter-chip" aria-pressed="{{ $type ? 'false' : 'true' }}">All <span class="opacity-60">{{ array_sum($counts) }}</span></a>
+                <a href="{{ route('search', ['q' => $q]) }}" @class(['filter-chip', 'is-active' => ! $type]) @if (! $type) aria-current="page" @endif>All <span class="opacity-60">{{ array_sum($counts) }}</span></a>
                 @foreach ($counts as $t => $c)
-                    <a href="{{ route('search', ['q' => $q, 'type' => $t]) }}" class="filter-chip" aria-pressed="{{ $type === $t ? 'true' : 'false' }}">{{ $labels[$t] }} <span class="opacity-60">{{ $c }}</span></a>
+                    <a href="{{ route('search', ['q' => $q, 'type' => $t]) }}" @class(['filter-chip', 'is-active' => $type === $t]) @if ($type === $t) aria-current="page" @endif>{{ $labels[$t] }} <span class="opacity-60">{{ $c }}</span></a>
                 @endforeach
             </div>
 

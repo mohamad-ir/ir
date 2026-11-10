@@ -9,6 +9,7 @@ use App\Models\Campaign;
 use App\Models\CampaignRecipient;
 use App\Models\Subscriber;
 use App\Support\Settings;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -32,10 +33,13 @@ class CampaignSender
             }));
     }
 
-    /** Snapshot the recipient list and mark the campaign as sending. */
+    /**
+     * Snapshot the recipient list and mark the campaign as sending. A stopped (cancelled) campaign can be
+     * started again: subscribers who already received it are not sent it twice.
+     */
     public function start(Campaign $campaign): int
     {
-        if (! in_array($campaign->status, [CampaignStatus::Draft, CampaignStatus::Scheduled], true)) {
+        if (! in_array($campaign->status, [CampaignStatus::Draft, CampaignStatus::Scheduled, CampaignStatus::Cancelled], true)) {
             return 0;
         }
 
@@ -43,8 +47,7 @@ class CampaignSender
         DB::transaction(function () use ($campaign, &$count) {
             $this->audienceQuery($campaign)->select('id')->chunkById(500, function ($subs) use ($campaign, &$count) {
                 $rows = $subs->map(fn ($s) => ['campaign_id' => $campaign->id, 'subscriber_id' => $s->id, 'status' => 'pending'])->all();
-                CampaignRecipient::insertOrIgnore($rows);
-                $count += count($rows);
+                $count += CampaignRecipient::insertOrIgnore($rows);
             });
             $campaign->update([
                 'status' => CampaignStatus::Sending,
@@ -65,6 +68,27 @@ class CampaignSender
             return 0;
         }
 
+        // One sender at a time (cron, open dashboard pages and the "Run scheduled tasks" button can all call
+        // this), and never more than the configured number of emails per minute in total.
+        $lock = Cache::lock('campaign-send:'.$campaign->id, 300);
+        if (! $lock->get()) {
+            return 0;
+        }
+
+        try {
+            return $this->sendLocked($campaign, $limit);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    protected function sendLocked(Campaign $campaign, int $limit): int
+    {
+        $limit -= $campaign->recipients()->whereIn('status', ['sent', 'failed'])->where('sent_at', '>', now()->subMinute())->count();
+        if ($limit <= 0 || $campaign->fresh()?->status !== CampaignStatus::Sending) {
+            return 0;
+        }
+
         $recipients = $campaign->recipients()->where('status', 'pending')->with('subscriber')->limit($limit)->get();
         $sent = 0;
 
@@ -81,14 +105,16 @@ class CampaignSender
                 $recipient->update(['status' => 'sent', 'sent_at' => now()]);
                 $sent++;
             } catch (Throwable $e) {
-                $recipient->update(['status' => 'failed', 'error' => mb_substr($e->getMessage(), 0, 500)]);
+                $recipient->update(['status' => 'failed', 'sent_at' => now(), 'error' => mb_substr($e->getMessage(), 0, 500)]);
             }
         }
 
         $this->refreshCounts($campaign);
 
+        // Only a campaign that is still sending becomes "sent" (it may have been stopped meanwhile).
         if (! $campaign->recipients()->where('status', 'pending')->exists()) {
-            $campaign->update(['status' => CampaignStatus::Sent, 'finished_at' => now()]);
+            Campaign::whereKey($campaign->id)->where('status', CampaignStatus::Sending->value)->update(['status' => CampaignStatus::Sent->value, 'finished_at' => now()]);
+            $campaign->refresh();
         }
 
         return $sent;
@@ -113,6 +139,12 @@ class CampaignSender
 
         Campaign::where('status', CampaignStatus::Sending->value)->orderBy('started_at')->get()
             ->each(fn (Campaign $c) => $this->sendBatch($c));
+
+        // Opens and clicks keep arriving after sending: refresh the figures of recent campaigns every 10 minutes.
+        if (now()->minute % 10 === 0) {
+            Campaign::where('status', CampaignStatus::Sent->value)->where('finished_at', '>', now()->subDays(30))->get()
+                ->each(fn (Campaign $c) => $this->refreshCounts($c));
+        }
     }
 
     public function sendTest(Campaign $campaign, string $email): void

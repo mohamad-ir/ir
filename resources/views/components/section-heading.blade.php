@@ -7,7 +7,7 @@
             @if ($intro)<p class="mt-4 text-lg leading-relaxed text-muted">{{ $intro }}</p>@endif
         </div>
         @if ($actionLabel && $actionUrl && $align !== 'center')
-            <a href="{{ $actionUrl }}" class="link-arrow shrink-0">{{ $actionLabel }} <x-heroicon-m-arrow-right /></a>
+            <a href="{{ safe_href($actionUrl) }}" class="link-arrow shrink-0">{{ $actionLabel }} <x-heroicon-m-arrow-right /></a>
         @endif
     </div>
 @endif

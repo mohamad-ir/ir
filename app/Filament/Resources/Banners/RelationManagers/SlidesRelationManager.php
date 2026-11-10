@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\Banners\RelationManagers;
 
+use App\Filament\Concerns\TranslatesRelationManagerLabels;
 use App\Filament\Forms\MediaPicker;
 use App\Models\BannerSlide;
+use App\Support\SafeUrl;
+use App\Support\Ui;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -24,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SlidesRelationManager extends RelationManager
 {
-    use \App\Filament\Concerns\TranslatesRelationManagerLabels;
+    use TranslatesRelationManagerLabels;
 
     protected static string $relationship = 'slides';
 
@@ -53,12 +56,12 @@ class SlidesRelationManager extends RelationManager
                 TextInput::make('eyebrow')->label(__('Small label'))->maxLength(60),
                 TextInput::make('title')->maxLength(120),
                 Textarea::make('text')->rows(2)->maxLength(300)->columnSpanFull(),
-                ToggleButtons::make('text_position')->label(__('Text position'))->options(\App\Support\Ui::options(['left' => 'Left', 'center' => 'Centre', 'right' => 'Right']))->default('left')->inline(),
-                ToggleButtons::make('overlay')->label(__('Shade behind text'))->options(\App\Support\Ui::options(['dark' => 'Dark', 'light' => 'Light', 'none' => 'None']))->default('dark')->inline(),
+                ToggleButtons::make('text_position')->label(__('Text position'))->options(Ui::options(['left' => 'Left', 'center' => 'Centre', 'right' => 'Right']))->default('left')->inline(),
+                ToggleButtons::make('overlay')->label(__('Shade behind text'))->options(Ui::options(['dark' => 'Dark', 'light' => 'Light', 'none' => 'None']))->default('dark')->inline(),
             ]),
             Section::make('Link')->heading(__('Link'))->compact()->columns(2)->schema([
-                TextInput::make('link_url')->label(__('Link'))->placeholder(__('/courses/oct-masterclass or https://…'))->maxLength(500)
-                    ->rule('regex:~^(/|https?://|mailto:|tel:)~i')->validationMessages(\App\Support\Ui::options(['regex' => 'Start with / for a page on this site, or https:// for another website.']))
+                TextInput::make('link_url')->label(__('Link'))->rule(SafeUrl::rule())->placeholder(__('/courses/oct-masterclass or https://…'))->maxLength(500)
+                    ->rule('regex:~^(/|https?://|mailto:|tel:)~i')->validationMessages(Ui::options(['regex' => 'Start with / for a page on this site, or https:// for another website.']))
                     ->helperText(__('Internal page (/…) or external website (https://…).'))->columnSpanFull(),
                 TextInput::make('button_label')->label(__('Button text'))->maxLength(60)->helperText(__('Leave empty to make the whole slide clickable.')),
                 Toggle::make('new_tab')->label(__('Open in a new tab'))->inline(false),

@@ -65,6 +65,7 @@ class RichText
         }
 
         $html = static::sanitizer()->sanitize($html);
+        $html = static::restrictIframes($html);
         $html = static::expandVideos($html);
 
         $toc = [];
@@ -116,6 +117,19 @@ class RichText
      * Video blocks are stored as safe placeholders and replaced with the player after
      * sanitizing, built only from the block's own settings (never from raw HTML).
      */
+    /** Embedded frames typed into the text may only show YouTube, Vimeo or this website. */
+    public static function restrictIframes(string $html): string
+    {
+        $allowed = ['www.youtube.com', 'youtube.com', 'www.youtube-nocookie.com', 'youtube-nocookie.com', 'player.vimeo.com', parse_url((string) config('app.url'), PHP_URL_HOST)];
+
+        return preg_replace_callback('~<iframe\b[^>]*>.*?</iframe>~is', function ($m) use ($allowed) {
+            $src = preg_match('~\ssrc="([^"]*)"~i', $m[0], $s) ? html_entity_decode($s[1]) : '';
+            $host = strtolower((string) parse_url($src, PHP_URL_HOST));
+
+            return in_array($host, array_filter($allowed), true) && str_starts_with(strtolower($src), 'https://') ? $m[0] : '';
+        }, $html) ?? $html;
+    }
+
     public static function expandVideos(string $html): string
     {
         // The sanitizer may entity-encode characters of the attribute (e.g. "=" becomes "&#61;").

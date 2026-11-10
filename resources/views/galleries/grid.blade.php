@@ -50,7 +50,7 @@
 
     {{-- Full-screen viewer --}}
     <template x-teleport="body">
-        <div x-show="current !== null" x-cloak x-transition.opacity.duration.200ms
+        <div x-show="current !== null" x-cloak x-transition.opacity.duration.200ms x-trap.inert="current !== null"
              class="fixed inset-0 z-[100] flex flex-col bg-[#0a0c0f] text-white" role="dialog" aria-modal="true" aria-label="Image viewer"
              x-on:touchstart.passive="touchStart($event)" x-on:touchend.passive="touchEnd($event)">
             <div class="flex items-center justify-between gap-4 px-4 py-3 text-sm">

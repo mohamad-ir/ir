@@ -7,7 +7,7 @@
 <header x-data="{ mobile: false, scrolled: false }"
         x-init="scrolled = window.scrollY > 8"
         x-on:scroll.window.passive="scrolled = window.scrollY > 8"
-        x-on:keydown.escape.window="mobile = false"
+        x-on:keydown.escape.window="if (mobile) { mobile = false; $nextTick(() => $refs.menuButton?.focus()) }"
         @class([
             'z-40 transition-[background-color,box-shadow,border-color] duration-300',
             'sticky top-0' => $sticky,
@@ -21,7 +21,7 @@
         <nav class="ml-4 hidden items-center gap-0.5 lg:flex" aria-label="Main">
             @foreach ($nav as $item)
                 @if ($item['children'])
-                    <div class="relative" x-data="{ open: false }" x-on:mouseenter="open = true" x-on:mouseleave="open = false" x-on:focusin="open = true" x-on:focusout="if (!$el.contains($event.relatedTarget)) open = false">
+                    <div class="relative" x-data="{ open: false }" x-on:keydown.escape="open = false; $el.querySelector('button')?.focus()" x-on:mouseenter="open = true" x-on:mouseleave="open = false" x-on:focusin="open = true" x-on:focusout="if (!$el.contains($event.relatedTarget)) open = false">
                         <button type="button" class="inline-flex items-center gap-1 whitespace-nowrap rounded-ui px-3 py-2 text-[0.9375rem] font-medium transition {{ $dark ? 'text-white/85 hover:text-white hover:bg-white/10' : ($item['active'] ? 'text-ink' : 'text-fg/80 hover:text-ink hover:bg-ink/5') }}" :aria-expanded="open">
                             {{ $item['label'] }}
                             <x-heroicon-m-chevron-down class="size-4 opacity-60 transition" ::class="open && 'rotate-180'" />
@@ -40,7 +40,7 @@
                         </div>
                     </div>
                 @else
-                    <a href="{{ $item['url'] }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif
+                    <a href="{{ safe_href($item['url']) }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif
                        @if($item['active']) aria-current="page" @endif
                        class="relative whitespace-nowrap rounded-ui px-3 py-2 text-[0.9375rem] font-medium transition {{ $dark ? 'text-white/85 hover:text-white hover:bg-white/10' : ($item['active'] ? 'text-ink' : 'text-fg/80 hover:text-ink hover:bg-ink/5') }}">
                         {{ $item['label'] }}
@@ -78,7 +78,7 @@
                 <a href="{{ $cta['url'] }}" class="hidden md:inline-flex btn btn-sm {{ $dark ? 'btn-light' : 'btn-primary' }}">{{ $cta['label'] }}</a>
             @endforeach
 
-            <button type="button" class="lg:hidden inline-flex size-10 items-center justify-center rounded-ui {{ $dark ? 'hover:bg-white/10' : 'hover:bg-ink/5' }}" x-on:click="mobile = true" aria-label="Open menu" :aria-expanded="mobile">
+            <button type="button" class="lg:hidden inline-flex size-10 items-center justify-center rounded-ui {{ $dark ? 'hover:bg-white/10' : 'hover:bg-ink/5' }}" x-ref="menuButton" x-on:click="mobile = true" aria-label="Open menu" :aria-expanded="mobile">
                 <x-heroicon-o-bars-3 class="size-6" />
             </button>
         </div>
@@ -86,7 +86,7 @@
 
     {{-- Mobile navigation --}}
     <template x-teleport="body">
-        <div x-cloak x-show="mobile" class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+        <div x-cloak x-show="mobile" x-trap.inert.noscroll="mobile" class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
             <div x-show="mobile" x-transition.opacity class="absolute inset-0 bg-ink/40 backdrop-blur-sm" x-on:click="mobile = false"></div>
             <div x-show="mobile" x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="translate-x-full" x-transition:leave="transition duration-200 ease-in" x-transition:leave-end="translate-x-full"
                  class="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-surface shadow-2xl">
@@ -112,7 +112,7 @@
                                     @endforeach
                                 </div>
                             @else
-                                <a href="{{ $item['url'] }}" class="block rounded-ui px-4 py-3 text-base font-semibold {{ $item['active'] ? 'bg-ink/5 text-ink' : 'text-ink hover:bg-ink/5' }}">{{ $item['label'] }}</a>
+                                <a href="{{ safe_href($item['url']) }}" class="block rounded-ui px-4 py-3 text-base font-semibold {{ $item['active'] ? 'bg-ink/5 text-ink' : 'text-ink hover:bg-ink/5' }}">{{ $item['label'] }}</a>
                             @endif
                         </div>
                     @endforeach

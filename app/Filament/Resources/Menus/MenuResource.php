@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\Menus;
 
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Models\Menu;
 use App\Models\Page;
+use App\Support\SafeUrl;
+use App\Support\Ui;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -20,7 +23,7 @@ use Filament\Tables\Table;
 
 class MenuResource extends Resource
 {
-    use \App\Filament\Concerns\TranslatesResourceLabels;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Menu::class;
 
@@ -51,7 +54,7 @@ class MenuResource extends Resource
             TextInput::make('label')->required()->maxLength(60),
             Select::make('quick')->label(__('Link to'))->options(fn () => static::destinations())->searchable()->dehydrated(false)
                 ->placeholder(__('Choose a page…'))->live()->afterStateUpdated(fn (?string $state, Set $set) => $state ? $set('url', $state) : null),
-            TextInput::make('url')->label(__('URL'))->required()->maxLength(500)->placeholder(__('/cases or https://…')),
+            TextInput::make('url')->label(__('URL'))->required()->maxLength(500)->rule(SafeUrl::rule())->placeholder(__('/cases or https://…')),
             TextInput::make('description')->maxLength(120)->placeholder(__('Optional — shown in dropdowns'))->visible(! $withChildren),
             Toggle::make('new_tab')->label(__('Open in a new tab'))->inline(false),
             $withChildren ? Repeater::make('children')->label(__('Dropdown items'))->schema(static::itemSchema(false))->columns(2)
@@ -65,7 +68,7 @@ class MenuResource extends Resource
         return $schema->components([
             Section::make()->columns(2)->schema([
                 TextInput::make('name')->required()->maxLength(80)->helperText(__('Shown as the column heading for footer menus.')),
-                Select::make('location')->options(\App\Support\Ui::options(Menu::LOCATIONS))->unique(ignoreRecord: true)->placeholder(__('Not displayed'))
+                Select::make('location')->options(Ui::options(Menu::LOCATIONS))->unique(ignoreRecord: true)->placeholder(__('Not displayed'))
                     ->helperText(__('Where this menu appears on the website.')),
             ]),
             Repeater::make('items')->label(__('Menu items'))->schema(static::itemSchema(true))->columns(2)

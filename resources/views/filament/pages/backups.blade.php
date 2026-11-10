@@ -16,7 +16,7 @@
                         <td class="px-5 py-3 text-right tabular-nums">{{ \Illuminate\Support\Number::fileSize($b['size'], 1) }}</td>
                         <td class="px-5 py-3 text-right">
                             <div class="flex justify-end gap-2">
-                                <x-filament::button size="xs" color="gray" icon="heroicon-m-arrow-down-tray" wire:click="download('{{ $b['name'] }}')">{{ __('Download') }}</x-filament::button>
+                                @if (auth()->user()->isSuperAdmin())<x-filament::button size="xs" color="gray" icon="heroicon-m-arrow-down-tray" wire:click="download('{{ $b['name'] }}')">{{ __('Download') }}</x-filament::button>@endif
                                 {{ ($this->restoreAction)(['name' => $b['name']]) }}
                                 <x-filament::button size="xs" color="gray" icon="heroicon-m-trash" wire:click="deleteBackup('{{ $b['name'] }}')" wire:confirm="Delete this backup permanently?"></x-filament::button>
                             </div>

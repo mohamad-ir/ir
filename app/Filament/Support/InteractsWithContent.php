@@ -87,7 +87,12 @@ trait InteractsWithContent
         $revision = Revision::where('revisionable_type', $this->record->getMorphClass())
             ->where('revisionable_id', $this->record->getKey())->findOrFail($revisionId);
 
-        $this->record->restoreRevision($revision);
+        // Restoring brings back the content; publication state and address stay as they are now (an author
+        // cannot republish something an editor took down, and an old address may belong to another item).
+        $this->record->restoreRevision($revision, keep: [
+            'slug', 'status', 'published_at',
+            ...(auth()->user()->can('content.edit_others') ? [] : ['author_id']),
+        ]);
         $this->reindex();
         $this->fillForm();
         $this->unmountAction();

@@ -8,7 +8,7 @@
             <a href="{{ route('cases.index') }}" class="btn btn-primary btn-lg">Browse OCT cases</a>
             <a href="{{ route('videos.index') }}" class="btn btn-secondary btn-lg">Watch videos</a>
         </div>
-        @auth @if (auth()->user()->isStaff())
+        @auth @if (auth()->user()->canUseDashboard())
             <p class="mt-12 text-sm text-muted">No homepage is selected yet. Choose one in the dashboard under Design › Pages.</p>
         @endif @endauth
     </div>

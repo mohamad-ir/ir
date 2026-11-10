@@ -14,6 +14,7 @@ use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -24,7 +25,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 {
     use HasFactory, HasRoles, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, LogsActivity, Notifiable;
 
-    /** Roles that may sign in to the administration dashboard. */
+    /**
+     * The five built-in team roles. They always have dashboard access and free access to paid and
+     * members-only content. Custom roles get these through the "dashboard.access" and
+     * "content.free_access" permissions instead.
+     */
     public const STAFF_ROLES = ['super_admin', 'administrator', 'editor', 'author', 'contributor'];
 
     protected $fillable = [
@@ -74,12 +79,41 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active && $this->isStaff();
+        return $this->is_active && $this->canUseDashboard();
     }
 
+    /**
+     * May sign in to the administration dashboard (two-step verification applies). The built-in team
+     * roles always hold "dashboard.access"; they are also checked by name so a site keeps working
+     * between uploading new files and applying the database update that adds the permission.
+     */
+    public function canUseDashboard(): bool
+    {
+        return $this->isStaff() || $this->checkPermissionTo('dashboard.access');
+    }
+
+    /** Holds one of the five built-in team roles (staff privileges on the public site). */
     public function isStaff(): bool
     {
         return $this->hasAnyRole(self::STAFF_ROLES);
+    }
+
+    /**
+     * Sees paid and members-only content without buying: the built-in team roles, exactly as before,
+     * and custom roles that a super administrator gave "content.free_access" (off by default).
+     */
+    public function hasFreeContentAccess(): bool
+    {
+        return $this->isStaff() || $this->checkPermissionTo('content.free_access');
+    }
+
+    /** Users who can sign in to the dashboard (built-in team roles or a role with dashboard.access). */
+    public function scopeDashboardUsers(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $q) => $q
+            ->whereHas('roles', fn (Builder $r) => $r->whereIn('name', self::STAFF_ROLES))
+            ->orWhereHas('roles.permissions', fn (Builder $p) => $p->where('name', 'dashboard.access'))
+            ->orWhereHas('permissions', fn (Builder $p) => $p->where('name', 'dashboard.access')));
     }
 
     public function isSuperAdmin(): bool

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Enrollment extends Model
 {
-    public const SOURCES = ['purchase' => 'Purchased', 'membership' => 'Membership', 'free' => 'Free course', 'admin' => 'Granted by staff'];
+    public const SOURCES = ['purchase' => 'Purchased', 'membership' => 'Membership', 'free' => 'Free course', 'admin' => 'Granted by staff', 'complimentary' => 'Free access (role)'];
 
     protected $fillable = ['user_id', 'course_id', 'source', 'order_id', 'last_lesson_id', 'completed_at'];
 

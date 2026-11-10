@@ -61,7 +61,7 @@ class ContentTable
                 ->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))
                 ->searchable()
                 ->query(fn (Builder $query, array $data) => $data['value'] ? $query->inTopic((int) $data['value']) : $query) : null,
-            SelectFilter::make('author_id')->label(__('Author'))->options(fn () => User::role(User::STAFF_ROLES)->pluck('name', 'id')),
+            SelectFilter::make('author_id')->label(__('Author'))->options(fn () => User::dashboardUsers()->orderBy('name')->pluck('name', 'id')),
             $trashed ? TrashedFilter::make()->label(__('Bin')) : null,
         ]));
     }
@@ -77,9 +77,11 @@ class ContentTable
                     ->url(fn (Model $record) => $record->url(), shouldOpenInNewTab: true)
                     ->visible(fn (Model $record) => method_exists($record, 'isPublished') && $record->isPublished() && method_exists($record, 'url')),
                 ReplicateAction::make()->label(__('Duplicate as draft'))
-                    ->excludeAttributes(['views_count', 'reveals_count', 'guesses_count', 'correct_guesses_count', 'plays_count', 'completions_count', 'attempts_count', 'correct_count'])
+                    // Statistics, sales links and bin state belong to the original only.
+                    ->excludeAttributes(['views_count', 'reveals_count', 'guesses_count', 'correct_guesses_count', 'plays_count', 'completions_count', 'attempts_count', 'correct_count',
+                        'enrollments_count', 'registrations_count', 'comments_count', 'stripe_product_id', 'deleted_at', 'is_case_of_week', 'case_of_week_date'])
                     ->mutateRecordDataUsing(function (array $data) {
-                        $data['title'] = ($data['title'] ?? 'Copy').' (copy)';
+                        $data['title'] = Str::limit($data['title'] ?? 'Copy', 240, '').' (copy)';
                         if (isset($data['slug'])) {
                             $data['slug'] = Str::limit($data['slug'], 180, '').'-copy-'.Str::lower(Str::random(4));
                         }
@@ -113,7 +115,7 @@ class ContentTable
                     ->visible(fn () => auth()->user()?->can($permissionPrefix.'.publish'))
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
-                        $records->each(fn (Model $record) => auth()->user()->can('update', $record) ? $record->update(['status' => ContentStatus::Published, 'published_at' => $record->published_at ?? now()]) : null);
+                        $records->each(fn (Model $record) => auth()->user()->can('publish', $record) ? $record->update(['status' => ContentStatus::Published, 'published_at' => $record->published_at ?? now()]) : null);
                         Notification::make()->success()->title(__('Published :count items', ['count' => $records->count()]))->send();
                     })->deselectRecordsAfterCompletion(),
                 BulkAction::make('unpublish')->label(__('Revert to draft'))->icon('heroicon-o-pencil-square')
@@ -122,9 +124,10 @@ class ContentTable
                         $records->each(fn (Model $record) => auth()->user()->can('update', $record) ? $record->update(['status' => ContentStatus::Draft]) : null);
                         Notification::make()->success()->title(__('Moved to drafts'))->send();
                     })->deselectRecordsAfterCompletion(),
-                DeleteBulkAction::make()->label(__('Move to bin')),
-                RestoreBulkAction::make(),
-                ForceDeleteBulkAction::make(),
+                // Each selected item is checked (authors may only bin, restore or delete their own items).
+                DeleteBulkAction::make()->label(__('Move to bin'))->authorizeIndividualRecords('delete'),
+                RestoreBulkAction::make()->authorizeIndividualRecords('restore'),
+                ForceDeleteBulkAction::make()->authorizeIndividualRecords('forceDelete'),
             ]),
         ];
     }

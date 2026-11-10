@@ -5,7 +5,6 @@ namespace App\Services\Analytics;
 use App\Models\AnalyticsEvent;
 use App\Models\ClinicalCase;
 use App\Models\PageView;
-use App\Models\Question;
 use App\Models\Video;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -27,7 +26,7 @@ class Tracker
             return false;
         }
 
-        return ! (Settings::get('analytics.exclude_staff', true) && $request->user()?->isStaff());
+        return ! (Settings::get('analytics.exclude_staff', true) && $request->user()?->canUseDashboard());
     }
 
     public function pageView(Request $request, array $payload): ?PageView

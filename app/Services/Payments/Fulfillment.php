@@ -5,12 +5,14 @@ namespace App\Services\Payments;
 use App\Enums\OrderStatus;
 use App\Enums\SubscriptionStatus;
 use App\Mail\MembershipStarted;
+use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\MembershipPlan;
 use App\Models\Order;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Webinar;
+use App\Services\Access\ContentAccess;
 use App\Services\Learning\LearningService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +32,7 @@ class Fulfillment
     public const EVENTS = [
         'checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed', 'checkout.session.expired',
         'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted', 'customer.subscription.paused', 'customer.subscription.resumed',
-        'invoice.paid', 'charge.refunded',
+        'invoice.paid', 'charge.refunded', 'charge.dispute.closed',
     ];
 
     public function __construct(protected StripeClient $stripe, protected LearningService $learning) {}
@@ -38,15 +40,17 @@ class Fulfillment
     public function handle(array $event): void
     {
         $object = $event['data']['object'] ?? [];
+        $created = self::time($event['created'] ?? null);
 
         match ($event['type'] ?? null) {
             'checkout.session.completed', 'checkout.session.async_payment_succeeded' => $this->fulfilCheckoutSession($object),
             'checkout.session.async_payment_failed' => $this->failCheckoutSession($object, OrderStatus::Failed),
             'checkout.session.expired' => $this->failCheckoutSession($object, OrderStatus::Canceled),
             'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted',
-            'customer.subscription.paused', 'customer.subscription.resumed' => $this->syncSubscription($object),
+            'customer.subscription.paused', 'customer.subscription.resumed' => $this->syncSubscription($object, [], $created),
             'invoice.paid' => $this->recordInvoice($object),
             'charge.refunded' => $this->recordRefund($object),
+            'charge.dispute.closed' => $this->recordDispute($object),
             default => null,
         };
     }
@@ -61,8 +65,9 @@ class Fulfillment
         if ($type === 'membership') {
             $subscriptionId = self::id($session['subscription'] ?? null);
             if ($subscriptionId) {
+                // Read when the session is handled, so this is the current state.
                 $subscription = is_array($session['subscription'] ?? null) ? $session['subscription'] : $this->stripe->get('subscriptions/'.$subscriptionId);
-                $this->syncSubscription($subscription, $metadata);
+                $this->syncSubscription($subscription, $metadata, now());
             }
 
             return;
@@ -73,7 +78,8 @@ class Fulfillment
         }
 
         // Asynchronous methods (e.g. SEPA Direct Debit) complete the session before the money arrives.
-        if (($session['payment_status'] ?? null) !== 'paid') {
+        // ("no_payment_required": a 100% promotion code.)
+        if (! self::isPaid($session)) {
             return;
         }
 
@@ -110,6 +116,15 @@ class Fulfillment
                 return;
             }
 
+            // Paid twice for the same item (two tabs, an old Checkout page): flag it for a refund in the dashboard.
+            $earlier = Order::where('user_id', $user->id)->where('id', '!=', $order->id)
+                ->where('purchasable_type', $order->purchasable_type)->where('purchasable_id', $order->purchasable_id)
+                ->where('status', OrderStatus::Paid)->value('number');
+            if ($earlier) {
+                $order->update(['meta' => [...($order->meta ?? []), 'duplicate_of' => $earlier]]);
+                Log::warning("Order {$order->number} pays again for an item already bought in {$earlier}; consider refunding it.");
+            }
+
             if ($type === 'course' && ($course = Course::withTrashed()->find($order->purchasable_id))) {
                 $this->learning->enroll($user, $course, 'purchase', $order);
             }
@@ -144,7 +159,11 @@ class Fulfillment
 
     // Subscriptions -----------------------------------------------------------
 
-    public function syncSubscription(array $data, array $sessionMetadata = []): ?Subscription
+    /**
+     * @param  Carbon|null  $stateAt  when this state was true (event creation time, or now for a fresh API read);
+     *                                an older state never overwrites a newer one (Stripe sends events out of order and retries for days)
+     */
+    public function syncSubscription(array $data, array $sessionMetadata = [], ?Carbon $stateAt = null): ?Subscription
     {
         $metadata = ($data['metadata'] ?? []) + $sessionMetadata;
         $customerId = self::id($data['customer'] ?? null);
@@ -165,10 +184,17 @@ class Fulfillment
 
         $status = SubscriptionStatus::tryFrom($data['status'] ?? '') ?? SubscriptionStatus::Incomplete;
 
-        return DB::transaction(function () use ($data, $user, $plan, $status, $item, $price, $customerId) {
-            $subscription = Subscription::lockForUpdate()->firstOrNew(['stripe_subscription_id' => $data['id']]);
-            $wasGranting = $subscription->exists && $subscription->grantsAccess();
-            $neverGranted = ! $subscription->exists || in_array($subscription->status, [SubscriptionStatus::Incomplete, null], true);
+        // The success page and several webhooks can create the same row at once: insert first (ignored when it
+        // exists), then lock the existing row; deadlocks are retried.
+        Subscription::query()->insertOrIgnore(['stripe_subscription_id' => $data['id'], 'user_id' => $user->id, 'status' => SubscriptionStatus::Incomplete->value, 'created_at' => now(), 'updated_at' => now()]);
+
+        return DB::transaction(function () use ($data, $user, $plan, $status, $item, $price, $customerId, $stateAt) {
+            $subscription = Subscription::lockForUpdate()->where('stripe_subscription_id', $data['id'])->firstOrFail();
+            if ($stateAt && $subscription->stripe_synced_at && $stateAt->lt($subscription->stripe_synced_at)) {
+                return $subscription; // an older event arriving late
+            }
+            $wasGranting = $subscription->grantsAccess();
+            $neverGranted = in_array($subscription->status, [SubscriptionStatus::Incomplete, null], true);
 
             $subscription->fill([
                 'user_id' => $user->id,
@@ -183,6 +209,7 @@ class Fulfillment
                 'cancel_at_period_end' => (bool) ($data['cancel_at_period_end'] ?? false) || filled($data['cancel_at'] ?? null),
                 'canceled_at' => self::time($data['canceled_at'] ?? null),
                 'ended_at' => self::time($data['ended_at'] ?? null),
+                'stripe_synced_at' => $stateAt ?? $subscription->stripe_synced_at,
             ])->save();
 
             if (! $user->stripe_customer_id && $customerId) {
@@ -195,7 +222,7 @@ class Fulfillment
             }
 
             return $subscription;
-        });
+        }, attempts: 3);
     }
 
     /** Each paid membership invoice becomes an order, so revenue reports include renewals. */
@@ -227,11 +254,39 @@ class Fulfillment
             'currency' => strtoupper($invoice['currency'] ?? 'EUR'),
             'status' => OrderStatus::Paid,
             'stripe_subscription_id' => $subscriptionId,
-            'stripe_payment_intent_id' => self::id($invoice['payment_intent'] ?? null),
+            'stripe_payment_intent_id' => $this->invoicePaymentIntent($invoice),
             'receipt_url' => $invoice['hosted_invoice_url'] ?? null,
             'invoice_pdf_url' => $invoice['invoice_pdf'] ?? null,
             'paid_at' => self::time($invoice['status_transitions']['paid_at'] ?? null) ?? now(),
         ]);
+    }
+
+    /**
+     * The payment behind an invoice. Older API versions put it on the invoice; since 2025-03-31
+     * ("basil") it is listed in invoice.payments, which webhooks only include when expanded.
+     */
+    protected function invoicePaymentIntent(array $invoice): ?string
+    {
+        $direct = self::id($invoice['payment_intent'] ?? null);
+        if ($direct) {
+            return $direct;
+        }
+        $payments = $invoice['payments']['data'] ?? null;
+        if ($payments === null && isset($invoice['id'])) {
+            try {
+                $payments = $this->stripe->get('invoices/'.$invoice['id'], ['expand' => ['payments']])['payments']['data'] ?? [];
+            } catch (StripeException $e) {
+                Log::warning('Could not read the payments of invoice '.$invoice['id'].': '.$e->getMessage());
+                $payments = [];
+            }
+        }
+        foreach ($payments as $payment) {
+            if ($id = self::id($payment['payment']['payment_intent'] ?? null)) {
+                return $id;
+            }
+        }
+
+        return null;
     }
 
     // Refunds -----------------------------------------------------------------
@@ -248,6 +303,20 @@ class Fulfillment
         $this->applyRefund($order, (int) ($charge['amount_refunded'] ?? 0));
     }
 
+    /** A lost chargeback is treated like a full refund (access bought by that payment ends). */
+    public function recordDispute(array $dispute): void
+    {
+        $intentId = self::id($dispute['payment_intent'] ?? null);
+        $order = $intentId ? Order::where('stripe_payment_intent_id', $intentId)->first() : null;
+        if (! $order) {
+            return;
+        }
+        $order->update(['meta' => [...($order->meta ?? []), 'dispute' => $dispute['status'] ?? 'closed']]);
+        if (($dispute['status'] ?? null) === 'lost') {
+            $this->applyRefund($order, $order->total);
+        }
+    }
+
     public function applyRefund(Order $order, int $refundedTotal): void
     {
         $full = $refundedTotal >= $order->total;
@@ -261,10 +330,30 @@ class Fulfillment
         if ($full) {
             $this->learning->revokeEnrollment($order);
             $this->learning->revokeRegistration($order);
+            $this->revokeCertificate($order);
         }
     }
 
+    /** A course certificate earned with access that was refunded is no longer valid (unless access remains another way). */
+    protected function revokeCertificate(Order $order): void
+    {
+        if ($order->type !== 'course' || ! $order->user || ! ($course = Course::withTrashed()->find($order->purchasable_id))) {
+            return;
+        }
+        if (app(ContentAccess::class)->canAccessCourse($course, $order->user->fresh())) {
+            return;
+        }
+        Certificate::where('user_id', $order->user_id)->where('course_id', $course->id)->whereNull('revoked_at')
+            ->update(['revoked_at' => now(), 'revoke_reason' => 'Payment refunded ('.$order->number.')']);
+    }
+
     // Helpers -----------------------------------------------------------------
+
+    /** A Checkout session whose money has arrived, or that needed none (100% promotion code). */
+    public static function isPaid(array $session): bool
+    {
+        return in_array($session['payment_status'] ?? null, ['paid', 'no_payment_required'], true);
+    }
 
     /** Stripe fields may be an ID string or an expanded object. */
     public static function id(mixed $value): ?string

@@ -4,12 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\ClinicalCase;
+use App\Models\Course;
 use App\Models\ExamTopic;
+use App\Models\Gallery;
 use App\Models\Page;
+use App\Models\Popup;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Models\Video;
+use App\Models\Webinar;
 use App\Services\Access\ContentAccess;
+use App\Services\Learning\LearningService;
+use App\Services\Popups\PopupService;
 use App\Services\Seo\SeoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -21,31 +27,48 @@ class PreviewController extends Controller
     {
         $seo->noindex();
 
+        if ($type === 'topic') {
+            return redirect(Topic::findOrFail($id)->urlPath());
+        }
+
+        $model = match ($type) {
+            'case' => ClinicalCase::withTrashed()->findOrFail($id),
+            'article' => Article::withTrashed()->findOrFail($id),
+            'video' => Video::withTrashed()->findOrFail($id),
+            'exam_topic' => ExamTopic::findOrFail($id),
+            'page' => Page::withTrashed()->findOrFail($id),
+            'course' => Course::withTrashed()->findOrFail($id),
+            'webinar' => Webinar::withTrashed()->findOrFail($id),
+            'gallery' => Gallery::withTrashed()->findOrFail($id),
+            'question' => Question::withTrashed()->with(['media', 'examTopic'])->findOrFail($id),
+        };
+        // Drafts are only shown to people who may view this type of content in the dashboard.
+        abort_unless($request->user()->can('view', $model), 403);
+
         return match ($type) {
-            'case' => app(CaseController::class)->render(ClinicalCase::withTrashed()->findOrFail($id), $request, $seo, $access, true),
-            'article' => app(ArticleController::class)->render(Article::withTrashed()->findOrFail($id), $request, $seo, $access, true),
-            'video' => app(VideoController::class)->render(Video::withTrashed()->findOrFail($id), $request, $seo, $access, true),
-            'exam_topic' => app(ExamController::class)->renderTopic(ExamTopic::findOrFail($id), $seo, true),
-            'topic' => redirect(Topic::findOrFail($id)->urlPath()),
-            'page' => $this->page(Page::withTrashed()->findOrFail($id), $seo),
-            'course' => app(CourseController::class)->render(\App\Models\Course::withTrashed()->findOrFail($id), $request, $seo, $access, app(\App\Services\Learning\LearningService::class), true),
-            'webinar' => app(WebinarController::class)->render(\App\Models\Webinar::withTrashed()->findOrFail($id), $request, $seo, $access, true),
-            'gallery' => app(GalleryController::class)->render(\App\Models\Gallery::withTrashed()->findOrFail($id), $request, $seo, $access, true),
-            'question' => view('preview.question', ['question' => Question::withTrashed()->with(['media', 'examTopic'])->findOrFail($id), 'noTracking' => true]),
+            'case' => app(CaseController::class)->render($model, $request, $seo, $access, true),
+            'article' => app(ArticleController::class)->render($model, $request, $seo, $access, true),
+            'video' => app(VideoController::class)->render($model, $request, $seo, $access, true),
+            'exam_topic' => app(ExamController::class)->renderTopic($model, $seo, true),
+            'page' => $this->page($model, $seo),
+            'course' => app(CourseController::class)->render($model, $request, $seo, $access, app(LearningService::class), true),
+            'webinar' => app(WebinarController::class)->render($model, $request, $seo, $access, true),
+            'gallery' => app(GalleryController::class)->render($model, $request, $seo, $access, true),
+            'question' => view('preview.question', ['question' => $model, 'noTracking' => true]),
         };
     }
 
     /** Opens a saved popup on a page it targets, shown at once and without counting views. */
-    public function popup(\App\Models\Popup $popup)
+    public function popup(Popup $popup)
     {
         abort_unless(auth()->user()?->can('popups.manage'), 403);
 
-        $token = \App\Services\Popups\PopupService::newPreviewToken();
-        \App\Services\Popups\PopupService::storePreview($token, $popup->attributesToArray());
+        $token = PopupService::newPreviewToken();
+        PopupService::storePreview($token, $popup->attributesToArray());
 
         $path = collect((array) $popup->include_paths)->first(fn ($p) => is_string($p) && str_starts_with($p, '/') && ! str_contains($p, '*')) ?? '/';
 
-        return redirect($path.'?'.\App\Services\Popups\PopupService::PREVIEW_QUERY.'='.$token);
+        return redirect($path.'?'.PopupService::PREVIEW_QUERY.'='.$token);
     }
 
     protected function page(Page $page, SeoManager $seo)

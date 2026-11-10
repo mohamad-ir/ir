@@ -5,21 +5,28 @@ use App\Filament\Pages\Settings\GeneralSettings;
 use App\Filament\Pages\Settings\ThemeSettings;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Cases\Pages\CreateCase;
-use App\Filament\Resources\Cases\Pages\EditCase;
 use App\Filament\Resources\Cases\Pages\ListCases;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Mail\CampaignMail;
 use App\Models\Article;
 use App\Models\Campaign;
 use App\Models\ClinicalCase;
+use App\Models\Media;
+use App\Models\Menu;
 use App\Models\Page;
+use App\Models\Setting;
 use App\Models\Subscriber;
+use App\Models\User;
 use App\Services\Backup\BackupService;
+use App\Services\Demo\DemoContent;
 use App\Services\Newsletter\CampaignSender;
 use App\Services\PageBuilder\BlockRegistry;
+use App\Services\Theme\ThemeService;
 use App\Support\Settings;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\DemoContentSeeder;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('loads every dashboard page for a super administrator', function (string $path) {
@@ -27,7 +34,7 @@ it('loads every dashboard page for a super administrator', function (string $pat
     ClinicalCase::factory()->create();
     $this->actingAsStaff();
 
-    $path = strtr($path, ['{case}' => ClinicalCase::value('id'), '{page}' => Page::value('id'), '{menu}' => \App\Models\Menu::value('id')]);
+    $path = strtr($path, ['{case}' => ClinicalCase::value('id'), '{page}' => Page::value('id'), '{menu}' => Menu::value('id')]);
     $this->get('/'.config('cms.admin_path').$path)->assertOk();
 })->with([
     '', '/cases', '/cases/create', '/cases/{case}/edit', '/articles', '/articles/create', '/videos/create', '/questions/create', '/exam-topics',
@@ -40,7 +47,7 @@ it('loads every dashboard page for a super administrator', function (string $pat
 it('keeps members and guests out of the dashboard', function () {
     $this->get('/'.config('cms.admin_path'))->assertRedirect();
     $this->seedRoles();
-    $member = \App\Models\User::factory()->create();
+    $member = User::factory()->create();
     $member->assignRole('member');
     $this->actingAs($member)->get('/'.config('cms.admin_path'))->assertForbidden();
 });
@@ -124,7 +131,7 @@ it('serves the live builder preview only to its owner', function () {
     $token = $component->get('previewToken');
 
     $this->get(route('preview.builder', $token))->assertOk();
-    $this->actingAs(\App\Models\User::factory()->create())->get(route('preview.builder', $token))->assertForbidden();
+    $this->actingAs(User::factory()->create())->get(route('preview.builder', $token))->assertForbidden();
 });
 
 it('saves settings and keeps secrets encrypted', function () {
@@ -138,7 +145,7 @@ it('saves settings and keeps secrets encrypted', function () {
     expect(Settings::get('site.name'))->toBe('Retina Teaching')->and(Settings::get('site.contact_email'))->toBe('hello@example.org');
 
     Settings::setMany(['mail.password' => 'super-secret'], ['mail.password']);
-    expect(\App\Models\Setting::where('key', 'mail.password')->value('value'))->not->toContain('super-secret');
+    expect(Setting::where('key', 'mail.password')->value('value'))->not->toContain('super-secret');
     Settings::flush();
     expect(Settings::get('mail.password'))->toBe('super-secret');
 });
@@ -147,7 +154,7 @@ it('saves theme colours and regenerates the stylesheet', function () {
     $this->actingAsStaff();
     Livewire::test(ThemeSettings::class)->set('data.theme.primary', '#7a1f3d')->call('save')->assertHasNoErrors();
 
-    expect(app(\App\Services\Theme\ThemeService::class)->css())->toContain('--color-ink:#7a1f3d');
+    expect(app(ThemeService::class)->css())->toContain('--color-ink:#7a1f3d');
 });
 
 it('sends campaigns in throttled batches with tracking', function () {
@@ -161,6 +168,9 @@ it('sends campaigns in throttled batches with tracking', function () {
     expect($sender->start($campaign))->toBe(3);
     $sender->sendBatch($campaign->fresh());
     expect($campaign->fresh()->sent_count)->toBe(2)->and($campaign->fresh()->status)->toBe(CampaignStatus::Sending);
+    // The rate is per minute in total, however often sending is triggered (cron, open dashboard pages).
+    expect($sender->sendBatch($campaign->fresh()))->toBe(0);
+    $this->travel(61)->seconds();
     $sender->sendBatch($campaign->fresh());
     expect($campaign->fresh()->status)->toBe(CampaignStatus::Sent);
     Mail::assertSent(CampaignMail::class, 3);
@@ -183,14 +193,14 @@ it('creates a database backup archive', function () {
 });
 
 it('installs and removes sample content', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
+    Storage::fake('public');
     $this->seed(DatabaseSeeder::class);
     $this->actingAsStaff();
-    $this->seed(\Database\Seeders\DemoContentSeeder::class);
+    $this->seed(DemoContentSeeder::class);
 
-    expect(ClinicalCase::count())->toBe(10)->and(\App\Services\Demo\DemoContent::present())->toBeTrue();
+    expect(ClinicalCase::count())->toBe(10)->and(DemoContent::present())->toBeTrue();
     $this->get('/cases/acute-central-serous-chorioretinopathy')->assertOk()->assertSee('Central serous chorioretinopathy');
 
-    \App\Services\Demo\DemoContent::remove();
-    expect(ClinicalCase::count())->toBe(0)->and(\App\Models\Media::count())->toBe(0)->and(Page::count())->toBeGreaterThan(0);
+    DemoContent::remove();
+    expect(ClinicalCase::count())->toBe(0)->and(Media::count())->toBe(0)->and(Page::count())->toBeGreaterThan(0);
 });

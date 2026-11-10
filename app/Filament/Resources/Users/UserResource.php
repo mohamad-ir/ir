@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Filament\Concerns\TranslatesResourceLabels;
+use App\Filament\Support\InitialsAvatarProvider;
 use App\Models\CareerStage;
 use App\Models\User;
+use App\Services\Users\AvatarService;
 use App\Support\Countries;
 use App\Support\Permissions;
 use BackedEnum;
@@ -35,7 +38,7 @@ use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
-    use \App\Filament\Concerns\TranslatesResourceLabels;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = User::class;
 
@@ -81,8 +84,24 @@ class UserResource extends Resource
                 Section::make('Access')->heading(__('Access'))->schema([
                     Select::make('roles')->relationship('roles', 'name')->multiple()->preload()
                         ->getOptionLabelFromRecordUsing(fn ($record) => __(Permissions::ROLES[$record->name] ?? $record->name))
-                        ->disableOptionWhen(fn (string $value, $label) => $label === __(Permissions::ROLES['super_admin']) && ! auth()->user()->isSuperAdmin())
-                        ->helperText(__('Staff roles can sign in to this dashboard. Members can only use the public account area.')),
+                        // Only a super administrator may give or take away the super administrator role and roles with free access to paid content.
+                        // (roles the user already holds stay selectable so the rest of the form can be saved; the rule below refuses removing them)
+                        ->disableOptionWhen(function (string $value, ?User $record) {
+                            $restricted = once(fn () => Permissions::superAdminOnlyRoleIds());
+
+                            return ! auth()->user()->isSuperAdmin() && in_array((int) $value, $restricted, true) && ! $record?->roles->contains('id', (int) $value);
+                        })
+                        ->rule(fn (?User $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                            if (auth()->user()->isSuperAdmin()) {
+                                return;
+                            }
+                            $before = $record ? $record->roles()->pluck('id')->all() : [];
+                            $changed = array_merge(array_diff(array_map('intval', (array) $value), $before), array_diff($before, array_map('intval', (array) $value)));
+                            if (array_intersect($changed, Permissions::superAdminOnlyRoleIds())) {
+                                $fail(__('Only a super administrator can give or remove this role.'));
+                            }
+                        })
+                        ->helperText(__('Roles with “Sign in to the dashboard” (every built-in team role) can use this dashboard, with two-step verification. Members only use the public account area.')),
                     Toggle::make('is_active')->label(__('Account active'))->default(true)->helperText(__('Inactive users cannot sign in.')),
                 ]),
             ]),
@@ -97,10 +116,12 @@ class UserResource extends Resource
             ->columns([
                 ImageColumn::make('avatar')->label('')->circular()->imageSize(36)
                     ->getStateUsing(fn (User $record) => $record->avatarUrl('sm'))
-                    ->defaultImageUrl(fn (User $record) => (new \App\Filament\Support\InitialsAvatarProvider)->get($record)),
+                    ->defaultImageUrl(fn (User $record) => (new InitialsAvatarProvider)->get($record)),
                 TextColumn::make('name')->searchable(['name', 'email'])->sortable()->weight('medium')->description(fn (User $record) => $record->email),
                 TextColumn::make('roles.name')->label(__('Role'))->badge()->formatStateUsing(fn ($state) => __(Permissions::ROLES[$state] ?? $state))
-                    ->color(fn ($state) => match ($state) { 'super_admin', 'administrator' => 'danger', 'editor' => 'warning', 'author', 'contributor' => 'info', default => 'gray' }),
+                    ->color(fn ($state) => match ($state) {
+                        'super_admin', 'administrator' => 'danger', 'editor' => 'warning', 'author', 'contributor' => 'info', default => 'gray'
+                    }),
                 TextColumn::make('career_stage')->label(__('Career stage'))->badge()->formatStateUsing(fn (?string $state) => CareerStage::labelFor($state))->color(fn (?string $state) => CareerStage::colorFor($state))->toggleable(),
                 TextColumn::make('country')->formatStateUsing(fn ($state) => Countries::name($state))->toggleable(),
                 IconColumn::make('two_factor')->label(__('2FA'))->getStateUsing(fn (User $record) => filled($record->app_authentication_secret))->boolean()->toggleable(),
@@ -113,7 +134,7 @@ class UserResource extends Resource
                 SelectFilter::make('roles')->relationship('roles', 'name')->getOptionLabelFromRecordUsing(fn ($record) => __(Permissions::ROLES[$record->name] ?? $record->name)),
                 SelectFilter::make('career_stage')->label(__('Career stage'))->options(fn () => CareerStage::options(false)),
                 TernaryFilter::make('staff')->label(__('Account type'))->trueLabel(__('Staff'))->falseLabel(__('Members'))
-                    ->queries(true: fn (Builder $query) => $query->role(User::STAFF_ROLES), false: fn (Builder $query) => $query->withoutRole(User::STAFF_ROLES)),
+                    ->queries(true: fn (Builder $query) => $query->dashboardUsers(), false: fn (Builder $query) => $query->whereNotIn('id', User::dashboardUsers()->select('id'))),
                 TernaryFilter::make('is_active')->label(__('Active')),
             ])
             ->recordActions([
@@ -135,13 +156,14 @@ class UserResource extends Resource
                         ->visible(fn (User $record) => filled($record->avatar_path))
                         ->requiresConfirmation()->modalDescription(__('Use this for an unsuitable photo. The member can upload a new one.'))
                         ->action(function (User $record) {
-                            app(\App\Services\Users\AvatarService::class)->remove($record);
+                            app(AvatarService::class)->remove($record);
                             Notification::make()->success()->title(__('Profile photo removed'))->send();
                         }),
                     DeleteAction::make(),
                 ]),
             ])
-            ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
+            // Each selected user is checked against UserPolicy::delete (super administrators, own account).
+            ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()->authorizeIndividualRecords('delete')])]);
     }
 
     public static function getPages(): array

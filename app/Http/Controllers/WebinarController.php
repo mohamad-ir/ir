@@ -97,7 +97,7 @@ class WebinarController extends Controller
         $user = $request->user();
         $registration = $access->registration($webinar, $user);
 
-        if (! $registration && ! $user->isStaff()) {
+        if (! $registration && ! $user->hasFreeContentAccess()) {
             return redirect($webinar->url())->with('error', 'Please register for this webinar to receive the join link.');
         }
         if (blank($webinar->join_url)) {

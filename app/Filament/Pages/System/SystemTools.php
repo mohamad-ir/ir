@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\System;
 
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Models\ActivityLog;
 use App\Services\Analytics\AnalyticsQuery;
 use App\Services\Demo\DemoContent;
@@ -20,7 +21,7 @@ use Illuminate\Support\Str;
 
 class SystemTools extends Page
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
+    use TranslatesPageLabels;
 
     protected static ?string $slug = 'system/health';
 
@@ -47,7 +48,7 @@ class SystemTools extends Page
             'requirements' => SystemHealth::requirements(),
             'runtime' => SystemHealth::runtime(),
             'maintenance' => app()->isDownForMaintenance(),
-            'cronUrl' => ($t = Settings::get('system.cron_token') ?: config('cms.cron_token')) ? route('cron', $t) : null,
+            'cronUrl' => ($t = config('cms.cron_token') ?: Settings::get('system.cron_token')) ? route('cron', $t) : null,
             'demo' => DemoContent::summary(),
             'pending' => $this->pendingMigrations(),
             'cronLine' => '* * * * * '.PHP_BINARY.' '.base_path('artisan').' schedule:run >> /dev/null 2>&1',

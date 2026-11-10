@@ -2,6 +2,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\Bookmark;
 use App\Models\Tag;
 use App\Models\Topic;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,6 +10,23 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait HasTaxonomies
 {
+    /** Deleting an item for good also removes its topic/tag links and bookmarks. */
+    public static function bootHasTaxonomies(): void
+    {
+        $cleanup = function ($model) {
+            if (method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
+                return; // moved to the bin only
+            }
+            $model->topics()->detach();
+            $model->tags()->detach();
+            if (method_exists($model, 'modalities')) {
+                $model->modalities()->detach();
+            }
+            Bookmark::where('bookmarkable_type', $model->getMorphClass())->where('bookmarkable_id', $model->getKey())->delete();
+        };
+        static::deleting($cleanup);
+    }
+
     public function topics(): MorphToMany
     {
         return $this->morphToMany(Topic::class, 'topicable')->orderBy('topics.sort_order');

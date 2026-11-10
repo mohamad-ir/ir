@@ -2,11 +2,16 @@
 
 namespace App\Services\PageBuilder;
 
+use App\Support\SafeUrl;
+use App\Support\Ui;
 use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -29,7 +34,7 @@ abstract class PageBlock
         return '';
     }
 
-    /** @return array<int, \Filament\Schemas\Components\Component|\Filament\Forms\Components\Field> */
+    /** @return array<int, Component|Field> */
     abstract public static function schema(): array;
 
     /** Load data from the database for rendering. */
@@ -75,16 +80,16 @@ abstract class PageBlock
     public static function appearanceSchema(): array
     {
         return [
-            ToggleButtons::make('_tone')->label(__('Background'))->inline()->default(static::defaultTone())->options(\App\Support\Ui::options([
+            ToggleButtons::make('_tone')->label(__('Background'))->inline()->default(static::defaultTone())->options(Ui::options([
                 'default' => 'Page', 'surface' => 'White', 'muted' => 'Soft grey', 'accent' => 'Accent tint', 'ink' => 'Dark',
             ]))->columnSpanFull(),
-            ToggleButtons::make('_spacing')->label(__('Vertical spacing'))->inline()->default('normal')->options(\App\Support\Ui::options([
+            ToggleButtons::make('_spacing')->label(__('Vertical spacing'))->inline()->default('normal')->options(Ui::options([
                 'none' => 'None', 'tight' => 'Tight', 'normal' => 'Normal', 'loose' => 'Generous',
             ])),
-            ToggleButtons::make('_width')->label(__('Content width'))->inline()->default('standard')->options(\App\Support\Ui::options([
+            ToggleButtons::make('_width')->label(__('Content width'))->inline()->default('standard')->options(Ui::options([
                 'narrow' => 'Narrow', 'standard' => 'Standard', 'wide' => 'Wide',
             ])),
-            Select::make('_visibility')->label(__('Show on'))->default('all')->options(\App\Support\Ui::options([
+            Select::make('_visibility')->label(__('Show on'))->default('all')->options(Ui::options([
                 'all' => 'All devices', 'desktop' => 'Desktop only', 'mobile' => 'Mobile & tablet only',
             ])),
             TextInput::make('_anchor')->label(__('Anchor ID'))->prefix('#')->alphaDash()->helperText(__('Link to this section with /page#anchor')),
@@ -94,12 +99,12 @@ abstract class PageBlock
 
     public static function buttonsRepeater(string $name = 'buttons', int $max = 3)
     {
-        return \Filament\Forms\Components\Repeater::make($name)
+        return Repeater::make($name)
             ->label(__('Buttons'))
             ->schema([
                 TextInput::make('label')->required()->maxLength(60),
-                TextInput::make('url')->label(__('Link'))->required()->placeholder(__('/cases or https://…'))->maxLength(500),
-                Select::make('style')->options(\App\Support\Ui::options(['primary' => 'Primary', 'accent' => 'Accent', 'secondary' => 'Outline', 'ghost' => 'Text link']))->default('primary')->selectablePlaceholder(false),
+                TextInput::make('url')->label(__('Link'))->required()->placeholder(__('/cases or https://…'))->maxLength(500)->rule(SafeUrl::rule()),
+                Select::make('style')->options(Ui::options(['primary' => 'Primary', 'accent' => 'Accent', 'secondary' => 'Outline', 'ghost' => 'Text link']))->default('primary')->selectablePlaceholder(false),
             ])
             ->columns(3)
             ->maxItems($max)

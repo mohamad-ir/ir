@@ -2,8 +2,10 @@
 
 namespace App\Filament\Pages\System;
 
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Services\Backup\BackupService;
 use App\Support\Settings;
+use App\Support\Ui;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,7 +16,7 @@ use Throwable;
 
 class Backups extends Page
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
+    use TranslatesPageLabels;
 
     protected static ?string $slug = 'system/backups';
 
@@ -47,7 +49,7 @@ class Backups extends Page
             Action::make('schedule')->label(__('Schedule'))->icon('heroicon-o-clock')->color('gray')
                 ->fillForm(fn () => ['schedule' => Settings::get('backup.schedule'), 'keep' => Settings::get('backup.keep'), 'include_media' => Settings::get('backup.include_media')])
                 ->schema([
-                    Select::make('schedule')->options(\App\Support\Ui::options(['off' => 'Off', 'daily' => 'Daily (03:10)', 'weekly' => 'Weekly (Sunday 03:10)']))->required(),
+                    Select::make('schedule')->options(Ui::options(['off' => 'Off', 'daily' => 'Daily (03:10)', 'weekly' => 'Weekly (Sunday 03:10)']))->required(),
                     TextInput::make('keep')->label(__('Number of backups to keep'))->numeric()->minValue(1)->maxValue(30)->required(),
                     Toggle::make('include_media')->label(__('Include media library in scheduled backups')),
                 ])
@@ -58,9 +60,13 @@ class Backups extends Page
         ];
     }
 
+    /**
+     * Archives contain the whole database (password hashes, sign-in tokens) and the application key, which
+     * together would allow signing in as anyone: only a super administrator may download them.
+     */
     public function download(string $name)
     {
-        abort_unless(static::canAccess(), 403);
+        abort_unless(static::canAccess() && auth()->user()->isSuperAdmin(), 403);
 
         return response()->download(app(BackupService::class)->path($name));
     }

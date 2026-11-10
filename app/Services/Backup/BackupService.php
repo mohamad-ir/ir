@@ -4,6 +4,7 @@ namespace App\Services\Backup;
 
 use App\Models\ActivityLog;
 use App\Support\Settings;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
@@ -44,7 +45,8 @@ class BackupService
         return $this->directory().'/'.$name;
     }
 
-    public function create(?bool $includeMedia = null, string $label = 'manual'): string
+    /** @param  string|null  $keep  a backup that pruning must not delete (the one about to be restored) */
+    public function create(?bool $includeMedia = null, string $label = 'manual', ?string $keep = null): string
     {
         if (! class_exists(ZipArchive::class)) {
             throw new RuntimeException('The PHP zip extension is required for backups. Enable it in DirectAdmin › PHP settings.');
@@ -65,7 +67,7 @@ class BackupService
             throw new RuntimeException('Could not create the backup archive.');
         }
         $zip->addFile($sqlPath, 'database.sql');
-        $zip->addFromString('README.txt', "Backup of ".config('app.url')." created ".now()->toDateTimeString()."\n\n"
+        $zip->addFromString('README.txt', 'Backup of '.config('app.url').' created '.now()->toDateTimeString()."\n\n"
             ."database.sql — import with phpMyAdmin (DirectAdmin › MySQL Management) or System › Backups › Restore.\n"
             ."media/ — copy into public/media (or public_html/media).\n"
             ."app-key.txt — the APP_KEY needed to read encrypted settings; keep this archive private.\n");
@@ -83,7 +85,7 @@ class BackupService
         @unlink($sqlPath);
 
         ActivityLog::record('backup', "Backup created ({$name})");
-        $this->prune();
+        $this->prune($keep);
 
         return $name;
     }
@@ -92,7 +94,7 @@ class BackupService
     {
         $pdo = DB::connection()->getPdo();
         $out = fopen($path, 'w');
-        fwrite($out, "-- ".config('app.name')." database backup\n-- ".now()->toDateTimeString()."\n\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
+        fwrite($out, '-- '.config('app.name')." database backup\n-- ".now()->toDateTimeString()."\n\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
 
         $tables = collect(DB::select('SHOW FULL TABLES'))->map(fn ($r) => array_values((array) $r))->filter(fn ($r) => ($r[1] ?? 'BASE TABLE') === 'BASE TABLE')->map(fn ($r) => $r[0]);
 
@@ -122,7 +124,8 @@ class BackupService
         $zipPath = $this->path($name);
         @set_time_limit(900);
 
-        $this->create(true, 'before-restore');
+        // Safety copy of the current site first — without pruning the backup being restored.
+        $this->create(true, 'before-restore', keep: $name);
 
         $zip = new ZipArchive;
         if ($zip->open($zipPath) !== true) {
@@ -158,6 +161,8 @@ class BackupService
         }
         $zip->close();
 
+        // Everything cached (settings, menus, redirects, popups, sitemaps…) belongs to the previous data.
+        Cache::flush();
         Settings::flush();
         ActivityLog::record('restore', "Site restored from {$name}");
     }
@@ -167,10 +172,10 @@ class BackupService
         @unlink($this->path($name));
     }
 
-    public function prune(): void
+    public function prune(?string $except = null): void
     {
         $keep = max(1, (int) Settings::get('backup.keep', 6));
-        foreach (array_slice($this->list(), $keep) as $old) {
+        foreach (array_slice(array_values(array_filter($this->list(), fn ($b) => $b['name'] !== $except)), $keep) as $old) {
             @unlink($this->directory().'/'.$old['name']);
         }
     }

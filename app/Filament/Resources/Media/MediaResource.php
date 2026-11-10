@@ -118,10 +118,12 @@ class MediaResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('move')->label(__('Move to folder'))->icon('heroicon-o-folder')
+                        ->visible(fn () => auth()->user()->can('media.update'))
                         ->schema([static::folderSelect()])
                         ->action(fn (Collection $records, array $data) => $records->each->update(['folder_id' => $data['folder_id']]))
                         ->deselectRecordsAfterCompletion(),
                     BulkAction::make('quality')->label(__('Set image quality'))->icon('heroicon-o-sparkles')
+                        ->visible(fn () => auth()->user()->can('media.update'))
                         ->schema([Select::make('quality')->label(__('Image quality'))->options(Media::qualityOptions())->default('auto')->required()
                             ->helperText(__('The optimised versions are rebuilt in the background within a few minutes. Originals are not changed.'))])
                         ->action(function (Collection $records, array $data) {

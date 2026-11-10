@@ -3,7 +3,7 @@
 <div class="grid gap-5 sm:grid-cols-2 {{ $cols === 4 ? 'lg:grid-cols-4' : ($cols === 2 ? '' : 'lg:grid-cols-3') }}">
     @foreach ($data['items'] ?? [] as $item)
         @php($tag = ! empty($item['url']) ? 'a' : 'div')
-        <{{ $tag }} @if($tag === 'a') href="{{ $item['url'] }}" @endif class="{{ $tag === 'a' ? 'card-interactive' : 'card' }} group relative p-6 reveal-on-scroll" style="transition-delay: {{ $loop->index * 60 }}ms">
+        <{{ $tag }} @if($tag === 'a') href="{{ safe_href($item['url']) }}" @endif class="{{ $tag === 'a' ? 'card-interactive' : 'card' }} group relative p-6 reveal-on-scroll" style="transition-delay: {{ $loop->index * 60 }}ms">
             <span class="grid size-11 place-items-center rounded-ui bg-accent/10 text-accent-ink ring-1 ring-accent/15">
                 <x-dynamic-component :component="'heroicon-o-'.(array_key_exists($item['icon'] ?? '', \App\Services\PageBuilder\Blocks\FeatureGridBlock::ICONS) ? $item['icon'] : 'eye')" class="size-5.5" />
             </span>
