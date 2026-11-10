@@ -7,6 +7,7 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Support\InitialsAvatarProvider;
 use App\Http\Middleware\AuthenticateDashboard;
 use App\Http\Middleware\RequireStaffMfa;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetAdminLocale;
 use App\Services\Branding\BrandingService;
 use App\Support\Settings;
@@ -99,6 +100,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
             ->middleware([
+                // Same security headers as the website (X-Frame-Options against clickjacking of the sign-in page, nosniff, HSTS…).
+                SecurityHeaders::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
