@@ -21,8 +21,7 @@ class EditRole extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [DeleteAction::make()->hidden(fn () => array_key_exists($this->record->name, Permissions::ROLES)
-            || (! auth()->user()->isSuperAdmin() && $this->record->permissions->pluck('name')->intersect(Permissions::SUPER_ADMIN_ONLY)->isNotEmpty()))];
+        return [DeleteAction::make()->hidden(fn () => ! auth()->user()->can('delete', $this->record))];
     }
 
     public function getTitle(): string

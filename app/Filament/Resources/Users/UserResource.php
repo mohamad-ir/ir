@@ -85,7 +85,12 @@ class UserResource extends Resource
                     Select::make('roles')->relationship('roles', 'name')->multiple()->preload()
                         ->getOptionLabelFromRecordUsing(fn ($record) => __(Permissions::ROLES[$record->name] ?? $record->name))
                         // Only a super administrator may give or take away the super administrator role and roles with free access to paid content.
-                        ->disableOptionWhen(fn (string $value) => ! auth()->user()->isSuperAdmin() && in_array((int) $value, Permissions::superAdminOnlyRoleIds(), true))
+                        // (roles the user already holds stay selectable so the rest of the form can be saved; the rule below refuses removing them)
+                        ->disableOptionWhen(function (string $value, ?User $record) {
+                            $restricted = once(fn () => Permissions::superAdminOnlyRoleIds());
+
+                            return ! auth()->user()->isSuperAdmin() && in_array((int) $value, $restricted, true) && ! $record?->roles->contains('id', (int) $value);
+                        })
                         ->rule(fn (?User $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
                             if (auth()->user()->isSuperAdmin()) {
                                 return;
@@ -157,7 +162,8 @@ class UserResource extends Resource
                     DeleteAction::make(),
                 ]),
             ])
-            ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
+            // Each selected user is checked against UserPolicy::delete (super administrators, own account).
+            ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()->authorizeIndividualRecords('delete')])]);
     }
 
     public static function getPages(): array

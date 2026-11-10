@@ -3,11 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\Comment;
+use App\Models\User;
+use App\Services\Access\ContentAccess;
 use App\Services\Comments\CommentService;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -68,7 +71,7 @@ class Comments extends Component
         return Comment::where('commentable_type', $this->type)->where('commentable_id', $this->itemId)->findOrFail($id);
     }
 
-    protected function requireUser(): \App\Models\User
+    protected function requireUser(): User
     {
         $user = auth()->user();
         if (! $user) {
@@ -110,8 +113,8 @@ class Comments extends Component
 
         try {
             $comment = $comments->post($user, $this->item(), $this->replyBody, $parent);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['replyBody' => $e->errors()['body'] ?? $e->getMessage()]);
+        } catch (ValidationException $e) {
+            throw ValidationException::withMessages(['replyBody' => $e->errors()['body'] ?? $e->getMessage()]);
         }
         $this->reset('replyTo', 'replyBody');
         $this->notice = $comment->isApproved() ? null : 'Thank you — your reply will appear once a moderator has approved it.';
@@ -160,10 +163,10 @@ class Comments extends Component
 
     // Moderation --------------------------------------------------------------
 
-    protected function moderator(): \App\Models\User
+    protected function moderator(): User
     {
         $user = $this->requireUser();
-        abort_unless($user->can('comments.moderate'), 403);
+        abort_unless($user->canUseDashboard() && $user->can('comments.moderate'), 403);
 
         return $user;
     }
@@ -209,14 +212,14 @@ class Comments extends Component
         $user = auth()->user();
 
         return $user && $comment->user_id === $user->id
-            && ($user->isStaff() || $comment->created_at->gt(now()->subMinutes((int) Settings::get('comments.edit_minutes', 15))));
+            && ($user->canUseDashboard() || $comment->created_at->gt(now()->subMinutes((int) Settings::get('comments.edit_minutes', 15))));
     }
 
     public function render()
     {
         $item = $this->item();
         $user = auth()->user();
-        $moderator = $user?->can('comments.moderate') ?? false;
+        $moderator = $user && $user->canUseDashboard() && $user->can('comments.moderate');
 
         $visible = fn ($q) => $moderator
             ? $q->whereIn('status', ['approved', 'pending'])
@@ -246,11 +249,11 @@ class Comments extends Component
             'threads' => $threads,
             'total' => $total,
             'count' => $item->comments_count,
-            'open' => $item->commentsOpen() && app(\App\Services\Access\ContentAccess::class)->canView($item, $user),
+            'open' => $item->commentsOpen() && app(ContentAccess::class)->canView($item, $user),
             'moderator' => $moderator,
             'liked' => $liked,
             'reported' => $reported,
-            'needsVerification' => $user && ! $user->hasVerifiedEmail() && ! $user->isStaff() && Settings::get('comments.require_verified', true),
+            'needsVerification' => $user && ! $user->hasVerifiedEmail() && ! $user->canUseDashboard() && Settings::get('comments.require_verified', true),
             'guidelines' => Settings::get('comments.guidelines'),
             'authorId' => $item->author_id ?? null,
         ]);

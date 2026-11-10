@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Access\ContentAccess;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -38,7 +39,7 @@ class CommentService
         if (! app(ContentAccess::class)->canView($commentable, $user)) {
             throw ValidationException::withMessages(['body' => 'Only members with access to this page can join the discussion.']);
         }
-        if (Settings::get('comments.require_verified', true) && ! $user->hasVerifiedEmail() && ! $user->isStaff()) {
+        if (Settings::get('comments.require_verified', true) && ! $user->hasVerifiedEmail() && ! $user->canUseDashboard()) {
             throw ValidationException::withMessages(['body' => 'Please confirm your email address before commenting — check your inbox for the link.']);
         }
         if (mb_strlen($body) < 2 || mb_strlen($body) > self::MAX_LENGTH) {
@@ -51,7 +52,7 @@ class CommentService
         $parent = $parent?->parent_id ? $parent->parent : $parent;
 
         $key = 'comment:'.$user->id;
-        if (! $user->isStaff() && (RateLimiter::tooManyAttempts($key.':min', 4) || RateLimiter::tooManyAttempts($key.':day', 40))) {
+        if (! $user->canUseDashboard() && (RateLimiter::tooManyAttempts($key.':min', 4) || RateLimiter::tooManyAttempts($key.':day', 40))) {
             throw ValidationException::withMessages(['body' => 'You are commenting very quickly — please wait a moment and try again.']);
         }
         if (Comment::where('user_id', $user->id)->where('body', $body)->where('created_at', '>', now()->subDay())->exists()) {
@@ -86,7 +87,7 @@ class CommentService
     /** @return array{0: string, 1: ?string} status and the reason it was held */
     protected function decideStatus(User $user, string $body): array
     {
-        if ($user->isStaff()) {
+        if ($user->canUseDashboard()) {
             return ['approved', null];
         }
 
@@ -130,7 +131,7 @@ class CommentService
     public function edit(Comment $comment, User $user, string $body): void
     {
         $minutes = (int) Settings::get('comments.edit_minutes', 15);
-        abort_unless($comment->user_id === $user->id && ($user->isStaff() || $comment->created_at->gt(now()->subMinutes($minutes))), 403);
+        abort_unless($comment->user_id === $user->id && ($user->canUseDashboard() || $comment->created_at->gt(now()->subMinutes($minutes))), 403);
 
         $body = trim($body);
         if (mb_strlen($body) < 2 || mb_strlen($body) > self::MAX_LENGTH) {
@@ -141,7 +142,7 @@ class CommentService
 
     public function delete(Comment $comment, User $user): void
     {
-        abort_unless($comment->user_id === $user->id || $user->can('comments.moderate'), 403);
+        abort_unless($comment->user_id === $user->id || ($user->canUseDashboard() && $user->can('comments.moderate')), 403);
         $wasApproved = $comment->isApproved();
         if ($comment->replies()->where('status', 'approved')->exists()) {
             // Keep the thread readable: replies stay, the removed comment becomes a placeholder.
@@ -217,7 +218,7 @@ class CommentService
         }
     }
 
-    protected function send(string $to, \Illuminate\Mail\Mailable $mail): void
+    protected function send(string $to, Mailable $mail): void
     {
         try {
             Mail::to($to)->queue($mail);

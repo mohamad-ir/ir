@@ -149,8 +149,7 @@ class RoleResource extends Resource
             TextColumn::make('permissions_count')->counts('permissions')->label(__('Permissions')),
         ])->recordActions([
             EditAction::make(),
-            DeleteAction::make()->hidden(fn (Role $record) => array_key_exists($record->name, Permissions::ROLES)
-                || (! auth()->user()->isSuperAdmin() && $record->permissions->pluck('name')->intersect(Permissions::SUPER_ADMIN_ONLY)->isNotEmpty())),
+            DeleteAction::make()->hidden(fn (Role $record) => ! auth()->user()->can('delete', $record)),
         ]);
     }
 

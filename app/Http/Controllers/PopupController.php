@@ -26,7 +26,7 @@ class PopupController extends Controller
         $id = (int) ($data['id'] ?? 0);
 
         if (! $id || ! array_key_exists($event, PopupService::EVENTS) || UserAgent::isBot($request->userAgent())
-            || (Settings::get('analytics.exclude_staff', true) && $request->user()?->isStaff())) {
+            || (Settings::get('analytics.exclude_staff', true) && $request->user()?->canUseDashboard())) {
             return response()->noContent();
         }
 

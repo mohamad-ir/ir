@@ -5,14 +5,18 @@ use App\Filament\Resources\Roles\Pages\CreateRole;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Filament\Resources\Users\Pages\EditUser;
+use App\Filament\Resources\Users\Pages\ListUsers;
+use App\Http\Middleware\AuthenticateDashboard;
 use App\Http\Middleware\RequireStaffMfa;
 use App\Models\Article;
 use App\Models\ClinicalCase;
+use App\Models\Comment;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\Access\ContentAccess;
+use App\Services\Comments\CommentService;
 use App\Services\Learning\LearningService;
 use App\Support\Settings;
 use Filament\Facades\Filament;
@@ -22,6 +26,7 @@ use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /*
  * Dashboard access is the "dashboard.access" permission; free access to paid content is a
@@ -291,4 +296,85 @@ it('explains an inactive account and lists custom dashboard users as possible au
     $member = userWithRole('member', ['name' => 'Plain Member']);
     $names = User::dashboardUsers()->pluck('name');
     expect($names)->toContain('Guest Editor')->not->toContain('Plain Member');
+});
+
+it('lets an administrator edit a user who holds a free-access role, but not remove that role', function () {
+    customRole('vip', ['content.free_access']);
+    $user = userWithRole('member', ['name' => 'Old Name']);
+    $user->assignRole('vip');
+    $roles = [Role::findByName('member')->id, Role::findByName('vip')->id];
+    $this->actingAsStaff('administrator');
+
+    Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
+        ->fillForm(['name' => 'New Name', 'roles' => $roles])
+        ->call('save')->assertHasNoFormErrors();
+    expect($user->fresh()->name)->toBe('New Name')->and($user->fresh()->hasRole('vip'))->toBeTrue();
+
+    Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
+        ->fillForm(['roles' => [Role::findByName('member')->id]])
+        ->call('save')->assertHasFormErrors(['roles']);
+    expect($user->fresh()->hasRole('vip'))->toBeTrue();
+});
+
+it('checks every selected user when users are deleted in bulk', function () {
+    $admin = $this->actingAsStaff('administrator');
+    $super = $this->staff('super_admin');
+    $member = userWithRole('member');
+
+    Livewire::test(ListUsers::class)
+        ->callTableBulkAction('delete', [$super->id, $admin->id, $member->id]);
+
+    expect(User::find($super->id))->not->toBeNull()
+        ->and(User::find($admin->id))->not->toBeNull()
+        ->and(User::find($member->id))->toBeNull();
+});
+
+it('protects built-in roles and free-access roles from deletion in the policy itself', function () {
+    customRole('role_manager', ['dashboard.access', 'roles.manage']);
+    $manager = userWithRole('role_manager');
+    $vip = customRole('vip', ['content.free_access']);
+    $plain = customRole('reviewer', ['cases.view']);
+
+    expect($manager->can('delete', Role::findByName('editor')))->toBeFalse()
+        ->and($manager->can('delete', $vip))->toBeFalse()
+        ->and($manager->can('delete', $plain))->toBeTrue()
+        ->and($this->staff('super_admin')->can('delete', $vip))->toBeTrue();
+});
+
+it('re-checks dashboard access on every Livewire update, so removing access applies to open pages', function () {
+    expect(Livewire::getPersistentMiddleware())->toContain(AuthenticateDashboard::class);
+});
+
+it('reserves comment moderation and other people’s certificates for people with dashboard access', function () {
+    customRole('moderator_only', ['comments.moderate', 'courses.view']);
+    $user = userWithRole('moderator_only');
+    $other = userWithRole('member');
+    $article = Article::factory()->create(['status' => 'published', 'published_at' => now()->subDay()]);
+    $comment = $article->comments()->create(['user_id' => $other->id, 'body' => 'Hello', 'status' => 'approved']);
+
+    expect(fn () => app(CommentService::class)->delete($comment, $user))
+        ->toThrow(HttpException::class);
+
+    Role::findByName('moderator_only')->givePermissionTo('dashboard.access');
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    app(CommentService::class)->delete($comment, $user->fresh());
+    expect(Comment::find($comment->id))->toBeNull();
+});
+
+it('asks for two-step verification before draft previews, as in the dashboard', function () {
+    customRole('case_reviewer', ['dashboard.access', 'cases.view']);
+    $this->actingAs(userWithRole('case_reviewer'));
+    $case = ClinicalCase::factory()->create(['status' => 'draft', 'published_at' => null]);
+    Route::get('/admin/multi-factor-authentication/set-up', fn () => 'setup')->name('filament.admin.auth.multi-factor-authentication.set-up-required');
+    app('router')->getRoutes()->refreshNameLookups();
+    Filament::getPanel('admin')->requiresMultiFactorAuthentication(true);
+    Settings::set('security.require_staff_mfa', true);
+
+    try {
+        $this->get('/_preview/case/'.$case->id)->assertRedirectContains('multi-factor-authentication');
+        Settings::set('security.require_staff_mfa', false);
+        $this->get('/_preview/case/'.$case->id)->assertOk();
+    } finally {
+        Filament::getPanel('admin')->requiresMultiFactorAuthentication(fn () => ! app()->runningUnitTests());
+    }
 });

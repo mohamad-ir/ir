@@ -120,7 +120,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 // Filament's Authenticate, plus a clear explanation instead of a bare 403 for signed-in users without dashboard access.
                 AuthenticateDashboard::class,
-            ]);
+            ], isPersistent: true); // also on Livewire updates: losing dashboard access or deactivation applies to open pages at once
     }
 
     public function boot(): void

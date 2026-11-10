@@ -1,7 +1,7 @@
 @php
     $mine = auth()->check() && $comment->user_id === auth()->id();
     $isAuthor = $comment->user_id && $comment->user_id === $authorId;
-    $isTeam = $comment->user?->isStaff();
+    $isTeam = $comment->user?->canUseDashboard();
 @endphp
 <article id="comment-{{ $comment->id }}" @class(['group flex scroll-mt-28 gap-3 sm:gap-4', 'opacity-70' => $comment->status === 'pending']) x-data="{ menu: false }">
     @include('livewire.comments.avatar', ['person' => $comment->user, 'small' => $isReply])
