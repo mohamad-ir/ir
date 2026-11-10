@@ -96,6 +96,12 @@
   - Viewers: OCT case viewer and gallery viewer use srcset and swap to the untouched original once loaded when zooming (the case viewer zoomed up to 6× into the 1600 px WebP before); banner mobile image uses srcset; rich-text figures get sizes per figure width
   - Existing images re-optimised in the background (media.variants_version, scheduler ~10 per minute) and `php artisan media:optimize`; dashboard: Image quality field, “Set image quality” bulk action, list of generated sizes with file sizes
 
+## Verification log (2026-11-12, 1.6.0 release package)
+- `release/oct-academy-1.6.0.zip` (44 MB, 23 267 files, SHA-256 `3536e78905cc1b0e570aac41beb82fd3fb8ce429541270cbc4dd2f24ea57a7ed`): integrity OK; layout `oct-academy/`, `public_html/`, `docs/` (with the updated Persian guide); permissions 644/755 only; no `.env`, lock file, logs, SQLite file, tests or development files; sRGB profile present for colour conversion.
+- Fresh install (DirectAdmin layout, 8 parallel first requests): `.env` complete and `640`, `/.env` 404, installer completed, `/install` 404 afterwards, 2FA enforced, 80 public + 70 dashboard pages crawled without errors.
+- Herd-style with an `APP_KEY`-only `.env`: installer opens, `.env` repaired; 30 × 8 parallel first requests → 0 broken.
+- Upgrade from the released 1.5.0 package (Imagick host; demo content, member, popup, custom setting, a JPEG with EXIF/GPS/comment uploaded under 1.5.0 — its original still carried the EXIF): migration applied, version 1.6.0, every table identical apart from `migrations` and the media optimisation data; `.env` byte-identical; 20 images re-optimised by 4 scheduler runs; the old upload's original is now clean and only that original changed; member and administrator sign in; 2FA setting works with cached routes; 80 + 70 pages crawled without errors.
+
 ## Verification log (2026-11-12, image quality)
 - 351 tests pass (26 new in `tests/Feature/Media/ImageQualityTest.php`, run with both GD and Imagick); CI now installs Imagick.
 - Before the fix, under Imagick an uploaded JPEG with EXIF camera data, GPS text and a patient-name comment kept them in the original and every WebP variant; now removed everywhere (originals, variants, profile photos), and the compressed JPEG data of the original is byte-identical to the upload.
