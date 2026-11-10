@@ -42,7 +42,7 @@ class LoginController extends Controller
         $user = $request->user();
 
         // Staff with two-factor authentication must use the dashboard login, which enforces it.
-        if ($user->isStaff()) {
+        if ($user->canUseDashboard()) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

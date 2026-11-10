@@ -48,7 +48,7 @@ class ThemeService
     {
         // Dashboard theme preview: staff can render unsaved theme values via ?theme_preview=token.
         $token = request()?->query('theme_preview');
-        if (is_string($token) && $token !== '' && auth()->user()?->isStaff() && is_array($draft = Cache::get('theme-preview:'.$token))) {
+        if (is_string($token) && $token !== '' && auth()->user()?->can('design.manage') && is_array($draft = Cache::get('theme-preview:'.$token))) {
             return $this->build($draft);
         }
 

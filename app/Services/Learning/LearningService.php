@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\Webinar;
 use App\Models\WebinarRegistration;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -25,7 +26,8 @@ class LearningService
         $isNew = ! $enrollment->exists;
 
         // A purchase or a staff grant upgrades a membership enrolment to permanent access.
-        if ($isNew || ($enrollment->source === 'membership' && in_array($source, ['purchase', 'admin'], true))) {
+        // Access that ends (membership, free access through a role) is upgraded by a purchase or a grant.
+        if ($isNew || (in_array($enrollment->source, ['membership', 'complimentary'], true) && in_array($source, ['purchase', 'admin'], true))) {
             $enrollment->source = $source;
         }
         if ($order) {
@@ -126,7 +128,7 @@ class LearningService
     }
 
     /** Queues an email; failures never break a payment or registration. */
-    public function mail(User $user, \Illuminate\Mail\Mailable $mailable): void
+    public function mail(User $user, Mailable $mailable): void
     {
         try {
             Mail::to($user->email, $user->name)->queue($mailable);

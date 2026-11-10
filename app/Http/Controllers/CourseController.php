@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Enrollment;
-use App\Models\Lesson;
 use App\Services\Access\ContentAccess;
 use App\Services\Learning\LearningService;
 use App\Services\Payments\StripeClient;
@@ -72,7 +72,7 @@ class CourseController extends Controller
             'progress' => $canAccess ? $learning->progress($user, $course) : 0,
             'nextLesson' => $next,
             'paymentsEnabled' => StripeClient::configured(),
-            'certificate' => $user ? \App\Models\Certificate::valid()->where('user_id', $user->id)->where('course_id', $course->id)->first() : null,
+            'certificate' => $user ? Certificate::valid()->where('user_id', $user->id)->where('course_id', $course->id)->first() : null,
             'isPreview' => $preview,
         ]);
     }
@@ -87,6 +87,8 @@ class CourseController extends Controller
             $course->isFree() => 'free',
             $course->included_in_membership && $user->isMember() => 'membership',
             $user->isStaff() => 'admin',
+            // Custom roles with free access: the enrolment lasts only while the role keeps that permission.
+            $user->hasFreeContentAccess() => 'complimentary',
             default => null,
         };
         abort_if($source === null && ! $access->canAccessCourse($course, $user), 403);
@@ -114,7 +116,7 @@ class CourseController extends Controller
 
         if ($canView && $user && $canAccessCourse) {
             $enrollment = $access->enrollment($course, $user);
-            if (! $enrollment && ! $user->isStaff()) {
+            if (! $enrollment && ! $user->hasFreeContentAccess()) {
                 $enrollment = $learning->enroll($user, $course, $course->isFree() ? 'free' : 'membership', notify: false);
             }
             $enrollment?->update(['last_lesson_id' => $lesson->id]);
@@ -170,7 +172,7 @@ class CourseController extends Controller
             return redirect()->route('courses.lesson', [$course->slug, $next->slug]);
         }
 
-        $certificate = $next ? null : \App\Models\Certificate::where('user_id', $request->user()->id)->where('course_id', $course->id)->whereNull('revoked_at')->first();
+        $certificate = $next ? null : Certificate::where('user_id', $request->user()->id)->where('course_id', $course->id)->whereNull('revoked_at')->first();
 
         return back()->with('status', $next ? 'Lesson completed.' : ($certificate ? 'Course completed — congratulations! Your certificate is ready in My learning.' : 'Course completed — congratulations!'));
     }

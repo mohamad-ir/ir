@@ -61,7 +61,7 @@ class ContentTable
                 ->options(fn () => Topic::orderBy('name')->pluck('name', 'id'))
                 ->searchable()
                 ->query(fn (Builder $query, array $data) => $data['value'] ? $query->inTopic((int) $data['value']) : $query) : null,
-            SelectFilter::make('author_id')->label(__('Author'))->options(fn () => User::role(User::STAFF_ROLES)->pluck('name', 'id')),
+            SelectFilter::make('author_id')->label(__('Author'))->options(fn () => User::dashboardUsers()->orderBy('name')->pluck('name', 'id')),
             $trashed ? TrashedFilter::make()->label(__('Bin')) : null,
         ]));
     }

@@ -197,6 +197,9 @@ Same steps. **Apply database updates** adds the new tables, gives editors/author
 ### Upgrading from 1.2 to 1.3 (comments, banners, videos in content)
 Same steps. **Apply database updates** adds the comment and banner tables and gives editors the *Moderate comments* permission. Comments are switched on for cases, articles and videos, with each member’s first comment held for approval — review **Audience › Comments › Comment settings** before announcing the feature, and add a sentence about comments to your privacy policy (comments are public, kept until deleted, and removed with the account). No banners are created on an existing site; add them under **Design › Banners & sliders**.
 
+### Roles and dashboard access (after 1.6.0)
+Same steps. **Apply database updates** adds two permissions: *Sign in to the dashboard* (given to the five built-in team roles, so nothing changes for them) and *Free access to paid and members-only content* (given to nobody). Custom roles you created earlier stay outside the dashboard until you tick *Sign in to the dashboard* for them in **System › Roles & permissions**. Built-in team members can still sign in before the update is applied.
+
 ### Upgrading from 1.5 to 1.6 (image quality)
 Same steps. **Apply database updates** adds three columns to the media library. Existing images are then re-optimised automatically in the background by the cron job (about ten images a minute; the website keeps working with the old copies meanwhile). Originals are not re-encoded: only their privacy metadata is removed. With SSH you can do it in one go with `php artisan media:optimize`. Installing the PHP **Imagick** extension is recommended (better resizing, CMYK and 16-bit images) but not required; WebP files are written by GD/libwebp in both cases. On hosts with Imagick, this version also fixes the removal of EXIF/GPS data from images and profile photos (earlier uploads are cleaned during the re-optimisation).
 

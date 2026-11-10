@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Support\InitialsAvatarProvider;
+use App\Http\Middleware\AuthenticateDashboard;
 use App\Http\Middleware\RequireStaffMfa;
 use App\Http\Middleware\SetAdminLocale;
 use App\Services\Branding\BrandingService;
@@ -117,7 +118,8 @@ class AdminPanelProvider extends PanelProvider
                 "<script>(function(){function c(){try{Object.keys(localStorage).forEach(function(k){if(/^(_x_)?filament:(builder|repeater):collapsed:/.test(k))localStorage.removeItem(k)})}catch(e){}}c();document.addEventListener('livewire:navigating',c)})()</script>"
             ))
             ->authMiddleware([
-                Authenticate::class,
+                // Filament's Authenticate, plus a clear explanation instead of a bare 403 for signed-in users without dashboard access.
+                AuthenticateDashboard::class,
             ]);
     }
 

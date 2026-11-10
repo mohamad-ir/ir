@@ -27,7 +27,7 @@ class ContentAccess
 
     public function canView(Model $content, ?User $user): bool
     {
-        if ($user?->isStaff()) {
+        if ($user?->hasFreeContentAccess()) {
             return true;
         }
 
@@ -60,7 +60,7 @@ class ContentAccess
         if (! $user) {
             return false;
         }
-        if ($user->isStaff()) {
+        if ($user->hasFreeContentAccess()) {
             return true;
         }
 
@@ -101,7 +101,7 @@ class ContentAccess
             return false;
         }
 
-        return $user->isStaff()
+        return $user->hasFreeContentAccess()
             || $webinar->isFree()
             || $this->registration($webinar, $user) !== null
             || ($webinar->free_for_members && $user->isMember());

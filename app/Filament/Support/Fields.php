@@ -5,8 +5,13 @@ namespace App\Filament\Support;
 use App\Enums\AccessLevel;
 use App\Enums\ContentStatus;
 use App\Filament\Forms\MediaPicker;
+use App\Models\Tag;
 use App\Models\User;
+use App\Models\Video;
+use App\Support\Money;
 use App\Support\RichText;
+use App\Support\Ui;
+use App\Support\VideoEmbed;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -22,6 +27,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 /** Reusable dashboard form components shared by all content types. */
@@ -53,11 +59,11 @@ class Fields
     {
         return Repeater::make('prices')->label(__('Prices in other currencies'))
             ->schema([
-                Select::make('currency')->options(array_combine(array_keys(\App\Support\Money::CURRENCIES), array_keys(\App\Support\Money::CURRENCIES)))
+                Select::make('currency')->options(array_combine(array_keys(Money::CURRENCIES), array_keys(Money::CURRENCIES)))
                     ->required()->selectablePlaceholder(false)->distinct(),
                 TextInput::make('amount')->label(__('Price'))->numeric()->minValue(0.5)->step('0.01')->required()
-                    ->formatStateUsing(fn ($state) => \App\Support\Money::toMajor($state === null ? null : (int) $state))
-                    ->dehydrateStateUsing(fn ($state) => \App\Support\Money::toMinor($state)),
+                    ->formatStateUsing(fn ($state) => Money::toMajor($state === null ? null : (int) $state))
+                    ->dehydrateStateUsing(fn ($state) => Money::toMinor($state)),
             ])
             ->columns(2)->defaultItems(0)->addActionLabel(__('Add a price in another currency'))
             ->helperText(__('Visitors see and pay the price in their currency (chosen by them, or detected from their country). Without one, they pay the main price.'));
@@ -68,14 +74,14 @@ class Fields
     {
         return Repeater::make($name)->label(__('Videos'))
             ->schema([
-                ToggleButtons::make('source')->label(__('Video from'))->options(\App\Support\VideoEmbed::SOURCES)->default('url')->inline()->live()->columnSpanFull(),
+                ToggleButtons::make('source')->label(__('Video from'))->options(VideoEmbed::SOURCES)->default('url')->inline()->live()->columnSpanFull(),
                 TextInput::make('url')->label(__('YouTube or Vimeo link'))->url()->columnSpanFull()
                     ->visible(fn ($get) => ($get('source') ?? 'url') === 'url')->required(fn ($get) => ($get('source') ?? 'url') === 'url'),
                 MediaPicker::make('media_id')->label(__('Video file'))->videosOnly()->columnSpanFull()
                     ->visible(fn ($get) => $get('source') === 'upload')->required(fn ($get) => $get('source') === 'upload'),
                 Select::make('video_id')->label(__('Video'))->searchable()->columnSpanFull()
-                    ->options(fn () => \App\Models\Video::latest()->limit(50)->pluck('title', 'id'))
-                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Video::where('title', 'like', "%{$search}%")->limit(30)->pluck('title', 'id'))
+                    ->options(fn () => Video::latest()->limit(50)->pluck('title', 'id'))
+                    ->getSearchResultsUsing(fn (string $search) => Video::where('title', 'like', "%{$search}%")->limit(30)->pluck('title', 'id'))
                     ->visible(fn ($get) => $get('source') === 'library')->required(fn ($get) => $get('source') === 'library'),
                 TextInput::make('title')->maxLength(160),
                 TextInput::make('caption')->maxLength(300),
@@ -107,7 +113,7 @@ class Fields
             ->required()
             ->maxLength(200)
             ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
-            ->validationMessages(\App\Support\Ui::options(['regex' => 'Use lowercase letters, numbers and hyphens only.']))
+            ->validationMessages(Ui::options(['regex' => 'Use lowercase letters, numbers and hyphens only.']))
             ->unique($table, 'slug', ignoreRecord: true)
             ->helperText(__('Changing the URL of a published item automatically creates a 301 redirect from the old address.'));
     }
@@ -152,7 +158,7 @@ class Fields
                     ->helperText(fn (?Model $record) => ($record?->comments_count ? __(':count published comments.', ['count' => number_format($record->comments_count)]).' ' : '').__('Signed-in members can discuss this item. Turn off to close the discussion (existing comments stay visible).')) : null,
                 $hasAuthor ? Select::make('author_id')
                     ->label(__('Author'))
-                    ->options(fn () => User::role(User::STAFF_ROLES)->orderBy('name')->pluck('name', 'id'))
+                    ->options(fn () => User::dashboardUsers()->orderBy('name')->pluck('name', 'id'))
                     ->default(fn () => auth()->id())
                     ->searchable()
                     ->disabled(fn () => ! auth()->user()?->can('content.edit_others'))
@@ -160,7 +166,7 @@ class Fields
                 Placeholder::make('meta')
                     ->hiddenLabel()
                     ->content(fn (?Model $record) => $record?->exists
-                        ? new \Illuminate\Support\HtmlString('<div class="text-xs text-gray-500 space-y-1"><div>'.e(__('Created :ago', ['ago' => $record->created_at?->diffForHumans()])).'</div><div>'.e(__('Last saved :ago', ['ago' => $record->updated_at?->diffForHumans()])).'</div>'.(isset($record->views_count) ? '<div>'.e(__(':count views', ['count' => number_format($record->views_count)])).'</div>' : '').'</div>')
+                        ? new HtmlString('<div class="text-xs text-gray-500 space-y-1"><div>'.e(__('Created :ago', ['ago' => $record->created_at?->diffForHumans()])).'</div><div>'.e(__('Last saved :ago', ['ago' => $record->updated_at?->diffForHumans()])).'</div>'.(isset($record->views_count) ? '<div>'.e(__(':count views', ['count' => number_format($record->views_count)])).'</div>' : '').'</div>')
                         : null)
                     ->visible(fn (?Model $record) => (bool) $record?->exists),
             ])));
@@ -236,7 +242,7 @@ class Fields
             ->searchable()
             ->preload()
             ->createOptionForm([TextInput::make('name')->required()->maxLength(80)])
-            ->createOptionUsing(fn (array $data) => \App\Models\Tag::create(['name' => $data['name'], 'slug' => Str::slug($data['name'])])->id);
+            ->createOptionUsing(fn (array $data) => Tag::create(['name' => $data['name'], 'slug' => Str::slug($data['name'])])->id);
     }
 
     public static function featuredImage(string $name = 'featured_media_id', string $label = 'Featured image'): MediaPicker
