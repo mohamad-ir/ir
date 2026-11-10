@@ -8,6 +8,7 @@ Built with **Laravel 13**, **Filament 5**, **Livewire 4**, **Alpine.js** and **T
 |---|---|
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Installing on DirectAdmin, cron, email, Google, backups, updates, troubleshooting |
 | [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) | Using the dashboard |
+| [docs/install-guide-fa.pdf](docs/install-guide-fa.pdf) | راهنمای نصب فارسی روی DirectAdmin (PDF) — Persian installation guide |
 | [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) | Build log, architecture decisions, test results |
 
 ## Development

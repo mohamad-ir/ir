@@ -63,13 +63,13 @@ class CommentResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(fn ($query) => $query->with(['user', 'commentable', 'parent.user']))
             ->columns([
-                TextColumn::make('body')->label(__('Comment'))->searchable()->wrap()
+                TextColumn::make('body')->label(__('Comment'))->searchable()->wrap()->width('40%')
                     ->formatStateUsing(fn (Comment $record) => new HtmlString(
                         ($record->parent ? '<span class="text-xs text-gray-500">↳ '.e(__('Reply to :name', ['name' => $record->parent->authorName()])).'</span><br>' : '')
                         .'<span class="text-sm">'.e($record->excerpt(220)).'</span>'
                         .($record->moderation_note ? '<br><span class="text-xs text-warning-600">'.e($record->moderation_note).'</span>' : '')))
                     ->description(fn (Comment $record) => $record->authorName().($record->user ? ' · '.$record->user->email : '')),
-                TextColumn::make('commentable.title')->label(__('On'))->limit(40)
+                TextColumn::make('commentable.title')->label(__('On'))->limit(60)->wrap()
                     ->description(fn (Comment $record) => __(['case' => 'OCT case', 'article' => 'Article', 'video' => 'Video'][$record->commentable_type] ?? $record->commentable_type))
                     ->url(fn (Comment $record) => $record->url(), shouldOpenInNewTab: true),
                 TextColumn::make('status')->badge()
