@@ -6,6 +6,7 @@ use App\Models\NotFoundLog;
 use App\Models\Redirect;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -62,7 +63,8 @@ class NotFoundHandler
         $hash = sha1($path);
         $updated = NotFoundLog::where('path_hash', $hash)->increment('hits', 1, ['last_seen_at' => now(), 'referrer' => mb_substr((string) $request->headers->get('referer'), 0, 1000) ?: null]);
 
-        if (! $updated) {
+        // New addresses are recorded at most 30 per minute per visitor, so random URLs cannot flood the table.
+        if (! $updated && RateLimiter::attempt('404-log:'.$request->ip(), 30, fn () => true)) {
             NotFoundLog::create([
                 'path_hash' => $hash,
                 'path' => mb_substr($path, 0, 1000),

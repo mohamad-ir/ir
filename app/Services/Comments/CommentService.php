@@ -137,7 +137,14 @@ class CommentService
         if (mb_strlen($body) < 2 || mb_strlen($body) > self::MAX_LENGTH) {
             throw ValidationException::withMessages(['editBody' => 'Comments must be between 2 and '.number_format(self::MAX_LENGTH).' characters.']);
         }
-        $comment->update(['body' => $body, 'edited_at' => now()]);
+        // An edit goes through the same checks as a new comment (links, blocked words, "approve every comment").
+        [$status, $reason] = $this->decideStatus($user, $body);
+        $wasApproved = $comment->isApproved();
+        $comment->update(['body' => $body, 'edited_at' => now(), ...($status === 'pending' ? ['status' => 'pending', 'moderation_note' => $reason] : [])]);
+        if ($status === 'pending' && $wasApproved) {
+            $comment->commentable?->refreshCommentsCount();
+            $this->notifyModerators($comment);
+        }
     }
 
     public function delete(Comment $comment, User $user): void

@@ -17,6 +17,11 @@ trait HasRevisions
 
     public static function bootHasRevisions(): void
     {
+        static::deleting(function ($model) {
+            if (! method_exists($model, 'isForceDeleting') || $model->isForceDeleting()) {
+                $model->revisions()->delete();
+            }
+        });
         static::saved(function ($model) {
             if (static::$revisionsPaused) {
                 return;
@@ -74,9 +79,10 @@ trait HasRevisions
         return $revision;
     }
 
-    public function restoreRevision(Revision $revision): void
+    /** @param  array<int, string>  $keep  attributes that keep their current value */
+    public function restoreRevision(Revision $revision, array $keep = []): void
     {
-        $data = collect($revision->data)->only($this->getFillable())->all();
+        $data = collect($revision->data)->only($this->getFillable())->except($keep)->all();
         $this->fill($data);
         static::withoutRevisions(fn () => $this->save());
         $this->createRevision('restored');

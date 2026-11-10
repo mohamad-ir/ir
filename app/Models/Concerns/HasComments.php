@@ -9,6 +9,16 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 /** Registered members can discuss the item. Counts only approved comments. */
 trait HasComments
 {
+    /** Comments of an item deleted for good go with it (they stay while the item is in the bin). */
+    public static function bootHasComments(): void
+    {
+        static::deleting(function ($model) {
+            if (! method_exists($model, 'isForceDeleting') || $model->isForceDeleting()) {
+                $model->comments()->withTrashed()->get()->each->forceDelete();
+            }
+        });
+    }
+
     public function initializeHasComments(): void
     {
         $this->mergeCasts(['comments_enabled' => 'boolean']);

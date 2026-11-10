@@ -42,14 +42,14 @@
                                 @if ($slide->title)<h2 class="mt-2 font-heading text-[1.75rem] font-medium leading-tight sm:text-4xl lg:text-5xl {{ $light ? 'text-ink' : 'text-white' }}">{{ $slide->title }}</h2>@endif
                                 @if ($slide->text)<p class="mt-3 line-clamp-3 text-[0.95rem] leading-relaxed sm:text-lg {{ $light ? 'text-fg/85' : 'text-white/85' }}">{{ $slide->text }}</p>@endif
                                 @if ($href && $slide->button_label)
-                                    <a href="{{ $href }}" data-banner-slide="{{ $slide->id }}" @if ($slide->new_tab) target="_blank" @endif @if ($slide->isExternal()) rel="noopener" @endif
+                                    <a href="{{ safe_href($href) }}" data-banner-slide="{{ $slide->id }}" @if ($slide->new_tab) target="_blank" @endif @if ($slide->isExternal()) rel="noopener" @endif
                                        class="btn {{ $light ? 'btn-primary' : 'btn-light' }} mt-5 sm:mt-6">{{ $slide->button_label }} <x-heroicon-m-arrow-right /></a>
                                 @endif
                             </div>
                         </div>
                     @endif
                     @if ($href && ! $slide->button_label)
-                        <a href="{{ $href }}" data-banner-slide="{{ $slide->id }}" class="absolute inset-0 z-[1]" @if ($slide->new_tab) target="_blank" @endif @if ($slide->isExternal()) rel="noopener" @endif aria-label="{{ $slide->title ?: $slide->alt ?: 'Open' }}"></a>
+                        <a href="{{ safe_href($href) }}" data-banner-slide="{{ $slide->id }}" class="absolute inset-0 z-[1]" @if ($slide->new_tab) target="_blank" @endif @if ($slide->isExternal()) rel="noopener" @endif aria-label="{{ $slide->title ?: $slide->alt ?: 'Open' }}"></a>
                     @endif
                 </div>
             @endforeach

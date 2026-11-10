@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Campaigns\Pages;
 
 use App\Enums\CampaignStatus;
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Filament\Resources\Campaigns\CampaignResource;
 use App\Models\ActivityLog;
 use App\Services\Newsletter\CampaignSender;
@@ -16,7 +17,7 @@ use Throwable;
 
 class EditCampaign extends EditRecord
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
+    use TranslatesPageLabels;
 
     protected static string $resource = CampaignResource::class;
 
@@ -55,11 +56,11 @@ class EditCampaign extends EditRecord
                     }
                 }),
             Action::make('schedule')->label(__('Schedule'))->icon('heroicon-o-calendar')->color('gray')->visible($editable)
-                ->schema([DateTimePicker::make('scheduled_at')->required()->native(false)->minDate(now())->seconds(false)])
+                ->schema([DateTimePicker::make('scheduled_at')->required()->native(false)->minDate(now())->seconds(false)->timezone(config('app.display_timezone', config('app.timezone')))])
                 ->action(function (array $data) {
                     $this->save(false);
                     $this->record->update(['status' => CampaignStatus::Scheduled, 'scheduled_at' => $data['scheduled_at']]);
-                    Notification::make()->success()->title(__('Scheduled for :date', ['date' => $this->record->scheduled_at->format('j M Y H:i')]))->body(__('Sending requires the cron job described in the installation guide.'))->send();
+                    Notification::make()->success()->title(__('Scheduled for :date', ['date' => $this->record->scheduled_at->timezone(config('app.display_timezone', config('app.timezone')))->format('j M Y H:i')]))->body(__('Sending requires the cron job described in the installation guide.'))->send();
                 }),
             Action::make('send')->label(__('Send now'))->icon('heroicon-o-paper-airplane')->visible($editable)
                 ->requiresConfirmation()
@@ -69,6 +70,11 @@ class EditCampaign extends EditRecord
                     $this->save(false);
                     $count = app(CampaignSender::class)->start($this->record->fresh());
                     $this->record->refresh();
+                    if ($this->record->status !== CampaignStatus::Sending) {
+                        Notification::make()->warning()->title(__('Sending could not start'))->send();
+
+                        return;
+                    }
                     ActivityLog::record('campaign_sent', 'Campaign “'.$this->record->subject.'” started ('.$count.' recipients)', $this->record);
                     Notification::make()->success()->title(__('Sending started'))->body(__('Keep this page open or rely on the cron job to finish sending.'))->send();
                 }),

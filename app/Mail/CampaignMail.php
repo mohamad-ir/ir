@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Http\Controllers\NewsletterController;
 use App\Models\Campaign;
 use App\Models\Subscriber;
 use App\Support\RichText;
@@ -47,7 +48,11 @@ class CampaignMail extends Mailable
 
         if (! $this->test) {
             // Route links through the click tracker.
-            $html = preg_replace_callback('~href="(https?://[^"]+)"~i', fn ($m) => 'href="'.e(route('newsletter.click', [$this->campaign->id, $token, 'u' => html_entity_decode($m[1])])).'"', $html);
+            $html = preg_replace_callback('~href="(https?://[^"]+)"~i', function ($m) use ($token) {
+                $url = html_entity_decode($m[1]);
+
+                return 'href="'.e(route('newsletter.click', [$this->campaign->id, $token, 'u' => $url, 's' => NewsletterController::linkSignature($this->campaign->id, $url)])).'"';
+            }, $html);
         }
 
         return new Content(view: 'emails.campaign', with: [

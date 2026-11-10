@@ -20,7 +20,7 @@
         @if ($social->isNotEmpty())
             <div class="mt-8 flex flex-wrap gap-2">
                 @foreach ($social as $network => $url)
-                    <a href="{{ $url }}" target="_blank" rel="noopener me" class="inline-flex items-center gap-2 rounded-full bg-surface px-3.5 py-1.5 text-sm font-medium text-fg ring-1 ring-line transition hover:ring-line-strong">
+                    <a href="{{ safe_href($url) }}" target="_blank" rel="noopener me" class="inline-flex items-center gap-2 rounded-full bg-surface px-3.5 py-1.5 text-sm font-medium text-fg ring-1 ring-line transition hover:ring-line-strong">
                         <x-social-icon :network="$network" class="size-4 text-muted" /> {{ \App\Support\Social::label($network) }}
                     </a>
                 @endforeach

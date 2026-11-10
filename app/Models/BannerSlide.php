@@ -62,6 +62,8 @@ class BannerSlide extends Model
             return null;
         }
 
-        return str_starts_with($this->link_url, '/') || preg_match('~^(https?:|mailto:|tel:)~i', $this->link_url) ? $this->link_url : '/'.ltrim($this->link_url, '/');
+        $url = trim($this->link_url);
+
+        return preg_match('~^(https?:|mailto:|tel:)~i', $url) || (str_starts_with($url, '/') && ! str_starts_with($url, '//')) ? $url : '/'.ltrim($url, '/');
     }
 }

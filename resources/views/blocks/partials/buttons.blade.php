@@ -15,7 +15,7 @@
                 };
                 $external = str_starts_with($button['url'] ?? '', 'http') && ! str_starts_with($button['url'], url('/'));
             @endphp
-            <a href="{{ $button['url'] ?? '#' }}" class="{{ $cls }}" @if($external) target="_blank" rel="noopener" @endif>
+            <a href="{{ safe_href($button['url'] ?? '#') }}" class="{{ $cls }}" @if($external) target="_blank" rel="noopener" @endif>
                 {{ $button['label'] }}
                 @if (in_array($style, ['primary', 'accent', 'ghost']))<x-heroicon-m-arrow-right />@endif
             </a>

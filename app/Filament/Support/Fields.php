@@ -115,7 +115,28 @@ class Fields
             ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
             ->validationMessages(Ui::options(['regex' => 'Use lowercase letters, numbers and hyphens only.']))
             ->unique($table, 'slug', ignoreRecord: true)
+            // Pages live at the site root: an address used by the website itself (articles, courses, search…) could never be reached.
+            ->rule(fn () => function (string $attribute, $value, \Closure $fail) use ($prefix) {
+                if (trim($prefix, '/') === '' && in_array((string) $value, self::reservedRootSlugs(), true)) {
+                    $fail(__('This address is used by the website itself. Please choose another one.'));
+                }
+            })
             ->helperText(__('Changing the URL of a published item automatically creates a 301 redirect from the old address.'));
+    }
+
+    /** First path segments of the website's own routes (and public folders), which pages cannot use. */
+    public static function reservedRootSlugs(): array
+    {
+        return once(function () {
+            $segments = collect(app('router')->getRoutes()->getRoutes())
+                ->map(fn ($route) => explode('/', trim($route->uri(), '/'))[0] ?? '')
+                ->filter(fn ($s) => $s !== '' && ! str_contains($s, '{'));
+
+            return $segments->merge(['admin', config('cms.admin_path'), 'media', 'build', 'storage', 'css', 'js', 'fonts', 'icons', 'livewire', 'filament'])
+                ->map(fn ($s) => strtolower((string) $s))->unique()
+                ->reject(fn ($s) => $s === 'contact') // the contact page may be replaced by a page with this address
+                ->values()->all();
+        });
     }
 
     /** Status, schedule, visibility and author — shown in the sidebar of every content editor. */
@@ -143,6 +164,8 @@ class Fields
                     ->helperText(fn () => auth()->user()?->can($permissionPrefix.'.publish') ? null : __('An editor will review and publish your work.')),
                 DateTimePicker::make('published_at')
                     ->label(__('Publish date'))
+                    // In the site's time zone (Settings › Site), like webinars and popups; stored in UTC.
+                    ->timezone(config('app.display_timezone', config('app.timezone')))
                     ->seconds(false)
                     ->native(false)
                     ->displayFormat('j M Y, H:i')

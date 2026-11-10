@@ -7,6 +7,7 @@ use App\Filament\Forms\MediaPicker;
 use App\Models\Popup;
 use App\Services\Popups\PopupService;
 use App\Services\Popups\PopupTemplates;
+use App\Support\SafeUrl;
 use App\Support\Settings;
 use App\Support\Ui;
 use BackedEnum;
@@ -120,7 +121,7 @@ class PopupResource extends Resource
                             Section::make('Buttons')->heading(__('Buttons'))->compact()->columns(2)->schema([
                                 TextInput::make('cta_label')->label(fn ($get) => $type($get) === 'bar' ? __('Link text') : __('Button text'))->maxLength(60)->placeholder(__('See the course'))->live(debounce: 600)
                                     ->requiredWith('cta_url'),
-                                TextInput::make('cta_url')->label(__('Button link'))->maxLength(500)->placeholder(__('/courses/oct-masterclass or https://…'))
+                                TextInput::make('cta_url')->label(__('Button link'))->rule(SafeUrl::rule())->maxLength(500)->placeholder(__('/courses/oct-masterclass or https://…'))
                                     ->rule($link)->validationMessages(Ui::options(['regex' => 'Start with / for a page on this site, # for a place on the page, or https:// for another website.']))
                                     ->requiredWith('cta_label'),
                                 Toggle::make('cta_new_tab')->label(__('Open the link in a new tab')),

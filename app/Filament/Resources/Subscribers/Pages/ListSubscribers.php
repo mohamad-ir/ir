@@ -3,8 +3,11 @@
 namespace App\Filament\Resources\Subscribers\Pages;
 
 use App\Enums\SubscriberStatus;
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Filament\Resources\Subscribers\SubscriberResource;
 use App\Models\Subscriber;
+use App\Support\Csv;
+use App\Support\Ui;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\CheckboxList;
@@ -16,7 +19,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 
 class ListSubscribers extends ListRecords
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
+    use TranslatesPageLabels;
 
     protected static string $resource = SubscriberResource::class;
 
@@ -26,10 +29,10 @@ class ListSubscribers extends ListRecords
             Action::make('export')->label(__('Export CSV'))->icon('heroicon-o-arrow-down-tray')->color('gray')
                 ->action(fn () => response()->streamDownload(function () {
                     $out = fopen('php://output', 'w');
-                    fputcsv($out, ['email', 'name', 'status', 'interests', 'source', 'confirmed_at', 'created_at']);
+                    Csv::put($out, ['email', 'name', 'status', 'interests', 'source', 'confirmed_at', 'created_at']);
                     Subscriber::orderBy('id')->chunk(500, function ($rows) use ($out) {
                         foreach ($rows as $s) {
-                            fputcsv($out, [$s->email, $s->name, $s->status->value, implode('|', $s->interests ?? []), $s->source, $s->confirmed_at?->toDateTimeString(), $s->created_at?->toDateTimeString()]);
+                            Csv::put($out, [$s->email, $s->name, $s->status->value, implode('|', $s->interests ?? []), $s->source, $s->confirmed_at?->toDateTimeString(), $s->created_at?->toDateTimeString()]);
                         }
                     });
                     fclose($out);
@@ -38,7 +41,7 @@ class ListSubscribers extends ListRecords
                 ->modalDescription(__('CSV with an "email" column and optionally "name". Existing addresses are updated, never duplicated.'))
                 ->schema([
                     FileUpload::make('file')->required()->storeFiles(false)->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel']),
-                    CheckboxList::make('interests')->options(\App\Support\Ui::options(Subscriber::INTERESTS))->default(['weekly_case'])->columns(2),
+                    CheckboxList::make('interests')->options(Ui::options(Subscriber::INTERESTS))->default(['weekly_case'])->columns(2),
                     Toggle::make('consent')->label(__('I confirm these people consented to receive emails'))->accepted(),
                 ])
                 ->action(function (array $data) {

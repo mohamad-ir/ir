@@ -110,8 +110,23 @@ class ThemeService
         $css .= ':root.dark{'.collect($this->darkVars($t))->map(fn ($v, $k) => "{$k}:{$v}")->implode(';').'}';
 
         if (filled($t['custom_css'] ?? null)) {
-            $css .= "\n".str_ireplace(['</style', '<script', 'javascript:', 'expression('], '', $t['custom_css']);
+            $css .= "\n".self::cleanCustomCss($t['custom_css']);
         }
+
+        return $css;
+    }
+
+    /**
+     * Custom CSS cannot contain HTML: every "<" is removed (CSS never needs it outside strings), so the
+     * style element can never be closed early, and script-like values are removed until none remain.
+     */
+    public static function cleanCustomCss(string $css): string
+    {
+        $css = str_replace(['<', "\0"], '', $css);
+        do {
+            $before = $css;
+            $css = str_ireplace(['javascript:', 'expression(', '@import', 'behavior:', '-moz-binding'], '', $css);
+        } while ($css !== $before);
 
         return $css;
     }

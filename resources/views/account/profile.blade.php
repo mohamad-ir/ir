@@ -8,7 +8,15 @@
                 <div><label for="title" class="field-label">Title</label><input id="title" name="title" value="{{ old('title', $user->title) }}" class="input" placeholder="Dr"></div>
                 <div><label for="name" class="field-label">Full name</label><input id="name" name="name" value="{{ old('name', $user->name) }}" required class="input">@error('name')<p class="field-error">{{ $message }}</p>@enderror</div>
             </div>
-            <div><label for="email" class="field-label">Email</label><input id="email" type="email" name="email" value="{{ old('email', $user->email) }}" required class="input">@error('email')<p class="field-error">{{ $message }}</p>@enderror</div>
+            <div x-data="{ original: @js($user->email), email: @js(old('email', $user->email)) }">
+                <label for="email" class="field-label">Email</label><input id="email" type="email" name="email" x-model="email" value="{{ old('email', $user->email) }}" required class="input">@error('email')<p class="field-error">{{ $message }}</p>@enderror
+                <div x-show="email.trim().toLowerCase() !== original.toLowerCase()" @if (! $errors->has('current_password')) x-cloak @endif class="mt-3">
+                    <label for="current_password" class="field-label">Current password <span class="font-normal text-muted">(needed to change your email)</span></label>
+                    <input id="current_password" type="password" name="current_password" autocomplete="current-password" class="input">
+                    @error('current_password')<p class="field-error">{{ $message }}</p>@enderror
+                    <p class="field-hint mt-1">We will send a confirmation link to the new address.</p>
+                </div>
+            </div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <div><label for="career_stage" class="field-label">Career stage</label>
                     <select id="career_stage" name="career_stage" class="input"><option value="">—</option>@foreach (\App\Models\CareerStage::options(true, $user->career_stage) as $key => $name)<option value="{{ $key }}" @selected(old('career_stage', $user->career_stage) === (string) $key)>{{ $name }}</option>@endforeach</select></div>

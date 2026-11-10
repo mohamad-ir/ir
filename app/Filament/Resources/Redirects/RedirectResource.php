@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Redirects;
 
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Models\Redirect;
+use App\Support\Ui;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -21,7 +23,7 @@ use Filament\Tables\Table;
 
 class RedirectResource extends Resource
 {
-    use \App\Filament\Concerns\TranslatesResourceLabels;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Redirect::class;
 
@@ -35,9 +37,17 @@ class RedirectResource extends Resource
     {
         return $schema->components([Section::make()->columns(2)->schema([
             TextInput::make('source_path')->label(__('Old address'))->required()->prefix(url('/'))->placeholder('/old-page')
-                ->unique(ignoreRecord: true)->helperText(__('Path only, e.g. /cases/old-name. Query strings are ignored.')),
+                // Compared after normalising (/Old-Page/ and /old-page are the same address).
+                ->dehydrateStateUsing(fn (?string $state) => Redirect::normalizePath((string) $state))
+                ->rule(fn (?Redirect $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                    $path = Redirect::normalizePath((string) $value);
+                    if (Redirect::where('source_path', $path)->when($record, fn ($q) => $q->whereKeyNot($record->getKey()))->exists()) {
+                        $fail(__('A redirect for this address already exists.'));
+                    }
+                })
+                ->helperText(__('Path only, e.g. /cases/old-name. Query strings are ignored.')),
             TextInput::make('target_url')->label(__('Redirect to'))->required()->placeholder(__('/cases/new-name or https://…')),
-            Select::make('status_code')->label(__('Type'))->options(\App\Support\Ui::options([301 => '301 — moved permanently (recommended)', 302 => '302 — temporary', 410 => '410 — content removed']))->default(301)->required(),
+            Select::make('status_code')->label(__('Type'))->options(Ui::options([301 => '301 — moved permanently (recommended)', 302 => '302 — temporary', 410 => '410 — content removed']))->default(301)->required(),
             Toggle::make('is_active')->label(__('Active'))->default(true)->inline(false),
             TextInput::make('notes')->columnSpanFull(),
         ])]);

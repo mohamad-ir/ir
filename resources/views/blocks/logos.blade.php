@@ -3,7 +3,7 @@
     @foreach ($data['items'] ?? [] as $item)
         <li>
             @php($tag = ! empty($item['url']) ? 'a' : 'span')
-            <{{ $tag }} @if($tag === 'a') href="{{ $item['url'] }}" target="_blank" rel="noopener" @endif class="block transition {{ ! empty($data['grayscale']) ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : '' }}" title="{{ $item['name'] ?? '' }}">
+            <{{ $tag }} @if($tag === 'a') href="{{ safe_href($item['url']) }}" target="_blank" rel="noopener" @endif class="block transition {{ ! empty($data['grayscale']) ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : '' }}" title="{{ $item['name'] ?? '' }}">
                 @if ($item['media'] ?? null)
                     <img src="{{ $item['media']->url('thumb') }}" alt="{{ $item['name'] ?? '' }}" class="h-10 w-auto max-w-[10rem] object-contain sm:h-12" loading="lazy">
                 @else

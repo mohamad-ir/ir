@@ -2,11 +2,13 @@
 
 namespace App\Filament\Pages\Insights;
 
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Filament\Widgets\Analytics\ChannelsChart;
 use App\Filament\Widgets\Analytics\SubscribersChart;
 use App\Filament\Widgets\Analytics\TrafficChart;
 use App\Services\Analytics\AnalyticsQuery;
 use App\Services\Analytics\GeoLocator;
+use App\Support\Csv;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
@@ -14,7 +16,7 @@ use Livewire\Attributes\Url;
 
 class Analytics extends Page
 {
-    use \App\Filament\Concerns\TranslatesPageLabels;
+    use TranslatesPageLabels;
 
     protected static ?string $slug = 'insights/analytics';
 
@@ -50,15 +52,15 @@ class Analytics extends Page
                 ->action(fn () => response()->streamDownload(function () {
                     $q = AnalyticsQuery::for($this->days);
                     $out = fopen('php://output', 'w');
-                    fputcsv($out, ['date', 'page_views', 'visits']);
+                    Csv::put($out, ['date', 'page_views', 'visits']);
                     $s = $q->timeseries();
                     foreach ($s['labels'] as $i => $label) {
-                        fputcsv($out, [$label, $s['views'][$i], $s['visits'][$i]]);
+                        Csv::put($out, [$label, $s['views'][$i], $s['visits'][$i]]);
                     }
-                    fputcsv($out, []);
-                    fputcsv($out, ['page', 'path', 'views', 'visits']);
+                    Csv::put($out, []);
+                    Csv::put($out, ['page', 'path', 'views', 'visits']);
                     foreach ($q->topPages(50) as $p) {
-                        fputcsv($out, [$p->title, $p->path, $p->views, $p->visits]);
+                        Csv::put($out, [$p->title, $p->path, $p->views, $p->visits]);
                     }
                     fclose($out);
                 }, "analytics-last-{$this->days}-days.csv")),

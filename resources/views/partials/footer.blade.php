@@ -16,7 +16,7 @@
                 @if ($social->isNotEmpty())
                     <div class="mt-6 flex flex-wrap gap-2">
                         @foreach ($social as $network => $url)
-                            <a href="{{ $url }}" target="_blank" rel="noopener me" class="grid size-10 place-items-center rounded-full transition {{ $dark ? 'bg-white/[.07] text-white/80 hover:bg-white/15 hover:text-white' : 'bg-surface ring-1 ring-line text-muted hover:text-ink' }}" aria-label="{{ \App\Support\Social::label($network) }}">
+                            <a href="{{ safe_href($url) }}" target="_blank" rel="noopener me" class="grid size-10 place-items-center rounded-full transition {{ $dark ? 'bg-white/[.07] text-white/80 hover:bg-white/15 hover:text-white' : 'bg-surface ring-1 ring-line text-muted hover:text-ink' }}" aria-label="{{ \App\Support\Social::label($network) }}">
                                 <x-social-icon :network="$network" class="size-[1.1rem]" />
                             </a>
                         @endforeach
@@ -30,7 +30,7 @@
                         <h2 class="text-xs font-semibold tracking-[.14em] uppercase font-sans {{ $dark ? 'text-white/50' : 'text-muted' }}">{{ $menu['name'] }}</h2>
                         <ul class="mt-4 space-y-2.5" role="list">
                             @foreach ($menu['items'] as $item)
-                                <li><a href="{{ $item['url'] }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif class="text-[0.9375rem] transition {{ $dark ? 'text-white/80 hover:text-white' : 'text-fg/80 hover:text-ink' }}">{{ $item['label'] }}</a></li>
+                                <li><a href="{{ safe_href($item['url']) }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif class="text-[0.9375rem] transition {{ $dark ? 'text-white/80 hover:text-white' : 'text-fg/80 hover:text-ink' }}">{{ $item['label'] }}</a></li>
                             @endforeach
                         </ul>
                     </div>
@@ -58,7 +58,7 @@
                 @if ($legal)
                     <ul class="flex flex-wrap gap-x-6 gap-y-2" role="list">
                         @foreach ($legal as $item)
-                            <li><a href="{{ $item['url'] }}" class="transition {{ $dark ? 'hover:text-white' : 'hover:text-ink' }}">{{ $item['label'] }}</a></li>
+                            <li><a href="{{ safe_href($item['url']) }}" class="transition {{ $dark ? 'hover:text-white' : 'hover:text-ink' }}">{{ $item['label'] }}</a></li>
                         @endforeach
                     </ul>
                 @endif

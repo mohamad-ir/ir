@@ -126,7 +126,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Super administrators implicitly hold every permission.
-        Gate::before(fn ($user) => $user->hasRole('super_admin') ? true : null);
+        // Super administrators may do everything — except deleting a user, which always follows UserPolicy
+        // (never yourself, never someone whose membership is still renewing in Stripe).
+        Gate::before(fn ($user, string $ability, array $arguments = []) => $user->hasRole('super_admin')
+            && ! ($ability === 'delete' && ($arguments[0] ?? null) instanceof Models\User) ? true : null);
 
         RateLimiter::for('forms', fn (Request $request) => [
             Limit::perMinute(5)->by('form:'.$request->ip()),

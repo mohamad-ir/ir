@@ -1,16 +1,41 @@
 <?php
 
 use App\Enums\OrderStatus;
+use App\Filament\Pages\System\Backups;
+use App\Filament\Resources\Cases\Pages\ListCases;
+use App\Filament\Resources\Menus\Pages\EditMenu;
+use App\Filament\Resources\Pages\Pages\CreatePage;
+use App\Filament\Resources\Redirects\Pages\CreateRedirect;
+use App\Http\Controllers\NewsletterController;
+use App\Models\Article;
+use App\Models\Campaign;
 use App\Models\Certificate;
+use App\Models\ClinicalCase;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Gallery;
+use App\Models\Media;
 use App\Models\MembershipPlan;
+use App\Models\Menu;
 use App\Models\Order;
+use App\Models\Popup;
+use App\Models\Redirect;
+use App\Models\Subscriber;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\Backup\BackupService;
+use App\Services\Comments\CommentService;
+use App\Services\Media\MediaUsage;
 use App\Services\Payments\StripeClient;
+use App\Services\Theme\ThemeService;
+use App\Support\Csv;
+use App\Support\RichText;
+use App\Support\SafeUrl;
+use App\Support\Settings;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 
 /* Regression tests for issues found in the 1.7.0 release QA. */
 
@@ -138,4 +163,133 @@ it('shows a “processing” page instead of an error when fulfilment fails on t
     Http::fake(['api.stripe.com/v1/subscriptions/sub_broken' => Http::response(['error' => ['message' => 'boom']], 500)]);
 
     $this->actingAs($user)->get(route('checkout.success').'?session_id=cs_x')->assertOk();
+});
+
+// Security and data integrity ---------------------------------------------------
+
+it('never renders script links from menus or blocks, and refuses them when saving', function () {
+    expect(SafeUrl::href('javascript:alert(1)'))->toBe('#')
+        ->and(SafeUrl::href(" java\tscript:alert(1)"))->toBe('#')
+        ->and(SafeUrl::href('data:text/html,x'))->toBe('#')
+        ->and(SafeUrl::href('/courses'))->toBe('/courses')
+        ->and(SafeUrl::href('https://example.org/x'))->toBe('https://example.org/x')
+        ->and(SafeUrl::href('mailto:a@b.org'))->toBe('mailto:a@b.org')
+        ->and(SafeUrl::href('cases'))->toBe('cases');
+
+    Menu::where('location', 'header')->first()?->update(['items' => [['label' => 'Evil', 'url' => 'javascript:alert(document.cookie)', 'new_tab' => false]]]);
+    Cache::flush();
+    $this->get('/')->assertOk()->assertDontSee('javascript:alert', false);
+
+    $this->actingAsStaff('editor');
+    $menu = Menu::firstOrCreate(['location' => 'footer'], ['name' => 'Footer', 'items' => []]);
+    Livewire::test(EditMenu::class, ['record' => $menu->getRouteKey()])
+        ->fillForm(['items' => [['label' => 'Evil', 'url' => 'javascript:alert(1)', 'new_tab' => false]]])
+        ->call('save')->assertHasFormErrors();
+});
+
+it('checks ownership for every item in bulk bin, restore and publish actions', function () {
+    $editor = $this->staff('editor');
+    $case = ClinicalCase::factory()->create(['author_id' => $editor->id]);
+    $this->actingAsStaff('author');
+
+    Livewire::test(ListCases::class)->callTableBulkAction('delete', [$case->id]);
+    expect(ClinicalCase::find($case->id))->not->toBeNull();
+});
+
+it('lets only a super administrator download backups', function () {
+    $admin = $this->actingAsStaff('administrator');
+    Livewire::test(Backups::class)->call('download', 'backup-x.zip')->assertForbidden();
+});
+
+it('keeps the backup being restored when the safety backup prunes old ones', function () {
+    $service = app(BackupService::class);
+    Settings::set('backup.keep', 1);
+    $old = $service->create(false, 'old');
+    $this->travel(2)->seconds();
+    $service->create(false, 'safety', keep: $old);
+    expect(collect($service->list())->pluck('name'))->toContain($old);
+    foreach ($service->list() as $b) {
+        $service->delete($b['name']);
+    }
+});
+
+it('only redirects newsletter clicks to links of that campaign', function () {
+    $campaign = Campaign::create(['subject' => 'S', 'body' => '<p><a href="https://example.org/case">x</a></p>', 'status' => 'sent']);
+    $this->get(route('newsletter.click', [$campaign->id, 'nobody', 'u' => 'https://evil.example/phish']))->assertRedirect('/');
+    $this->get(route('newsletter.click', [$campaign->id, 'nobody', 'u' => 'https://example.org/case']))->assertRedirect('https://example.org/case');
+    $url = 'https://other.example/new';
+    $this->get(route('newsletter.click', [$campaign->id, 'nobody', 'u' => $url, 's' => NewsletterController::linkSignature($campaign->id, $url)]))->assertRedirect($url);
+});
+
+it('accepts one-click unsubscribe from mail providers without a form token', function () {
+    $subscriber = Subscriber::factory()->create();
+    expect($this->post('/newsletter/unsubscribe/'.$subscriber->token)->status())->not->toBe(419);
+    expect($subscriber->fresh()->status->value)->toBe('unsubscribed');
+});
+
+it('cannot break out of the custom CSS with nested tags', function () {
+    expect(ThemeService::cleanCustomCss('</st</styleyle><scr<scriptipt>alert(1)</script>'))->not->toContain('<')
+        ->and(ThemeService::cleanCustomCss('a{background:url(javajavascript:script:x)}'))->not->toContain('javascript:')
+        ->and(ThemeService::cleanCustomCss('.btn{color:red}'))->toBe('.btn{color:red}');
+});
+
+it('asks for the password to change the email and keeps newsletter data to verified addresses', function () {
+    $member = User::factory()->create(['email_verified_at' => now(), 'password' => bcrypt('Str0ngPassword9')]);
+    $victim = Subscriber::factory()->create(['email' => 'victim@example.org']);
+    $this->actingAs($member);
+
+    $this->put('/account/profile', ['name' => $member->name, 'email' => 'victim@example.org'])->assertSessionHasErrors('current_password');
+    $this->put('/account/profile', ['name' => $member->name, 'email' => 'victim@example.org', 'current_password' => 'Str0ngPassword9', 'newsletter' => '0'])->assertSessionHasNoErrors();
+    expect($member->fresh()->email)->toBe('victim@example.org')->and($member->fresh()->hasVerifiedEmail())->toBeFalse()
+        ->and($victim->fresh()->status->value)->toBe('subscribed');
+});
+
+it('applies comment moderation rules to edits as well', function () {
+    Settings::set('comments.blocked_words', 'casino');
+    $member = User::factory()->create(['email_verified_at' => now()]);
+    $article = Article::factory()->create(['status' => 'published', 'published_at' => now()->subDay()]);
+    $comment = $article->comments()->create(['user_id' => $member->id, 'body' => 'Helpful case', 'status' => 'approved']);
+
+    app(CommentService::class)->edit($comment, $member, 'Visit my casino');
+    expect($comment->fresh()->status)->toBe('pending');
+});
+
+it('protects spreadsheets from formulas and embeds only known video sites', function () {
+    expect(Csv::cell('=HYPERLINK("x")'))->toBe("'=HYPERLINK(\"x\")")->and(Csv::cell('-5'))->toBe('-5')
+        ->and(RichText::restrictIframes('<iframe src="https://evil.example/x"></iframe><iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe>'))
+        ->not->toContain('evil.example')->toContain('youtube-nocookie');
+});
+
+it('finds media used in galleries, banners, popups, courses and lessons, and keeps live subscriptions from being deleted with a user', function () {
+    $media = Media::create(['disk' => 'public', 'path' => 'uploads/x.jpg', 'filename' => 'x.jpg', 'original_name' => 'x.jpg', 'mime_type' => 'image/jpeg', 'extension' => 'jpg', 'size' => 1]);
+    $gallery = Gallery::factory()->create(['title' => 'Atlas']);
+    $gallery->items()->create(['media_id' => $media->id, 'sort_order' => 1]);
+    Popup::create(['name' => 'Promo', 'type' => 'modal', 'status' => 'draft', 'title' => 'Hi', 'trigger' => 'load', 'media_id' => $media->id]);
+    $types = collect(app(MediaUsage::class)->find($media))->pluck('type');
+    expect($types)->toContain('Photo gallery')->toContain('Popup');
+
+    $member = makeMember();
+    $admin = $this->staff('super_admin');
+    expect($admin->can('delete', $member))->toBeFalse();
+});
+
+it('rejects page addresses used by the website and duplicate redirects written differently', function () {
+    $this->actingAsStaff('editor');
+    Livewire::test(CreatePage::class)
+        ->fillForm(['title' => 'Articles', 'slug' => 'articles'])->call('create')->assertHasFormErrors(['slug']);
+
+    Redirect::create(['source_path' => '/old-page', 'target_url' => '/new', 'status_code' => 301, 'is_active' => true]);
+    $this->actingAsStaff('super_admin');
+    Livewire::test(CreateRedirect::class)
+        ->fillForm(['source_path' => '/Old-Page/', 'target_url' => '/x', 'status_code' => 301])->call('create')->assertHasFormErrors(['source_path']);
+});
+
+it('restores the content of a revision but not its publication state', function () {
+    $this->actingAsStaff('editor');
+    $article = Article::factory()->create(['status' => 'published', 'published_at' => now()->subDay(), 'title' => 'First']);
+    $article->update(['title' => 'Second', 'status' => 'draft']);
+    $revision = $article->revisions()->where('data->title', 'First')->first() ?? $article->revisions()->oldest('id')->first();
+
+    $article->restoreRevision($revision, keep: ['slug', 'status', 'published_at']);
+    expect($article->fresh()->status->value)->toBe('draft');
 });

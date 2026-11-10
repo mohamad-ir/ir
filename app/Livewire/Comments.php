@@ -238,7 +238,7 @@ class Comments extends Component
         };
 
         $total = (clone $query)->count();
-        $threads = $query->limit($this->perPage)->get();
+        $threads = $query->limit(min(max(10, $this->perPage), 500))->get(); // perPage comes from the browser
 
         $ids = $threads->pluck('id')->merge($threads->flatMap->replies->pluck('id'));
         $liked = $user ? DB::table('comment_likes')->where('user_id', $user->id)->whereIn('comment_id', $ids)->pluck('comment_id')->all() : [];

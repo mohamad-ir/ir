@@ -53,7 +53,7 @@ class AccountController extends Controller
             'totalQuestions' => Question::published()->count(),
             'recentAttempts' => $user->questionAttempts()->with('question')->latest('id')->limit(6)->get(),
             'latestCases' => ClinicalCase::published()->with(['featuredMedia', 'topics', 'modalities'])->latest('published_at')->limit(3)->get(),
-            'subscriber' => Subscriber::where('email', $user->email)->first(),
+            'subscriber' => $user->hasVerifiedEmail() ? Subscriber::where('email', $user->email)->first() : null,
         ]);
     }
 
@@ -78,7 +78,7 @@ class AccountController extends Controller
 
         return view('account.profile', [
             'user' => $request->user(),
-            'subscriber' => Subscriber::where('email', $request->user()->email)->first(),
+            'subscriber' => $request->user()->hasVerifiedEmail() ? Subscriber::where('email', $request->user()->email)->first() : null,
         ]);
     }
 
@@ -95,7 +95,10 @@ class AccountController extends Controller
             'country' => ['nullable', 'string', 'size:2'],
             'newsletter' => ['nullable', 'boolean'],
             'notify_replies' => ['nullable', 'boolean'],
-        ]);
+            // Changing the sign-in email needs the password (someone at an unlocked computer cannot take over the account).
+            'current_password' => [Rule::requiredIf(fn () => strcasecmp((string) $request->input('email'), $user->email) !== 0), 'nullable', 'current_password'],
+        ], ['current_password.required' => 'Enter your current password to change your email address.']);
+        unset($data['current_password']);
         $data['notify_replies'] = $request->boolean('notify_replies');
 
         $emailChanged = $data['email'] !== $user->email;
@@ -109,8 +112,11 @@ class AccountController extends Controller
             $user->sendEmailVerificationNotification();
         }
 
-        $subscriber = Subscriber::where('email', $user->email)->first();
-        if ($request->boolean('newsletter') && (! $subscriber || $subscriber->status->value !== 'subscribed')) {
+        // Newsletter preferences follow a verified address only: a new, unconfirmed address may belong to someone else.
+        $subscriber = $user->hasVerifiedEmail() ? Subscriber::where('email', $user->email)->first() : null;
+        if (! $user->hasVerifiedEmail()) {
+            // nothing to change until the new address is confirmed
+        } elseif ($request->boolean('newsletter') && (! $subscriber || $subscriber->status->value !== 'subscribed')) {
             $newsletter->subscribe($user->email, $user->name, ['weekly_case'], 'account', $user->id);
         } elseif (! $request->boolean('newsletter') && $subscriber && $subscriber->status->value === 'subscribed') {
             $newsletter->unsubscribe($subscriber);
@@ -139,7 +145,7 @@ class AccountController extends Controller
             'account' => [...$user->only(['name', 'title', 'email', 'career_stage', 'specialty', 'institution', 'country', 'created_at', 'last_login_at']), 'career_stage_name' => $user->careerStageLabel()],
             'bookmarks' => $user->bookmarks()->with('bookmarkable')->get()->map(fn ($b) => ['type' => $b->bookmarkable_type, 'title' => $b->bookmarkable?->title, 'saved_at' => $b->created_at])->all(),
             'question_attempts' => $user->questionAttempts()->with('question:id,title')->get()->map(fn ($a) => ['question' => $a->question?->title, 'answer' => $a->selected_key, 'correct' => $a->is_correct, 'at' => $a->created_at])->all(),
-            'newsletter' => Subscriber::where('email', $user->email)->first()?->only(['email', 'status', 'interests', 'confirmed_at']),
+            'newsletter' => $user->hasVerifiedEmail() ? Subscriber::where('email', $user->email)->first()?->only(['email', 'status', 'interests', 'confirmed_at']) : null,
             'certificates' => Certificate::where('user_id', $user->id)->get()->map(fn ($c) => $c->only(['code', 'course_title', 'recipient_name', 'issued_at', 'revoked_at']))->all(),
             'quiz_attempts' => LessonQuizAttempt::where('user_id', $user->id)->with('lesson:id,title')->get()->map(fn ($a) => ['lesson' => $a->lesson?->title, 'score' => $a->score, 'passed' => $a->passed, 'at' => $a->created_at])->all(),
             'courses' => $user->enrollments()->with('course:id,title')->get()->map(fn ($e) => ['course' => $e->course?->title, 'access' => $e->source, 'enrolled_at' => $e->created_at, 'completed_at' => $e->completed_at])->all(),
@@ -164,7 +170,9 @@ class AccountController extends Controller
         }
 
         Auth::logout();
-        Subscriber::where('email', $user->email)->delete();
+        if ($user->hasVerifiedEmail()) {
+            Subscriber::where('email', $user->email)->delete();
+        }
         $user->delete();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

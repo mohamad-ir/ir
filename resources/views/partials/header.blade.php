@@ -40,7 +40,7 @@
                         </div>
                     </div>
                 @else
-                    <a href="{{ $item['url'] }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif
+                    <a href="{{ safe_href($item['url']) }}" @if($item['new_tab']) target="_blank" rel="noopener" @endif
                        @if($item['active']) aria-current="page" @endif
                        class="relative whitespace-nowrap rounded-ui px-3 py-2 text-[0.9375rem] font-medium transition {{ $dark ? 'text-white/85 hover:text-white hover:bg-white/10' : ($item['active'] ? 'text-ink' : 'text-fg/80 hover:text-ink hover:bg-ink/5') }}">
                         {{ $item['label'] }}
@@ -112,7 +112,7 @@
                                     @endforeach
                                 </div>
                             @else
-                                <a href="{{ $item['url'] }}" class="block rounded-ui px-4 py-3 text-base font-semibold {{ $item['active'] ? 'bg-ink/5 text-ink' : 'text-ink hover:bg-ink/5' }}">{{ $item['label'] }}</a>
+                                <a href="{{ safe_href($item['url']) }}" class="block rounded-ui px-4 py-3 text-base font-semibold {{ $item['active'] ? 'bg-ink/5 text-ink' : 'text-ink hover:bg-ink/5' }}">{{ $item['label'] }}</a>
                             @endif
                         </div>
                     @endforeach
